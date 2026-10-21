@@ -1,0 +1,12 @@
+# No Git LFS: large data lives on the Hugging Face Hub (scripts/download_data.py).
+*.png  binary
+*.pdf  binary
+
+# Keep generated benchmark and dataset artifacts out of GitHub language stats.
+benchmark/input/** linguist-generated=true
+benchmark/groundtruth/** linguist-generated=true
+benchmark/verification/dataset/** linguist-generated=true
+benchmark/verification/groundtruth/** linguist-generated=true
+benchmark/verification/seeds/** linguist-generated=true
+training/input/** linguist-generated=true
+training/groundtruth/** linguist-generated=true

@@ -1,0 +1,303 @@
+[
+ {
+  "model_id": "base-qwen27b",
+  "path": "${HF_HOME}/hub/models--Qwen--Qwen3.8-27B/snapshots/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "family": "qwen-27b",
+  "kind": "base",
+  "agentorch_global_orch": 0.2857,
+  "tp": 1
+ },
+ {
+  "model_id": "base-qwen4b",
+  "path": "${HF_HOME}/hub/models--Qwen--Qwen3-4B-Instruct-2507/snapshots/cdbee75f17c01a7cc42f958dc650907174af0554",
+  "family": "qwen-4b",
+  "kind": "base",
+  "agentorch_global_orch": 0.1375,
+  "tp": 1
+ },
+ {
+  "model_id": "base-gemma26b",
+  "path": "${HF_HOME}/hub/models--google--gemma-4-26B-A4B-it/snapshots/4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+  "family": "gemma-26b",
+  "kind": "base",
+  "agentorch_global_orch": 0.0405,
+  "tp": 1
+ },
+ {
+  "model_id": "base-gemma31b",
+  "path": "${HF_HOME}/hub/models--google--gemma-4-31B-it/snapshots/842da3794eaa0b77d5f08bae87a17459d91ff475",
+  "family": "gemma-31b",
+  "kind": "base",
+  "agentorch_global_orch": 0.1271,
+  "tp": 1
+ },
+ {
+  "model_id": "base-gemma12b",
+  "path": "${HF_HOME}/hub/models--google--gemma-4-12B-it/snapshots/707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+  "family": "gemma-12b",
+  "kind": "base",
+  "agentorch_global_orch": 0.1426,
+  "tp": 1
+ },
+ {
+  "model_id": "sft-27b-64k-2ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-final-fixed",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.3594,
+  "tp": 1,
+  "checkpoint": "merged-final-fixed"
+ },
+ {
+  "model_id": "sft-27b-80k-2ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-v1-80k",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.3621,
+  "tp": 1,
+  "checkpoint": "merged-27b-v1-80k"
+ },
+ {
+  "model_id": "sft-27b-80k-3ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-80k-3ep",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.4196,
+  "tp": 1,
+  "checkpoint": "merged-27b-80k-3ep"
+ },
+ {
+  "model_id": "sft-27b-80k-4ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-80k-4ep",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.4108,
+  "tp": 1,
+  "checkpoint": "merged-27b-80k-4ep"
+ },
+ {
+  "model_id": "sft-27b-80k-5ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-80k-5ep",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.4019,
+  "tp": 1,
+  "checkpoint": "merged-27b-80k-5ep"
+ },
+ {
+  "model_id": "sft-27b-v2-1ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-v2r2",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.3092,
+  "tp": 1,
+  "checkpoint": "merged-v2r2"
+ },
+ {
+  "model_id": "rl-27b-kl-step60",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-rl-kl-step60",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.3706,
+  "tp": 1,
+  "checkpoint": "merged-27b-rl-kl-step60"
+ },
+ {
+  "model_id": "rl-27b-kl-step80",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-rl-kl-step80",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.3702,
+  "tp": 1,
+  "checkpoint": "merged-27b-rl-kl-step80"
+ },
+ {
+  "model_id": "rl-27b-kl-step100",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-rl-kl-step100",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.3641,
+  "tp": 1,
+  "checkpoint": "merged-27b-rl-kl-step100"
+ },
+ {
+  "model_id": "rl-27b-kl-step120",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-rl-kl-step120",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.374,
+  "tp": 1,
+  "checkpoint": "merged-27b-rl-kl-step120"
+ },
+ {
+  "model_id": "rl-27b-3ep-step40",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-3ep-rl-step40",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.4162,
+  "tp": 1,
+  "checkpoint": "merged-27b-3ep-rl-step40"
+ },
+ {
+  "model_id": "rl-27b-3ep-step60",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-3ep-rl-step60",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.4132,
+  "tp": 1,
+  "checkpoint": "merged-27b-3ep-rl-step60"
+ },
+ {
+  "model_id": "sft-4b-v2-1ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-4bfull",
+  "family": "qwen-4b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.1929,
+  "tp": 1,
+  "checkpoint": "merged-4bfull"
+ },
+ {
+  "model_id": "sft-4b-v1-2ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-abl-v1",
+  "family": "qwen-4b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.2546,
+  "tp": 1,
+  "checkpoint": "merged-abl-v1"
+ },
+ {
+  "model_id": "sft-4b-v2-2ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-abl-v2",
+  "family": "qwen-4b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.2096,
+  "tp": 1,
+  "checkpoint": "merged-abl-v2"
+ },
+ {
+  "model_id": "rl-4b-step20",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-4b-rl-step20",
+  "family": "qwen-4b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.2047,
+  "tp": 1,
+  "checkpoint": "merged-4b-rl-step20"
+ },
+ {
+  "model_id": "sft-gemma26b-v2-1ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma26b",
+  "family": "gemma-26b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.1255,
+  "tp": 1,
+  "checkpoint": "merged-gemma26b"
+ },
+ {
+  "model_id": "sft-gemma26b-v1-2ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma26b-v1",
+  "family": "gemma-26b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.1989,
+  "tp": 1,
+  "checkpoint": "merged-gemma26b-v1"
+ },
+ {
+  "model_id": "rl-gemma26b-step180",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma26b-rl-step180",
+  "family": "gemma-26b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.2052,
+  "tp": 1,
+  "checkpoint": "merged-gemma26b-rl-step180"
+ },
+ {
+  "model_id": "rl-gemma26b-step680",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma26b-rl-step680",
+  "family": "gemma-26b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.2393,
+  "tp": 1,
+  "checkpoint": "merged-gemma26b-rl-step680"
+ },
+ {
+  "model_id": "sft-gemma31b-v1-1ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma31b",
+  "family": "gemma-31b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.1955,
+  "tp": 1,
+  "checkpoint": "merged-gemma31b"
+ },
+ {
+  "model_id": "rl-gemma31b-final",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma31b-rl-final",
+  "family": "gemma-31b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.191,
+  "tp": 1,
+  "checkpoint": "merged-gemma31b-rl-final"
+ },
+ {
+  "model_id": "sft-gemma12b-v1-2ep",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma12b-v1",
+  "family": "gemma-12b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.1792,
+  "tp": 1,
+  "checkpoint": "merged-gemma12b-v1"
+ },
+ {
+  "model_id": "sft-27b-3ep-r64",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-3ep-r64",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.4217,
+  "tp": 1,
+  "checkpoint": "merged-27b-3ep-r64"
+ },
+ {
+  "model_id": "sft-27b-3ep-lr2e4",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-3ep-lr2e4",
+  "family": "qwen-27b",
+  "kind": "sft",
+  "agentorch_global_orch": 0.3857,
+  "tp": 1,
+  "checkpoint": "merged-27b-3ep-lr2e4"
+ },
+ {
+  "model_id": "rl-27b-3ep-step124",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-27b-3ep-rl-step124",
+  "family": "qwen-27b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.4114,
+  "tp": 1,
+  "checkpoint": "merged-27b-3ep-rl-step124"
+ },
+ {
+  "model_id": "rl-4b-v1-step20",
+  "path": "${TRAIN_ROOT}/output/checkpoints/4b-v1-kl-step20",
+  "family": "qwen-4b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.2495,
+  "tp": 1,
+  "checkpoint": "4b-v1-kl-step20"
+ },
+ {
+  "model_id": "rl-4b-v1-step60",
+  "path": "${TRAIN_ROOT}/output/checkpoints/4b-v1-kl-step60",
+  "family": "qwen-4b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.2716,
+  "tp": 1,
+  "checkpoint": "4b-v1-kl-step60"
+ },
+ {
+  "model_id": "rl-gemma12b-final",
+  "path": "${TRAIN_ROOT}/output/checkpoints/merged-gemma12b-rl-final",
+  "family": "gemma-12b",
+  "kind": "rl",
+  "agentorch_global_orch": 0.2166,
+  "tp": 1,
+  "checkpoint": "merged-gemma12b-rl-final"
+ }
+]

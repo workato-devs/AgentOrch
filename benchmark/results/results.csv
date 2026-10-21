@@ -1,0 +1,175 @@
+# frozen published snapshot (2026-09-16); finished lanes only (all 3,220 variants scored); paper-table builder intentionally excluded
+model,tier,mode,status,rows,total,orchestration_accuracy,final_accuracy,side_effect_accuracy,execution_trace_accuracy,terminal_output_accuracy,error_rate,health,run,note
+Phi-3.5-mini-instruct,small,global,complete,103,3220,0.0086,0.0025,0.0096,0.0075,0.0078,0.968,ok,small_model (tier layout),
+Phi-3.5-mini-instruct,small,react,complete,3023,3220,0.2917,0.0907,0.3748,0.2086,0.4438,0.0612,ok,small_model (tier layout),
+Qwen/Qwen2.5-0.5B-Instruct,small,global,complete,7,3220,0.0013,0.0,0.0022,0.0004,0.0,0.9978,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-0.5B-Instruct,small,react,complete,3213,3220,0.3646,0.1245,0.4885,0.2406,0.4876,0.0022,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-1.5B-Instruct,small,global,complete,115,3220,0.0166,0.0022,0.0252,0.0081,0.0102,0.9643,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-1.5B-Instruct,small,react,complete,3212,3220,0.3141,0.0891,0.4062,0.222,0.445,0.0025,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen3-4B-Instruct-2507,small,global_input,complete,1140,3220,0.1304,0.0394,0.1562,0.1045,0.1624,0.646,ok,global-input-20260915,
+Qwen/Qwen3-4B-Instruct-2507,small,replan_iter,complete,1659,3220,0.1863,0.0481,0.2242,0.1484,0.2152,0.4848,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+Qwen2.5-3B-Instruct,small,global,complete,168,3220,0.0219,0.0059,0.0273,0.0164,0.0168,0.9478,ok,small_model (tier layout),
+Qwen2.5-3B-Instruct,small,local,complete,1993,3220,0.2275,0.0547,0.2888,0.1663,0.2354,0.3811,ok,small_model (tier layout),
+Qwen2.5-3B-Instruct,small,react,complete,3204,3220,0.3416,0.095,0.4612,0.222,0.4028,0.005,ok,small_model (tier layout),
+Qwen2.5-3B-Instruct,small,replan,complete,168,3220,0.0219,0.0059,0.0273,0.0164,0.0168,0.9478,ok,small_model (tier layout),
+Qwen3-4B-Instruct-2507,small,global,complete,1225,3220,0.1375,0.0391,0.164,0.1111,0.163,0.6196,ok,small_model (tier layout),
+Qwen3-4B-Instruct-2507,small,local,complete,697,3220,0.069,0.0255,0.0842,0.0539,0.1155,0.7835,ok,small_model (tier layout),
+Qwen3-4B-Instruct-2507,small,react,complete,3218,3220,0.4184,0.173,0.5137,0.3232,0.5217,0.0006,ok,small_model (tier layout),
+Qwen3-4B-Instruct-2507,small,replan,complete,1225,3220,0.1381,0.0394,0.164,0.1122,0.1627,0.6196,ok,small_model (tier layout),
+Qwen3-4B-Thinking-2507,small,global,complete,716,3220,0.1025,0.027,0.1304,0.0745,0.0842,0.7776,ok,small_model (tier layout),
+Qwen3-4B-Thinking-2507,small,react,complete,3215,3220,0.4734,0.2217,0.5705,0.3762,0.537,0.0016,ok,small_model (tier layout),
+granite-3.1-2b-instruct,small,global,complete,605,3220,0.063,0.0155,0.0801,0.0458,0.0702,0.8121,ok,small_model (tier layout),
+granite-3.1-2b-instruct,small,react,complete,3181,3220,0.3183,0.1099,0.4152,0.2214,0.4997,0.0121,ok,small_model (tier layout),
+meta-llama/Llama-3.2-1B-Instruct,small,global,complete,0,3220,0.0,0.0,0.0,0.0,0.0,1.0,ok,global-react-final-20260814 (tier layout),canonical comparison
+meta-llama/Llama-3.2-1B-Instruct,small,react,complete,3203,3220,0.3693,0.1326,0.491,0.2477,0.4941,0.0053,ok,global-react-final-20260814 (tier layout),canonical comparison
+meta-llama/Llama-3.2-3B-Instruct,small,global,complete,152,3220,0.0207,0.0112,0.027,0.0143,0.027,0.9528,ok,global-react-final-20260814 (tier layout),canonical comparison
+meta-llama/Llama-3.2-3B-Instruct,small,react,complete,3214,3220,0.355,0.1311,0.4776,0.2324,0.5043,0.0019,ok,global-react-final-20260814 (tier layout),canonical comparison
+Mistral-Nemo-Instruct-2407,medium,global,complete,167,3220,0.0226,0.0099,0.0348,0.0104,0.0255,0.9481,ok,medium_model (tier layout),
+Mistral-Nemo-Instruct-2407,medium,local,complete,36,3220,0.0039,0.0012,0.0053,0.0024,0.0056,0.9888,ok,medium_model (tier layout),
+Mistral-Nemo-Instruct-2407,medium,react,complete,3214,3220,0.3427,0.1196,0.455,0.2305,0.4991,0.0019,ok,medium_model (tier layout),
+Mistral-Nemo-Instruct-2407,medium,replan,complete,167,3220,0.0226,0.0099,0.0348,0.0104,0.0255,0.9481,ok,medium_model (tier layout),
+Qwen/Qwen2.5-14B-Instruct,medium,global,complete,470,3220,0.0533,0.0161,0.0693,0.0373,0.0683,0.854,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-14B-Instruct,medium,react,complete,3219,3220,0.4154,0.2146,0.5388,0.292,0.5593,0.0003,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-7B-Instruct,medium,global,complete,211,3220,0.0263,0.0047,0.0345,0.0182,0.0214,0.9345,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-7B-Instruct,medium,react,complete,3185,3220,0.305,0.0742,0.395,0.2149,0.3655,0.0109,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen2.5-14B-Instruct,medium,local,complete,855,3220,0.0999,0.0264,0.1295,0.0704,0.1301,0.7345,ok,medium_model (tier layout),
+Qwen2.5-14B-Instruct,medium,replan,complete,473,3220,0.0554,0.0158,0.0711,0.0396,0.0696,0.8531,ok,medium_model (tier layout),
+gemma-3-12b-it,medium,global,complete,735,3220,0.0846,0.0183,0.1112,0.058,0.0593,0.7717,ok,medium_model (tier layout),
+gemma-3-12b-it,medium,local,complete,1586,3220,0.1645,0.0519,0.2102,0.1188,0.2469,0.5075,ok,medium_model (tier layout),
+gemma-3-12b-it,medium,react,complete,3219,3220,0.3785,0.1307,0.5019,0.2551,0.4885,0.0003,ok,medium_model (tier layout),
+gemma-3-12b-it,medium,replan,complete,735,3220,0.0846,0.0168,0.1112,0.058,0.0578,0.7717,ok,medium_model (tier layout),
+gemma-3-4b-it,medium,global,complete,567,3220,0.0615,0.0161,0.0839,0.0391,0.0876,0.8239,ok,medium_model (tier layout),
+gemma-3-4b-it,medium,react,complete,3211,3220,0.3275,0.1065,0.4335,0.2215,0.5003,0.0028,ok,medium_model (tier layout),
+gemma-4-12B-it,medium,global,complete,1102,3220,0.1426,0.0407,0.1609,0.1244,0.1335,0.6578,ok,medium_model (tier layout),
+gemma-4-12B-it,medium,local,complete,761,3220,0.1067,0.0429,0.1214,0.092,0.1255,0.7637,ok,medium_model (tier layout),
+gemma-4-12B-it,medium,react,complete,3215,3220,0.4983,0.2776,0.595,0.4016,0.5447,0.0016,ok,medium_model (tier layout),
+gemma-4-12B-it,medium,replan,complete,1102,3220,0.1466,0.0373,0.1634,0.1298,0.1121,0.6578,ok,medium_model (tier layout),
+gemma-4-26B-A4B-it,medium,global,complete,347,3220,0.0405,0.018,0.041,0.0399,0.0581,0.8922,ok,medium_model (tier layout),
+gemma-4-26B-A4B-it,medium,local,complete,651,3220,0.0635,0.0276,0.0696,0.0575,0.113,0.7978,ok,medium_model (tier layout),
+gemma-4-26B-A4B-it,medium,react,complete,3213,3220,0.521,0.3258,0.6196,0.4224,0.6311,0.0022,ok,medium_model (tier layout),
+gemma-4-26B-A4B-it,medium,replan,complete,347,3220,0.0439,0.0193,0.0435,0.0442,0.0556,0.8922,ok,medium_model (tier layout),
+glm-4-9b-chat,medium,global,complete,815,3220,0.0903,0.0283,0.1031,0.0775,0.1419,0.7469,ok,medium_model (tier layout),
+glm-4-9b-chat,medium,local,complete,384,3220,0.0445,0.0158,0.0497,0.0393,0.0606,0.8807,ok,medium_model (tier layout),
+glm-4-9b-chat,medium,react,complete,3216,3220,0.3788,0.1348,0.4997,0.2579,0.4963,0.0012,ok,medium_model (tier layout),
+glm-4-9b-chat,medium,replan,complete,815,3220,0.0908,0.0283,0.1031,0.0785,0.1419,0.7469,ok,medium_model (tier layout),
+google/gemma-4-12B-it,medium,global_input,complete,991,3220,0.1273,0.0491,0.1469,0.1076,0.1385,0.6922,ok,global-input-20260915,
+google/gemma-4-12B-it,medium,replan_iter,complete,1463,3220,0.1919,0.0593,0.2155,0.1682,0.1773,0.5457,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+granite-3.1-8b-instruct,medium,global,complete,577,3220,0.0652,0.0267,0.0829,0.0475,0.096,0.8208,ok,medium_model (tier layout),
+granite-3.1-8b-instruct,medium,react,complete,3175,3220,0.3419,0.1106,0.4401,0.2437,0.4724,0.014,ok,medium_model (tier layout),
+meta-llama/Llama-3.1-8B-Instruct,medium,global,complete,385,3220,0.0445,0.0134,0.0528,0.0363,0.0593,0.8804,ok,global-react-final-20260814 (tier layout),canonical comparison
+meta-llama/Llama-3.1-8B-Instruct,medium,react,complete,3213,3220,0.3482,0.128,0.4823,0.214,0.5047,0.0022,ok,global-react-final-20260814 (tier layout),canonical comparison
+DeepSeek-V4-Flash-0731,large,global,complete,1819,3220,0.2701,0.1143,0.2994,0.2407,0.2898,0.4351,ok,large_model (tier layout),
+DeepSeek-V4-Flash-0731,large,react,complete,3214,3220,0.5899,0.4457,0.6826,0.4973,0.7121,0.0019,ok,large_model (tier layout),
+DeepSeek-V4-Flash-0731-thinking,large,global,complete,1041,3220,0.1714,0.0966,0.1752,0.1676,0.2006,0.6767,ok,large_model (tier layout),ablation — reported separately
+DeepSeek-V4-Flash-0731-thinking,large,react,complete,3166,3220,0.5885,0.4543,0.6767,0.5003,0.7143,0.0168,ok,large_model (tier layout),ablation — reported separately
+GLM-4.5-Air-FP8,large,global,complete,845,3220,0.1228,0.0478,0.1422,0.1034,0.1171,0.7376,ok,large_model (tier layout),
+GLM-4.5-Air-FP8,large,local,complete,1601,3220,0.1898,0.0745,0.2161,0.1635,0.2885,0.5028,ok,large_model (tier layout),
+GLM-4.5-Air-FP8,large,react,complete,3216,3220,0.4859,0.2888,0.5969,0.3748,0.5988,0.0012,ok,large_model (tier layout),
+GLM-4.5-Air-FP8,large,replan,complete,571,3220,0.0839,0.0345,0.0929,0.075,0.0804,0.8227,ok,large_model (tier layout),
+GLM-4.5-Air-FP8-thinking,large,global,complete,817,3220,0.1072,0.0425,0.1161,0.0983,0.1345,0.7463,ok,large_model (tier layout),ablation — reported separately
+GLM-4.5-Air-FP8-thinking,large,react,complete,3090,3220,0.4949,0.3006,0.5988,0.3911,0.5814,0.0404,ok,large_model (tier layout),ablation — reported separately
+GLM-4.5-FP8,large,global,complete,783,3220,0.1293,0.0519,0.1388,0.1199,0.1081,0.7568,ok,large_model (tier layout),
+GLM-4.5-FP8,large,react,complete,3217,3220,0.5447,0.3829,0.6413,0.4481,0.6789,0.0009,ok,large_model (tier layout),
+GLM-4.5-FP8-thinking,large,global,complete,1341,3220,0.2009,0.0848,0.2146,0.1872,0.1988,0.5835,ok,large_model (tier layout),ablation — reported separately
+GLM-4.5-FP8-thinking,large,react,complete,3214,3220,0.5468,0.3792,0.641,0.4526,0.6708,0.0019,ok,large_model (tier layout),ablation — reported separately
+GLM-5.2-FP8,large,global,complete,1245,3220,0.1923,0.0857,0.2115,0.1731,0.1894,0.6134,ok,large_model (tier layout),
+GLM-5.2-FP8,large,react,complete,3216,3220,0.6216,0.482,0.7158,0.5273,0.7298,0.0012,ok,large_model (tier layout),
+GLM-5.2-FP8-thinking,large,global,complete,869,3220,0.1775,0.0929,0.1866,0.1684,0.1432,0.7301,ok,large_model (tier layout),ablation — reported separately
+GLM-5.2-FP8-thinking,large,react,complete,3203,3220,0.6266,0.4891,0.7208,0.5324,0.7248,0.0053,ok,large_model (tier layout),ablation — reported separately
+Llama-3.1-70B-Instruct,large,global,complete,894,3220,0.1081,0.0335,0.1307,0.0855,0.1171,0.7224,ok,large_model (tier layout),
+Llama-3.1-70B-Instruct,large,react,complete,3219,3220,0.3892,0.1441,0.5146,0.2639,0.4826,0.0003,ok,large_model (tier layout),
+Llama-3.3-70B-Instruct,large,global,complete,919,3220,0.1045,0.0429,0.1193,0.0898,0.1478,0.7146,ok,large_model (tier layout),
+Llama-3.3-70B-Instruct,large,local,complete,2830,3220,0.3491,0.0907,0.4457,0.2525,0.3683,0.1211,ok,large_model (tier layout),
+Llama-3.3-70B-Instruct,large,react,complete,3220,3220,0.4298,0.2031,0.5444,0.3152,0.5301,0.0,ok,large_model (tier layout),
+Llama-3.3-70B-Instruct,large,replan,complete,919,3220,0.1047,0.0429,0.1196,0.0898,0.1488,0.7146,ok,large_model (tier layout),
+Mistral-Small-3.1-24B-Instruct-2503,large,global,complete,1062,3220,0.1415,0.0612,0.1736,0.1094,0.1665,0.6702,ok,large_model (tier layout),
+Mistral-Small-3.1-24B-Instruct-2503,large,local,complete,2221,3220,0.2726,0.122,0.3227,0.2225,0.3981,0.3102,ok,large_model (tier layout),
+Mistral-Small-3.1-24B-Instruct-2503,large,react,complete,3215,3220,0.4471,0.2056,0.55,0.3442,0.5416,0.0016,ok,large_model (tier layout),
+Mistral-Small-3.1-24B-Instruct-2503,large,replan,complete,1062,3220,0.1448,0.0637,0.177,0.1125,0.1643,0.6702,ok,large_model (tier layout),
+Muse-Glimmer-30B-thinking,large,global,complete,953,3220,0.1415,0.0547,0.1466,0.1365,0.1646,0.704,ok,large_model (tier layout),ablation — reported separately
+Muse-Glimmer-30B-thinking,large,react,complete,3201,3220,0.548,0.3907,0.663,0.433,0.6612,0.0059,ok,large_model (tier layout),ablation — reported separately
+Qwen/Qwen2.5-32B-Instruct,large,global,complete,1348,3220,0.1618,0.064,0.186,0.1376,0.2227,0.5814,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen2.5-32B-Instruct,large,react,complete,3209,3220,0.4564,0.2441,0.5652,0.3476,0.5705,0.0034,ok,global-react-final-20260814 (tier layout),canonical comparison
+Qwen/Qwen3-30B-A3B-Instruct-2507,large,replan_iter,complete,990,3220,0.1176,0.0494,0.1323,0.1029,0.1876,0.6925,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+Qwen/Qwen3.8-27B-FP8,large,global_input,complete,1862,3220,0.2919,0.1342,0.3264,0.2574,0.2988,0.4217,ok,global-input-20260915,
+Qwen/Qwen3.8-27B-FP8,large,replan_iter,complete,2275,3220,0.3973,0.2034,0.4339,0.3607,0.3888,0.2935,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+Qwen2.5-72B-Instruct,large,global,complete,851,3220,0.0991,0.0391,0.1121,0.0861,0.1488,0.7357,ok,large_model (tier layout),
+Qwen2.5-72B-Instruct,large,react,complete,3212,3220,0.4657,0.2596,0.5699,0.3615,0.5798,0.0025,ok,large_model (tier layout),
+Qwen2.5-72B-Instruct,large,replan,complete,851,3220,0.1029,0.0432,0.114,0.0918,0.1481,0.7357,ok,large_model (tier layout),
+Qwen3-30B-A3B-Instruct-2507,large,global,complete,759,3220,0.0835,0.0295,0.0944,0.0726,0.1373,0.7643,ok,large_model (tier layout),
+Qwen3-30B-A3B-Instruct-2507,large,local,complete,711,3220,0.0848,0.0298,0.0963,0.0734,0.1183,0.7792,ok,large_model (tier layout),
+Qwen3-30B-A3B-Instruct-2507,large,react,complete,3214,3220,0.4781,0.2668,0.5857,0.3704,0.5724,0.0019,ok,large_model (tier layout),
+Qwen3-30B-A3B-Instruct-2507,large,replan,complete,759,3220,0.0852,0.0295,0.095,0.0753,0.1345,0.7643,ok,large_model (tier layout),
+Qwen3-30B-A3B-Thinking-2507,large,global,complete,1262,3220,0.1475,0.0519,0.1683,0.1268,0.2012,0.6081,ok,large_model (tier layout),
+Qwen3-30B-A3B-Thinking-2507,large,react,complete,3218,3220,0.5209,0.2817,0.6335,0.4082,0.5655,0.0006,ok,large_model (tier layout),
+Qwen3.8-27B-FP8,large,global,complete,1807,3220,0.2857,0.1267,0.318,0.2533,0.2898,0.4388,ok,large_model (tier layout),
+Qwen3.8-27B-FP8,large,local,complete,2167,3220,0.3276,0.1472,0.387,0.2683,0.3366,0.327,ok,large_model (tier layout),
+Qwen3.8-27B-FP8,large,react,complete,3215,3220,0.5331,0.3177,0.6491,0.4171,0.6006,0.0016,ok,large_model (tier layout),
+Qwen3.8-27B-FP8,large,replan,complete,1807,3220,0.2939,0.1339,0.3283,0.2594,0.2832,0.4388,ok,large_model (tier layout),
+Qwen3.8-27B-FP8-thinking,large,global,complete,1949,3220,0.3302,0.1705,0.3571,0.3033,0.3516,0.3947,ok,large_model (tier layout),ablation — reported separately
+Qwen3.8-27B-FP8-thinking,large,local,complete,2510,3220,0.4154,0.2273,0.4761,0.3547,0.4497,0.2205,ok,large_model (tier layout),ablation — reported separately
+Qwen3.8-27B-FP8-thinking,large,react,complete,3197,3220,0.6308,0.4941,0.7239,0.5376,0.7242,0.0071,ok,large_model (tier layout),ablation — reported separately
+Qwen3.8-27B-FP8-thinking,large,replan,complete,1948,3220,0.3303,0.1705,0.3568,0.3037,0.3516,0.395,ok,large_model (tier layout),ablation — reported separately
+c4ai-command-r-08-2024,large,global,complete,700,3220,0.0664,0.0202,0.0748,0.058,0.1106,0.7826,ok,large_model (tier layout),
+c4ai-command-r-08-2024,large,react,complete,3196,3220,0.3597,0.1295,0.4646,0.2548,0.5106,0.0075,ok,large_model (tier layout),
+c4ai-command-r-08-2024,large,replan,complete,700,3220,0.0687,0.022,0.0795,0.0578,0.1043,0.7826,ok,large_model (tier layout),
+claude-opus-5,large,global,complete,2603,3220,0.4644,0.2354,0.5016,0.4272,0.4224,0.1916,ok,global-react-final-20260814 (tier layout),canonical comparison
+claude-opus-5,large,global_input,complete,2588,3220,0.4879,0.2152,0.5177,0.458,0.3643,0.1963,ok,global-input-20260915,
+claude-opus-5,large,react,complete,3220,3220,0.6352,0.4714,0.7009,0.5695,0.7236,0.0,ok,global-react-final-20260814 (tier layout),canonical comparison
+claude-opus-5-thinking,large,global,complete,3020,3220,0.5988,0.3233,0.6398,0.5578,0.4829,0.0621,ok,large_model (tier layout),ablation — reported separately
+claude-opus-5-thinking,large,react,complete,3220,3220,0.6841,0.5531,0.7457,0.6225,0.7755,0.0,ok,large_model (tier layout),ablation — reported separately
+deepseek-ai/DeepSeek-V4-Flash-0731,large,global_input,complete,1660,3220,0.2562,0.1062,0.2814,0.2311,0.2637,0.4845,ok,global-input-20260915,
+deepseek-ai/DeepSeek-V4-Flash-0731,large,replan_iter,complete,2250,3220,0.3576,0.154,0.396,0.3192,0.3323,0.3012,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+gemma-3-27b-it,large,global,complete,704,3220,0.0741,0.0267,0.1,0.0481,0.1149,0.7814,ok,large_model (tier layout),
+gemma-3-27b-it,large,local,complete,1153,3220,0.1262,0.0435,0.1649,0.0875,0.191,0.6419,ok,large_model (tier layout),
+gemma-3-27b-it,large,react,complete,3217,3220,0.3993,0.1702,0.5071,0.2914,0.5183,0.0009,ok,large_model (tier layout),
+gemma-3-27b-it,large,replan,complete,699,3220,0.0736,0.0258,0.0997,0.0476,0.1109,0.7829,ok,large_model (tier layout),
+gemma-4-31B-it,large,global,complete,807,3220,0.1271,0.0478,0.1335,0.1207,0.1143,0.7494,ok,large_model (tier layout),
+gemma-4-31B-it,large,react,complete,3215,3220,0.6143,0.4609,0.6839,0.5448,0.7307,0.0016,ok,large_model (tier layout),
+google/gemma-3-27b-it,large,replan_iter,complete,994,3220,0.1034,0.0345,0.1382,0.0685,0.1599,0.6913,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+google/gemma-4-26B-A4B-it,large,global_input,complete,254,3220,0.0366,0.0174,0.0404,0.0327,0.036,0.9211,ok,global-input-20260915,
+google/gemma-4-26B-A4B-it,large,replan_iter,complete,739,3220,0.0982,0.0388,0.1065,0.0898,0.1068,0.7705,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+gpt-35-turbo,large,global,complete,802,3220,0.1011,0.0432,0.114,0.0882,0.1475,0.7509,ok,global-react-final-20260814 (tier layout),canonical comparison
+gpt-35-turbo,large,react,complete,3214,3220,0.5078,0.3006,0.6022,0.4134,0.5618,0.0019,ok,global-react-final-20260814 (tier layout),canonical comparison
+gpt-4o,large,global,complete,2080,3220,0.2809,0.1034,0.3193,0.2425,0.3171,0.354,ok,global-react-final-20260814 (tier layout),canonical comparison
+gpt-4o,large,react,complete,3215,3220,0.5012,0.2913,0.5929,0.4096,0.5938,0.0016,ok,global-react-final-20260814 (tier layout),canonical comparison
+gpt-5.6-sol-thinking,large,global,complete,2743,3220,0.5176,0.3189,0.5488,0.4865,0.5568,0.1481,ok,large_model (tier layout),ablation — reported separately
+gpt-5.6-sol-thinking,large,react,complete,3218,3220,0.6688,0.5444,0.7379,0.5997,0.7733,0.0006,ok,large_model (tier layout),ablation — reported separately
+mistralai/Mistral-Small-3.1-24B-Instruct-2503,large,replan_iter,complete,1603,3220,0.2176,0.0894,0.2599,0.1752,0.2528,0.5022,ok,replan-iter-full-20260829,self-evolution round 3 (K=3; round 0 == frozen Global plan)
+local:4b-v1-kl-step20,,global,complete,1916,3220,0.2495,0.0978,0.305,0.194,0.3342,0.405,ok,rl-4b-v1-kl-step20-global,
+local:4b-v1-kl-step60,,global,complete,2057,3220,0.2716,0.1071,0.3289,0.2143,0.3506,0.3612,ok,rl-4b-v1-kl-step60-global,
+local:merged-27b-3ep-lr2e4,,global,complete,2665,3220,0.3857,0.1627,0.454,0.3173,0.4519,0.1724,ok,sft-27b-3ep-lr2e4-global,
+local:merged-27b-3ep-r64,,global,complete,2789,3220,0.4217,0.1826,0.4904,0.353,0.4773,0.1339,ok,sft-27b-3ep-r64-global,
+local:merged-27b-3ep-rl-step124,,global,complete,2596,3220,0.4114,0.1826,0.4705,0.3524,0.4407,0.1938,ok,rl-27b-3ep-step124-global,
+local:merged-27b-3ep-rl-step40,,global,complete,2662,3220,0.4162,0.1823,0.4755,0.3569,0.455,0.1733,ok,rl-27b-3ep-step40-global,
+local:merged-27b-3ep-rl-step60,,global,complete,2645,3220,0.4132,0.1795,0.473,0.3534,0.4488,0.1786,ok,rl-27b-3ep-step60-global,
+local:merged-27b-80k-3ep,,global,complete,2670,3220,0.4196,0.1848,0.4804,0.3587,0.4593,0.1708,ok,sft-27b-80k-3ep-global,
+local:merged-27b-80k-3ep,,react,complete,3181,3220,0.5112,0.3016,0.605,0.4174,0.609,0.0121,ok,sft-27b-80k-3ep-react,
+local:merged-27b-80k-3ep,,replan,complete,2666,3220,0.4208,0.1876,0.4832,0.3584,0.4599,0.172,ok,sft-27b-80k-3ep-replan,
+local:merged-27b-80k-4ep,,global,complete,2620,3220,0.4108,0.1832,0.4674,0.3542,0.4534,0.1863,ok,sft-27b-80k-4ep-global,
+local:merged-27b-80k-5ep,,global,complete,2583,3220,0.4019,0.1758,0.4609,0.3429,0.4438,0.1978,ok,sft-27b-80k-5ep-global,
+local:merged-27b-rl-kl-step100,,global,complete,2482,3220,0.3641,0.1674,0.4217,0.3064,0.4376,0.2292,ok,rl-27b-kl-step100-global,
+local:merged-27b-rl-kl-step120,,global,complete,2504,3220,0.374,0.1705,0.4339,0.3142,0.432,0.2224,ok,rl-27b-kl-step120-global,
+local:merged-27b-rl-kl-step60,,global,complete,2523,3220,0.3706,0.1643,0.4307,0.3104,0.4348,0.2165,ok,rl-27b-kl-step60-global,
+local:merged-27b-rl-kl-step80,,global,complete,2508,3220,0.3702,0.1708,0.4276,0.3128,0.4413,0.2211,ok,rl-27b-kl-step80-global,
+local:merged-27b-v1-80k,,global,complete,2439,3220,0.3621,0.1655,0.4075,0.3168,0.4447,0.2425,ok,sft-27b-v1-80k-global,
+local:merged-4b-rl-step20,,global,complete,1502,3220,0.2047,0.0761,0.2435,0.1659,0.2484,0.5335,ok,rl-4b-step20-global,
+local:merged-4bfull,,global,complete,1374,3220,0.1929,0.0804,0.2335,0.1522,0.2323,0.5733,ok,sft-4bfull-global,
+local:merged-abl-v1,,global,complete,1900,3220,0.2546,0.1078,0.3112,0.198,0.328,0.4099,ok,sft-abl4b-v1-global,
+local:merged-abl-v2,,global,complete,1672,3220,0.2096,0.087,0.2587,0.1605,0.2929,0.4807,ok,sft-abl4b-v2-global,
+local:merged-final,,global,complete,1818,3220,0.2887,0.1314,0.322,0.2553,0.2773,0.4354,ok,sft-final-global,
+local:merged-final-fixed,,global,complete,2451,3220,0.3594,0.1596,0.4127,0.3061,0.4298,0.2388,ok,sft-final-fixed-global,
+local:merged-gemma12b-rl-final,,global,complete,1521,3220,0.2166,0.0854,0.2599,0.1733,0.2447,0.5276,ok,rl-gemma12b-final-global,
+local:merged-gemma12b-v1,,global,complete,1161,3220,0.1792,0.0851,0.2155,0.1429,0.2034,0.6394,ok,sft-gemma12b-v1-global,
+local:merged-gemma26b,,global,complete,986,3220,0.1255,0.0512,0.1637,0.0874,0.1621,0.6938,ok,sft-gemma26b-global,
+local:merged-gemma26b-rl-step180,,global,complete,1435,3220,0.2052,0.0814,0.2494,0.1611,0.2376,0.5543,ok,rl-gemma26b-step180-global,
+local:merged-gemma26b-rl-step680,,global,complete,1667,3220,0.2393,0.0935,0.2919,0.1866,0.2739,0.4823,ok,rl-gemma26b-step680-global,
+local:merged-gemma26b-v1,,global,complete,1397,3220,0.1989,0.0845,0.2438,0.154,0.2398,0.5661,ok,sft-gemma26b-v1-global,
+local:merged-gemma31b,,global,complete,1379,3220,0.1955,0.0978,0.2307,0.1603,0.2562,0.5717,ok,sft-gemma31b-global,
+local:merged-gemma31b-rl-final,,global,complete,1399,3220,0.191,0.0922,0.2227,0.1593,0.2525,0.5655,ok,rl-gemma31b-final-global,
+local:merged-grpo-27b-3ep-kl-step124,,global,complete,2596,3220,0.4114,0.1826,0.4705,0.3524,0.4407,0.1938,ok,rl-27b-3ep-step124-global,
+local:merged-grpo-27b-3ep-kl-step80,,global,complete,2627,3220,0.4147,0.182,0.4745,0.3549,0.4457,0.1842,ok,rl-27b-3ep-step80-global,
+local:merged-step100,,global,complete,1818,3220,0.2887,0.1314,0.322,0.2553,0.2773,0.4354,ok,sft-step100-global,
+local:merged-v2r2,,global,complete,2152,3220,0.3092,0.1382,0.3457,0.2727,0.3941,0.3317,ok,sft-v2r2-global,
+scripted-gold,,global,complete,3220,3220,0.7441,0.5683,0.8155,0.6727,0.7143,0.0,ok,gold-replay-20260915,
+scripted-gold,,react,complete,3220,3220,0.9854,0.7652,0.9932,0.9776,0.768,0.0,ok,gold-replay-20260915,
