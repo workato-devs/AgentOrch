@@ -1,0 +1,21 @@
+# Pinned to the stack every published number was produced with (Python 3.12,
+# Linux x86_64). See README.md "Set up from scratch" for the install order.
+
+# --- core: data loaders, public scorer, smoke runtime, connector runner ------
+jsonschema==4.26.0
+
+# --- local open-weight models (evaluation.model_corpus, vendored llm_client) --
+torch==2.11.0
+transformers==5.13.0
+accelerate==1.14.0
+huggingface_hub==1.22.0
+lm-format-enforcer==0.11.3
+vllm==0.24.0
+
+# --- analysis scripts and figures -------------------------------------------
+numpy==2.3.5
+pandas==3.0.3
+matplotlib==3.11.0
+
+# --- tests ------------------------------------------------------------------
+pytest==9.1.1

@@ -1,0 +1,15 @@
+# SFT environment (Python 3.12, Linux x86_64, CUDA 13 wheels). These are the
+# versions the published checkpoints were trained with.
+torch==2.13.0
+transformers==5.15.0
+peft==0.20.0
+trl==1.10.0
+accelerate==1.14.0
+datasets==5.0.1
+safetensors==0.8.0
+tiktoken==0.13.0
+numpy==2.3.5
+pandas==3.0.5
+pyarrow==25.0.1
+wandb==0.28.2
+# optional: flash-attn 2.8.3.post1 (Qwen runs); gemma-4 must use sdpa (head_dim > 256)

@@ -1,0 +1,481 @@
+{
+  "active_trace": {
+    "active_trace_hash": "e674cf0afb37878c9a0fb6b9648d185c1d593bf17db8d9e84888d10911cafb10",
+    "events": [
+      {
+        "branch": "exception",
+        "controller_source_ref": "step_2",
+        "event_type": "branch_decision"
+      },
+      {
+        "controller_source_ref": "step_2",
+        "event_type": "exception_transition",
+        "transition": "try_to_catch"
+      },
+      {
+        "arguments": {
+          "http_status_code": "400",
+          "response": {
+            "error": "benchmark forced get_records failure"
+          }
+        },
+        "event_type": "tool_call",
+        "expected_status": "success",
+        "plan_node_ref": "n6",
+        "result_cardinality": null,
+        "tool": "workato_api_platform.return_response"
+      },
+      {
+        "condition_output_observations": [
+          {
+            "path": [
+              "records",
+              "<size>"
+            ],
+            "value": null
+          }
+        ],
+        "event_type": "condition_observation",
+        "evidence": "unexecuted_producer_is_nil",
+        "plan_node_ref": "n2"
+      },
+      {
+        "event_type": "terminal",
+        "terminal_type": "return"
+      }
+    ],
+    "recipe_id": "64112882",
+    "schema_version": "agentorch-active-trace-result-history",
+    "variant_id": "05",
+    "workflow_plan_hash": "21fcabc6149b26da9fc076755718ea3978ce32e3fe3502ca74cfab9a5536854c"
+  },
+  "final_snapshot": {
+    "ok": true,
+    "workato_db_table": {
+      "state_file": "output/_state/workato_db_tables/64112882/variant_05/tables.json",
+      "tables": {
+        "1670": [
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+            "_created_by": "seed",
+            "_row_id": 0,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+          }
+        ]
+      }
+    }
+  },
+  "hidden_target_hash": "9e9fa6449212b889e8ccca78ddb64bdd812170b9317a3bfe149b564fa5dc18f2",
+  "hidden_variant_state": {
+    "expect": {
+      "case": "get_records fails; the try/catch catch branch returns an HTTP 400 error response carrying the failure message",
+      "executed_action_count": 1,
+      "tool_expectations": [
+        {
+          "args_contains": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "http_status_code": "400",
+          "response_contains": {
+            "error": "benchmark forced get_records failure"
+          },
+          "tool": "workato_api_platform.return_response"
+        }
+      ],
+      "tools": [
+        "workato_api_platform.return_response"
+      ]
+    },
+    "force_action_error": {
+      "error": "benchmark forced get_records failure",
+      "step_as": "1bd64b3a"
+    },
+    "private_evaluation_context": {},
+    "recipe_id": "64112882",
+    "seed": {
+      "workato_db_table": {
+        "tables": {
+          "1670": [
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+              "_row_id": 0,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+            }
+          ]
+        }
+      }
+    },
+    "track": "workato_api_open_invoices",
+    "variant": 5
+  },
+  "outcome_gold_calls": [
+    {
+      "args": {
+        "http_status_code": "400",
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "result": {
+        "http_status_code": "400",
+        "ok": true,
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "tool": "workato_api_platform.return_response"
+    }
+  ],
+  "public_package_hash": "06d877f3f1bfbb83941673976c9a922b80fc4df85716190eff7bdf3e825a7364",
+  "recipe_id": "64112882",
+  "reference_tool_calls": [
+    {
+      "args": {
+        "http_status_code": "400",
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "expected_status": "success",
+      "plan_node_ref": "n6",
+      "result": {
+        "http_status_code": "400",
+        "ok": true,
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "tool": "workato_api_platform.return_response"
+    }
+  ],
+  "schema": "agentorch-private-ground-truth",
+  "structural_return": {
+    "present": false,
+    "value": null
+  },
+  "terminal_contract": {
+    "declared_responses": [
+      {
+        "body_schema": [
+          {
+            "label": "Invoices",
+            "name": "invoices",
+            "of": "object",
+            "optional": true,
+            "properties": [
+              {
+                "control_type": "text",
+                "label": "Invoice ID",
+                "name": "id",
+                "optional": true,
+                "sticky": true,
+                "type": "string"
+              },
+              {
+                "control_type": "text",
+                "label": "Invoice Number",
+                "name": "number",
+                "optional": true,
+                "sticky": true,
+                "type": "string"
+              }
+            ],
+            "sticky": true,
+            "type": "array"
+          }
+        ],
+        "content_type": "json",
+        "delivery": "explicit_tool_call",
+        "http_status_code": "200",
+        "name": "Success"
+      },
+      {
+        "body_schema": [
+          {
+            "control_type": "text",
+            "label": "Error",
+            "name": "error",
+            "optional": false,
+            "type": "string"
+          }
+        ],
+        "content_type": "json",
+        "delivery": "explicit_tool_call",
+        "http_status_code": "400",
+        "name": "Failed"
+      }
+    ],
+    "scalar_encoding_semantics": {
+      "workato_checkbox_control": "Boolean-declared checkbox controls accept JSON booleans or the authoring strings true and false.",
+      "workato_numeric_control": "Integer and number response controls accept mathematically compatible numeric expressions; numeric strings are coerced by controls that declare numeric output conversion.",
+      "workato_text_control": "String-declared text controls accept string, integer, number, or boolean scalar expressions and apply Workato's text coercion."
+    },
+    "schema_version": "public-output-interface"
+  },
+  "terminal_result": {
+    "error": "benchmark forced get_records failure"
+  },
+  "terminal_result_known": true,
+  "tool_expectations": [
+    {
+      "args_contains": {
+        "http_status_code": "400",
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "expected_status": "success",
+      "tool": "workato_api_platform.return_response"
+    }
+  ],
+  "variant_id": "05",
+  "workflow_plan": {
+    "compiler_version": "workflow-a-compiler-v2",
+    "recipe_id": "64112882",
+    "schema_version": "agentorch-workflow-plan-v1",
+    "workflow": [
+      {
+        "body": [
+          {
+            "arguments": {
+              "filters": {
+                "expression": {
+                  "items": [
+                    {
+                      "expression": {
+                        "fields": {
+                          "field_id": {
+                            "literal": "ad862ef9_2e1e_462e_ab20_c149ce29997f"
+                          },
+                          "op": {
+                            "literal": "eq"
+                          },
+                          "value": {
+                            "input_ref": "request.oppty_id"
+                          }
+                        },
+                        "op": "object"
+                      }
+                    }
+                  ],
+                  "op": "array"
+                }
+              },
+              "limit": {
+                "literal": 200
+              },
+              "order_direction": {
+                "literal": "asc"
+              },
+              "table_id": {
+                "literal": "1670"
+              }
+            },
+            "id": "n2",
+            "kind": "call",
+            "tool": "workato_db_table.get_records"
+          },
+          {
+            "condition": {
+              "expression": {
+                "fields": {
+                  "conditions": {
+                    "expression": {
+                      "items": [
+                        {
+                          "expression": {
+                            "fields": {
+                              "lhs": {
+                                "output_ref": {
+                                  "node": "n2",
+                                  "path": [
+                                    "records",
+                                    "<size>"
+                                  ]
+                                }
+                              },
+                              "operand": {
+                                "literal": "equals_to"
+                              },
+                              "rhs": {
+                                "literal": "200"
+                              }
+                            },
+                            "op": "object"
+                          }
+                        }
+                      ],
+                      "op": "array"
+                    }
+                  },
+                  "operand": {
+                    "literal": "and"
+                  },
+                  "type": {
+                    "literal": "compound"
+                  }
+                },
+                "op": "object"
+              }
+            },
+            "else": [],
+            "id": "n3",
+            "kind": "if",
+            "then": [
+              {
+                "arguments": {
+                  "expression": {
+                    "fields": {
+                      "stop_reason": {
+                        "literal": "Amount of invoices found hits table storage limit, please consider increasing search size"
+                      },
+                      "stop_with_error": {
+                        "literal": "true"
+                      }
+                    },
+                    "op": "object"
+                  }
+                },
+                "id": "n4",
+                "kind": "stop"
+              }
+            ]
+          },
+          {
+            "arguments": {
+              "http_status_code": {
+                "literal": "200"
+              },
+              "response": {
+                "expression": {
+                  "fields": {
+                    "invoices": {
+                      "expression": {
+                        "args": [
+                          {
+                            "output_ref": {
+                              "node": "n2",
+                              "path": [
+                                "records"
+                              ]
+                            }
+                          }
+                        ],
+                        "item_bind": "map_1bd64b3a_item_1",
+                        "op": "map",
+                        "value": {
+                          "expression": {
+                            "fields": {
+                              "id": {
+                                "expression": {
+                                  "args": [
+                                    {
+                                      "expression": {
+                                        "args": [
+                                          {
+                                            "loop_ref": {
+                                              "path": [
+                                                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c"
+                                              ],
+                                              "source_node": "map_1bd64b3a_item_1"
+                                            }
+                                          },
+                                          {
+                                            "literal": "presence"
+                                          }
+                                        ],
+                                        "op": "call_method"
+                                      }
+                                    },
+                                    {
+                                      "literal": null
+                                    }
+                                  ],
+                                  "op": "ruby_or"
+                                }
+                              },
+                              "number": {
+                                "expression": {
+                                  "args": [
+                                    {
+                                      "expression": {
+                                        "args": [
+                                          {
+                                            "loop_ref": {
+                                              "path": [
+                                                "665410c4_9b6f_46fe_93cd_8253dbcd3308"
+                                              ],
+                                              "source_node": "map_1bd64b3a_item_1"
+                                            }
+                                          },
+                                          {
+                                            "literal": "presence"
+                                          }
+                                        ],
+                                        "op": "call_method"
+                                      }
+                                    },
+                                    {
+                                      "literal": null
+                                    }
+                                  ],
+                                  "op": "ruby_or"
+                                }
+                              }
+                            },
+                            "op": "object"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "op": "object"
+                }
+              }
+            },
+            "id": "n5",
+            "kind": "call",
+            "tool": "workato_api_platform.return_response"
+          }
+        ],
+        "catch": [
+          {
+            "arguments": {
+              "http_status_code": {
+                "literal": "400"
+              },
+              "response": {
+                "expression": {
+                  "fields": {
+                    "error": {
+                      "error_ref": {
+                        "path": [
+                          "message"
+                        ],
+                        "source_node": "n1"
+                      }
+                    }
+                  },
+                  "op": "object"
+                }
+              }
+            },
+            "id": "n6",
+            "kind": "call",
+            "tool": "workato_api_platform.return_response"
+          }
+        ],
+        "id": "n1",
+        "kind": "try"
+      }
+    ],
+    "workflow_a_hash": "4bc59c6953b9035c42b7869432dd2419535ceb4b7533af94867ab39c6ab1766f",
+    "workflow_plan_hash": "21fcabc6149b26da9fc076755718ea3978ce32e3fe3502ca74cfab9a5536854c"
+  },
+  "workflow_plan_hash": "21fcabc6149b26da9fc076755718ea3978ce32e3fe3502ca74cfab9a5536854c"
+}

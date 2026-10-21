@@ -1,0 +1,70 @@
+{
+  "schema": "agentorch-data-release-v1",
+  "archives": {
+    "benchmark": {
+      "repo_id": "JesseLiu/agentorch-benchmark",
+      "revision": "a0328e666e7039f118b7799dffb85d6f4700a9f1",
+      "files": [
+        {
+          "path": "source/benchmark_input.tar.gz",
+          "bytes": 50103517,
+          "sha256": "f859f6fb55d57b772291236faebc57a4b716d543ec2d4648637f65dadb44b193",
+          "contains": [
+            "benchmark/input/recipes"
+          ]
+        },
+        {
+          "path": "source/benchmark_groundtruth.tar.gz",
+          "bytes": 8542318,
+          "sha256": "7243309ebdbf0d7734e29984600741fc096aaa26981f246b4fa090823ab79233",
+          "contains": [
+            "benchmark/groundtruth/recipes"
+          ]
+        },
+        {
+          "path": "source/benchmark_verification.tar.gz",
+          "bytes": 51547899,
+          "sha256": "d78237b41d86c9316ee3fb5af9e439a8d041cd22933954bdf38eee8f83cbab83",
+          "contains": [
+            "benchmark/verification/dataset",
+            "benchmark/verification/evaluation_support",
+            "benchmark/verification/groundtruth",
+            "benchmark/verification/seeds"
+          ]
+        }
+      ]
+    },
+    "training": {
+      "repo_id": "JesseLiu/agentorch-training",
+      "revision": "1fe76111cb384c70bc047e75e44f8b75e58bf5ea",
+      "files": [
+        {
+          "path": "source/training_input_v1.tar.gz",
+          "bytes": 127004258,
+          "sha256": "f54f241025333be5f8cbd80d793487b184fa54ad4dbcc63b1ed9c1f191ff2dc0",
+          "contains": [
+            "training/input/recipes"
+          ]
+        },
+        {
+          "path": "source/training_groundtruth.tar.gz",
+          "bytes": 10570913,
+          "sha256": "cfdd3a03434a28c591ae8eb52ce8699de78d62d13fba770165a82ba1aaaa7d74",
+          "contains": [
+            "training/groundtruth/recipes"
+          ]
+        }
+      ]
+    }
+  },
+  "prepared": {
+    "repo_id": "JesseLiu/agentorch-training",
+      "revision": "1fe76111cb384c70bc047e75e44f8b75e58bf5ea",
+    "allow_patterns": [
+      "sft_v1_80k/*",
+      "rl_verl_v1/*",
+      "rl_trl_v1/*",
+      "rl_trl_v1_31b/*"
+    ]
+  }
+}

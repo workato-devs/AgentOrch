@@ -1,0 +1,24 @@
+--- a/trl/generation/vllm_generation.py
++++ b/trl/generation/vllm_generation.py
+@@ -429,10 +429,20 @@
+             if "original_module" in name:
+                 continue
+             name = self._fix_param_name_to_vllm(name, extra_prefixes=["modules_to_save.default."])
++            # [local patch 2026-09-03] text-only RL never trains the vision/audio
++            # towers (frozen, excluded from LoRA); vLLM keeps its own on-disk copy and
++            # names them differently for Gemma4Unified (embed_vision.pos_embedding is
++            # absent there), so pushing them raises in load_weights. Skip them.
++            if any(tok in name for tok in ("vision", "visual", "audio")):
++                continue
+ 
+             if param.is_cpu:
+                 param = param.to(self.accelerator.device)
+-            param = param.full_tensor()
++            # [local patch 2026-08-29] state_dict() also yields buffers and any
++            # parameter outside a fully_shard group; those are plain Tensors and
++            # have no full_tensor(). Original saved as vllm_generation.py.orig-1.10.0
++            if hasattr(param, "full_tensor"):
++                param = param.full_tensor()
+ 
+             self._push_param_to_vllm(name, param)
+ 

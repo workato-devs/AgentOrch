@@ -1,0 +1,1517 @@
+TRIGGER EVENT:
+{
+ "request": {
+  "oppty_id": "OPP-64112882-02-CHURN"
+ }
+}
+
+ENVIRONMENT:
+- Data table 1670: columns ['1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c', '665410c4_9b6f_46fe_93cd_8253dbcd3308', 'ad862ef9_2e1e_462e_ab20_c149ce29997f']
+
+PUBLIC WORKFLOW CONTEXT:
+{
+ "communication_templates": [],
+ "control_actions": [
+  {
+   "name": "finish",
+   "purpose": "Declare non-error processing complete."
+  },
+  {
+   "name": "stop",
+   "purpose": "Terminate explicit workflow stop branches with stop_reason and stop_with_error."
+  }
+ ],
+ "execution_context_schema": {
+  "properties": {},
+  "type": "object"
+ },
+ "input_schema": {
+  "properties": {
+   "request": {
+    "properties": {
+     "oppty_id": {
+      "minLength": 1,
+      "title": "Opportunity ID",
+      "type": "string"
+     }
+    },
+    "required": [
+     "oppty_id"
+    ],
+    "title": "Request",
+    "type": "object"
+   }
+  },
+  "required": [
+   "request"
+  ],
+  "type": "object"
+ },
+ "workspace_resources": [
+  {
+   "fields": [
+    {
+     "argument_field_id": "AccountId",
+     "field_id": "AccountId",
+     "label": "Account ID",
+     "output_field_id": "AccountId"
+    },
+    {
+     "argument_field_id": "ActivatedById",
+     "field_id": "ActivatedById",
+     "label": "Activated By ID",
+     "output_field_id": "ActivatedById"
+    },
+    {
+     "argument_field_id": "ActivatedDate",
+     "field_id": "ActivatedDate",
+     "label": "Activated Date",
+     "output_field_id": "ActivatedDate"
+    },
+    {
+     "argument_field_id": "CompanySignedId",
+     "field_id": "CompanySignedId",
+     "label": "Company Signed By ID",
+     "output_field_id": "CompanySignedId"
+    },
+    {
+     "argument_field_id": "Contract",
+     "field_id": "Contract",
+     "label": "Contract",
+     "output_field_id": "Contract"
+    },
+    {
+     "argument_field_id": "ContractNumber",
+     "field_id": "ContractNumber",
+     "label": "Contract Number",
+     "output_field_id": "ContractNumber"
+    },
+    {
+     "argument_field_id": "ContractTerm",
+     "field_id": "ContractTerm",
+     "label": "Contract Term",
+     "output_field_id": "ContractTerm"
+    },
+    {
+     "argument_field_id": "CreatedDate",
+     "field_id": "CreatedDate",
+     "label": "Created Date",
+     "output_field_id": "CreatedDate"
+    },
+    {
+     "argument_field_id": "CustomerSignedId",
+     "field_id": "CustomerSignedId",
+     "label": "Customer Signed By ID",
+     "output_field_id": "CustomerSignedId"
+    },
+    {
+     "argument_field_id": "Description",
+     "field_id": "Description",
+     "label": "Description",
+     "output_field_id": "Description"
+    },
+    {
+     "argument_field_id": "EndDate",
+     "field_id": "EndDate",
+     "label": "Contract End Date",
+     "output_field_id": "EndDate"
+    },
+    {
+     "argument_field_id": "Id",
+     "field_id": "Id",
+     "label": "Contract ID",
+     "output_field_id": "Id"
+    },
+    {
+     "argument_field_id": "OwnerId",
+     "field_id": "OwnerId",
+     "label": "Owner ID",
+     "output_field_id": "OwnerId"
+    },
+    {
+     "argument_field_id": "Pricebook2Id",
+     "field_id": "Pricebook2Id",
+     "label": "Price Book ID",
+     "output_field_id": "Pricebook2Id"
+    },
+    {
+     "argument_field_id": "SpecialTerms",
+     "field_id": "SpecialTerms",
+     "label": "Special Terms",
+     "output_field_id": "SpecialTerms"
+    },
+    {
+     "argument_field_id": "StartDate",
+     "field_id": "StartDate",
+     "label": "Contract Start Date",
+     "output_field_id": "StartDate"
+    },
+    {
+     "argument_field_id": "Status",
+     "field_id": "Status",
+     "label": "Status",
+     "output_field_id": "Status"
+    },
+    {
+     "argument_field_id": "StatusCode",
+     "field_id": "StatusCode",
+     "label": "Status Category",
+     "output_field_id": "StatusCode"
+    }
+   ],
+   "name": "Contract",
+   "public_id": "Contract",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_195dfe8e4e47"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "Account__c",
+     "field_id": "Account__c",
+     "label": "Account",
+     "output_field_id": "Account__c"
+    },
+    {
+     "argument_field_id": "Domain__c",
+     "field_id": "Domain__c",
+     "label": "Domain",
+     "output_field_id": "Domain__c"
+    },
+    {
+     "argument_field_id": "Name",
+     "field_id": "Name",
+     "label": "Name",
+     "output_field_id": "Name"
+    }
+   ],
+   "name": "Domain",
+   "public_id": "Domain__c",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_95d438e6454f"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "CreatedDate",
+     "field_id": "CreatedDate",
+     "label": "Created Date",
+     "output_field_id": "CreatedDate"
+    },
+    {
+     "argument_field_id": "Gong__Call_Brief__c",
+     "field_id": "Gong__Call_Brief__c",
+     "label": "Call Brief",
+     "output_field_id": "Gong__Call_Brief__c"
+    },
+    {
+     "argument_field_id": "Gong__Call_Highlights_Next_Steps__c",
+     "field_id": "Gong__Call_Highlights_Next_Steps__c",
+     "label": "Call Highlights - Next Steps",
+     "output_field_id": "Gong__Call_Highlights_Next_Steps__c"
+    },
+    {
+     "argument_field_id": "Gong__Call_ID__c",
+     "field_id": "Gong__Call_ID__c",
+     "label": "Gong ID",
+     "output_field_id": "Gong__Call_ID__c"
+    },
+    {
+     "argument_field_id": "Gong__Gong_Call__c",
+     "field_id": "Gong__Gong_Call__c",
+     "label": "Gong Gong Call",
+     "output_field_id": "Gong__Gong_Call__c"
+    },
+    {
+     "argument_field_id": "Gong__Primary_Account__c",
+     "field_id": "Gong__Primary_Account__c",
+     "label": "Primary Account",
+     "output_field_id": "Gong__Primary_Account__c"
+    },
+    {
+     "argument_field_id": "Name",
+     "field_id": "Name",
+     "label": "Conversation Title",
+     "output_field_id": "Name"
+    }
+   ],
+   "name": "Conversation",
+   "public_id": "Gong__Gong_Call__c",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_c588f361a75f"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "AccountId",
+     "field_id": "AccountId",
+     "label": "Account ID",
+     "output_field_id": "AccountId"
+    },
+    {
+     "argument_field_id": "Id",
+     "field_id": "Id",
+     "label": "Opportunity ID",
+     "output_field_id": "Id"
+    },
+    {
+     "argument_field_id": "Name",
+     "field_id": "Name",
+     "label": "Name",
+     "output_field_id": "Name"
+    }
+   ],
+   "name": "Opportunity",
+   "public_id": "Opportunity",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_386a6c872630"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "Field",
+     "field_id": "Field",
+     "label": "Changed Field",
+     "output_field_id": "Field"
+    },
+    {
+     "argument_field_id": "NewValue",
+     "field_id": "NewValue",
+     "label": "New Value",
+     "output_field_id": "NewValue"
+    },
+    {
+     "argument_field_id": "OldValue",
+     "field_id": "OldValue",
+     "label": "Old Value",
+     "output_field_id": "OldValue"
+    },
+    {
+     "argument_field_id": "Opportunity.SBQQSC__RenewedServiceContract__c",
+     "field_id": "Opportunity.SBQQSC__RenewedServiceContract__c",
+     "label": "Opportunity.Renewed Service Contract",
+     "output_field_id": "Opportunity.SBQQSC__RenewedServiceContract__c"
+    },
+    {
+     "argument_field_id": "Opportunity.Type",
+     "field_id": "Opportunity.Type",
+     "label": "Opportunity.Opportunity Type",
+     "output_field_id": "Opportunity.Type"
+    },
+    {
+     "argument_field_id": "OpportunityId",
+     "field_id": "OpportunityId",
+     "label": "Opportunity ID",
+     "output_field_id": "OpportunityId"
+    },
+    {
+     "argument_field_id": "SBCF_CPQContractStatus__c",
+     "field_id": "SBCF_CPQContractStatus__c",
+     "label": "SBCF_CPQContractStatus__c",
+     "output_field_id": "SBCF_CPQContractStatus__c"
+    },
+    {
+     "argument_field_id": "SBCF_ConnectionLimitOverridden__c",
+     "field_id": "SBCF_ConnectionLimitOverridden__c",
+     "label": "SBCF_ConnectionLimitOverridden__c",
+     "output_field_id": "SBCF_ConnectionLimitOverridden__c"
+    },
+    {
+     "argument_field_id": "SBCF_RecipeLimitOverridden__c",
+     "field_id": "SBCF_RecipeLimitOverridden__c",
+     "label": "SBCF_RecipeLimitOverridden__c",
+     "output_field_id": "SBCF_RecipeLimitOverridden__c"
+    },
+    {
+     "argument_field_id": "SBCF_TaskLimitOverridden__c",
+     "field_id": "SBCF_TaskLimitOverridden__c",
+     "label": "SBCF_TaskLimitOverridden__c",
+     "output_field_id": "SBCF_TaskLimitOverridden__c"
+    },
+    {
+     "argument_field_id": "SBCF_TransactionLimitOverridden__c",
+     "field_id": "SBCF_TransactionLimitOverridden__c",
+     "label": "SBCF_TransactionLimitOverridden__c",
+     "output_field_id": "SBCF_TransactionLimitOverridden__c"
+    },
+    {
+     "argument_field_id": "Type",
+     "field_id": "Type",
+     "label": "Type",
+     "output_field_id": "Type"
+    },
+    {
+     "argument_field_id": "since",
+     "field_id": "since",
+     "label": "since",
+     "output_field_id": "since"
+    }
+   ],
+   "name": "Opportunity Field History",
+   "public_id": "OpportunityFieldHistory",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_740a09454417"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "Account__c",
+     "field_id": "Account__c",
+     "label": "Account ID",
+     "output_field_id": "Account__c",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "Active_Recipes__c",
+     "field_id": "Active_Recipes__c",
+     "label": "Active Recipes",
+     "output_field_id": "Active_Recipes__c"
+    },
+    {
+     "argument_field_id": "In_trial__c",
+     "field_id": "In_trial__c",
+     "label": "In Trial",
+     "output_field_id": "In_trial__c"
+    },
+    {
+     "argument_field_id": "IsDeleted",
+     "field_id": "IsDeleted",
+     "label": "Isdeleted",
+     "output_field_id": "IsDeleted"
+    },
+    {
+     "argument_field_id": "Last_Login_Date__c",
+     "field_id": "Last_Login_Date__c",
+     "label": "Last Login Date",
+     "output_field_id": "Last_Login_Date__c"
+    },
+    {
+     "argument_field_id": "User_Account_Type__c",
+     "field_id": "User_Account_Type__c",
+     "label": "User Account Type",
+     "output_field_id": "User_Account_Type__c"
+    },
+    {
+     "argument_field_id": "Workato_Plan__c",
+     "field_id": "Workato_Plan__c",
+     "label": "Workato Plan",
+     "output_field_id": "Workato_Plan__c"
+    },
+    {
+     "argument_field_id": "active_recipes",
+     "field_id": "active_recipes",
+     "label": "Active Recipes",
+     "output_field_id": "active_recipes",
+     "type": "integer"
+    },
+    {
+     "argument_field_id": "last_login_date",
+     "field_id": "last_login_date",
+     "label": "Last Login Date",
+     "output_field_id": "last_login_date",
+     "type": "date_time"
+    }
+   ],
+   "name": "Workato User",
+   "public_id": "Workato_User__c",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_74d687649a3e"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "ID",
+     "field_id": "ID",
+     "label": "Id",
+     "output_field_id": "ID"
+    }
+   ],
+   "name": "Vh Hero Activity",
+   "public_id": "vh__Hero_Activity__c",
+   "resource_kind": "record_collection",
+   "resource_ref": "resource_c3a0342d8812"
+  },
+  {
+   "configuration_scope": "account",
+   "name": "Salesforce Environment",
+   "public_id": "benchfca",
+   "resource_kind": "workspace_configuration",
+   "resource_ref": "resource_0d4c7abb4bb3"
+  },
+  {
+   "configuration_scope": "account",
+   "name": "KLA Notification Channel",
+   "public_id": "benchmark-kla-notifications",
+   "resource_kind": "workspace_configuration",
+   "resource_ref": "resource_9233d393b6bd"
+  },
+  {
+   "configuration_scope": "account",
+   "name": "Salesforce.base.url",
+   "public_id": "https://bench.example.my.salesforce.com",
+   "resource_kind": "workspace_configuration",
+   "resource_ref": "resource_a63970019728"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "01124e6e_cc78_4ef8_be38_cc6d23617b6b",
+     "field_id": "01124e6e_cc78_4ef8_be38_cc6d23617b6b",
+     "label": "Cancellation Processed",
+     "output_field_id": "01124e6e_cc78_4ef8_be38_cc6d23617b6b",
+     "type": "boolean"
+    },
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "167199db_4b09_4eee_856d_de4da13762a4",
+     "field_id": "167199db_4b09_4eee_856d_de4da13762a4",
+     "label": "Date of 4th Event",
+     "output_field_id": "167199db_4b09_4eee_856d_de4da13762a4",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "167f2a3b_ae11_46eb_85c2_8b9eb0fdcd58",
+     "field_id": "167f2a3b_ae11_46eb_85c2_8b9eb0fdcd58",
+     "label": "Last Name",
+     "output_field_id": "167f2a3b_ae11_46eb_85c2_8b9eb0fdcd58",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "18c0d693_fada_4736_8c14_ff92031785cb",
+     "field_id": "18c0d693_fada_4736_8c14_ff92031785cb",
+     "label": "Hours Event 5",
+     "output_field_id": "18c0d693_fada_4736_8c14_ff92031785cb",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "1cfaf695_ab64_48c9_87fa_17e809c68169",
+     "field_id": "1cfaf695_ab64_48c9_87fa_17e809c68169",
+     "label": "First Name",
+     "output_field_id": "1cfaf695_ab64_48c9_87fa_17e809c68169",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "20e3ee39_1689_48cb_8bc0_8239c4d124d0",
+     "field_id": "20e3ee39_1689_48cb_8bc0_8239c4d124d0",
+     "label": "Activity Country Record ID",
+     "output_field_id": "20e3ee39_1689_48cb_8bc0_8239c4d124d0",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "25953fff_bdef_42bd_8e66_d205465e97a1",
+     "field_id": "25953fff_bdef_42bd_8e66_d205465e97a1",
+     "label": "Approved by",
+     "output_field_id": "25953fff_bdef_42bd_8e66_d205465e97a1",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "2f960f40_2f77_4619_bd23_dadae6bd3ec2",
+     "field_id": "2f960f40_2f77_4619_bd23_dadae6bd3ec2",
+     "label": "Numbers Helped",
+     "output_field_id": "2f960f40_2f77_4619_bd23_dadae6bd3ec2",
+     "type": "integer"
+    },
+    {
+     "argument_field_id": "3dc4d7e4_9803_4033_b92e_b437afeb72c2",
+     "field_id": "3dc4d7e4_9803_4033_b92e_b437afeb72c2",
+     "label": "Date of 7th Event",
+     "output_field_id": "3dc4d7e4_9803_4033_b92e_b437afeb72c2",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "404b52eb_8549_49a4_bccb_f9bc987dd849",
+     "field_id": "404b52eb_8549_49a4_bccb_f9bc987dd849",
+     "label": "Hours Event 3",
+     "output_field_id": "404b52eb_8549_49a4_bccb_f9bc987dd849",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "40d6f8f4_505a_46fb_b8ec_cdfe56ba806f",
+     "field_id": "40d6f8f4_505a_46fb_b8ec_cdfe56ba806f",
+     "label": "Activity City",
+     "output_field_id": "40d6f8f4_505a_46fb_b8ec_cdfe56ba806f",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "410f1576_4a3b_4f90_993f_369ca6208e70",
+     "field_id": "410f1576_4a3b_4f90_993f_369ca6208e70",
+     "label": "Hours Event 7",
+     "output_field_id": "410f1576_4a3b_4f90_993f_369ca6208e70",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "4689ede5_c4d0_4cc8_88ba_abdeac672762",
+     "field_id": "4689ede5_c4d0_4cc8_88ba_abdeac672762",
+     "label": "Activity Contact Email",
+     "output_field_id": "4689ede5_c4d0_4cc8_88ba_abdeac672762",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "4727fb54_1245_444e_b9a0_5ef1d9ba8165",
+     "field_id": "4727fb54_1245_444e_b9a0_5ef1d9ba8165",
+     "label": "Remarks",
+     "output_field_id": "4727fb54_1245_444e_b9a0_5ef1d9ba8165",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "52bc22f6_e74d_4852_a071_2d37cf0f02b2",
+     "field_id": "52bc22f6_e74d_4852_a071_2d37cf0f02b2",
+     "label": "Cancellation Approved by",
+     "output_field_id": "52bc22f6_e74d_4852_a071_2d37cf0f02b2",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "554d3e32_a9e4_492a_915c_8fc5eee4551d",
+     "field_id": "554d3e32_a9e4_492a_915c_8fc5eee4551d",
+     "label": "Email Record ID",
+     "output_field_id": "554d3e32_a9e4_492a_915c_8fc5eee4551d",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "5e209040_8b16_48a3_9007_c03cd76dde16",
+     "field_id": "5e209040_8b16_48a3_9007_c03cd76dde16",
+     "label": "Date of 1st Event",
+     "output_field_id": "5e209040_8b16_48a3_9007_c03cd76dde16",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "69246342_8538_4ac7_a570_bd69df6e6eb4",
+     "field_id": "69246342_8538_4ac7_a570_bd69df6e6eb4",
+     "label": "Hours Event 9",
+     "output_field_id": "69246342_8538_4ac7_a570_bd69df6e6eb4",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "69849ff0_cdb7_40b3_a977_b01b258fef6b",
+     "field_id": "69849ff0_cdb7_40b3_a977_b01b258fef6b",
+     "label": "Cancellation Reason",
+     "output_field_id": "69849ff0_cdb7_40b3_a977_b01b258fef6b",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "69934d20_5a3a_421b_973a_d48c324013d0",
+     "field_id": "69934d20_5a3a_421b_973a_d48c324013d0",
+     "label": "Error",
+     "output_field_id": "69934d20_5a3a_421b_973a_d48c324013d0",
+     "type": "boolean"
+    },
+    {
+     "argument_field_id": "6c944059_f21e_43a7_b935_19166b5432fa",
+     "field_id": "6c944059_f21e_43a7_b935_19166b5432fa",
+     "label": "Date of 10th Event",
+     "output_field_id": "6c944059_f21e_43a7_b935_19166b5432fa",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "7102349b_0e89_49a3_bd7d_19682607f1d9",
+     "field_id": "7102349b_0e89_49a3_bd7d_19682607f1d9",
+     "label": "Date of 3rd Event",
+     "output_field_id": "7102349b_0e89_49a3_bd7d_19682607f1d9",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "7253ca9f_cada_49d3_99ba_129962c45e97",
+     "field_id": "7253ca9f_cada_49d3_99ba_129962c45e97",
+     "label": "Employee Country Record ID",
+     "output_field_id": "7253ca9f_cada_49d3_99ba_129962c45e97",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "74abc251_e97c_462f_bad0_2a4be1ad65d8",
+     "field_id": "74abc251_e97c_462f_bad0_2a4be1ad65d8",
+     "label": "Edit Type",
+     "output_field_id": "74abc251_e97c_462f_bad0_2a4be1ad65d8",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "760bbef6_46ee_40a3_9aa3_430452dead2f",
+     "field_id": "760bbef6_46ee_40a3_9aa3_430452dead2f",
+     "label": "$internal_value_760bbef6-46ee-40a3-9aa3-430452dead2f",
+     "output_field_id": "760bbef6_46ee_40a3_9aa3_430452dead2f",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "7928fb21_5d0c_40ea_b486_ef56cdddf941",
+     "field_id": "7928fb21_5d0c_40ea_b486_ef56cdddf941",
+     "label": "Activity Description",
+     "output_field_id": "7928fb21_5d0c_40ea_b486_ef56cdddf941",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "7afbd433_45b2_49c7_b826_782e80a49010",
+     "field_id": "7afbd433_45b2_49c7_b826_782e80a49010",
+     "label": "Hours Event 10",
+     "output_field_id": "7afbd433_45b2_49c7_b826_782e80a49010",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "7ef9ec80_c50c_4c89_9c82_7d059c9f083f",
+     "field_id": "7ef9ec80_c50c_4c89_9c82_7d059c9f083f",
+     "label": "Sequence Number",
+     "output_field_id": "7ef9ec80_c50c_4c89_9c82_7d059c9f083f",
+     "type": "integer"
+    },
+    {
+     "argument_field_id": "7fee37e0_2499_4b16_848a_9571d68407c7",
+     "field_id": "7fee37e0_2499_4b16_848a_9571d68407c7",
+     "label": "Date of 9th Event",
+     "output_field_id": "7fee37e0_2499_4b16_848a_9571d68407c7",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "802fd7fe_8871_4620_bf45_22f6e8ba5fc2",
+     "field_id": "802fd7fe_8871_4620_bf45_22f6e8ba5fc2",
+     "label": "Organization Supported",
+     "output_field_id": "802fd7fe_8871_4620_bf45_22f6e8ba5fc2",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "876153d1_7763_4c4a_8dab_b901b5bcc007",
+     "field_id": "876153d1_7763_4c4a_8dab_b901b5bcc007",
+     "label": "Date of 2nd Event",
+     "output_field_id": "876153d1_7763_4c4a_8dab_b901b5bcc007",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "877856ae_d57b_479c_90b7_cd25cf04cf09",
+     "field_id": "877856ae_d57b_479c_90b7_cd25cf04cf09",
+     "label": "Number of Repeats",
+     "output_field_id": "877856ae_d57b_479c_90b7_cd25cf04cf09",
+     "type": "integer"
+    },
+    {
+     "argument_field_id": "8a711850_6e92_4ab7_90a7_4ad66539f306",
+     "field_id": "8a711850_6e92_4ab7_90a7_4ad66539f306",
+     "label": "Employee City",
+     "output_field_id": "8a711850_6e92_4ab7_90a7_4ad66539f306",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "9e9bd915_2a6e_4a73_812d_bb2c5baec4f0",
+     "field_id": "9e9bd915_2a6e_4a73_812d_bb2c5baec4f0",
+     "label": "Approval Date",
+     "output_field_id": "9e9bd915_2a6e_4a73_812d_bb2c5baec4f0",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "a2335e02_cdaf_435d_b842_e18b69dcce29",
+     "field_id": "a2335e02_cdaf_435d_b842_e18b69dcce29",
+     "label": "Date of 5th Event",
+     "output_field_id": "a2335e02_cdaf_435d_b842_e18b69dcce29",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "a51e7a67_fa77_4d54_9423_6475b28cb091",
+     "field_id": "a51e7a67_fa77_4d54_9423_6475b28cb091",
+     "label": "Hours Event 6",
+     "output_field_id": "a51e7a67_fa77_4d54_9423_6475b28cb091",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "ad2a9320_2230_45ed_b689_9caef4dae5e9",
+     "field_id": "ad2a9320_2230_45ed_b689_9caef4dae5e9",
+     "label": "Cancellation Date",
+     "output_field_id": "ad2a9320_2230_45ed_b689_9caef4dae5e9",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "aece0ef4_7b3b_4621_9073_687670fc14a6",
+     "field_id": "aece0ef4_7b3b_4621_9073_687670fc14a6",
+     "label": "Team Name",
+     "output_field_id": "aece0ef4_7b3b_4621_9073_687670fc14a6",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "b36957f0_00e4_44e6_a465_ab063e6ac998",
+     "field_id": "b36957f0_00e4_44e6_a465_ab063e6ac998",
+     "label": "Activity Contact Name",
+     "output_field_id": "b36957f0_00e4_44e6_a465_ab063e6ac998",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "b3914c90_f85d_40db_a152_bc83fdcff759",
+     "field_id": "b3914c90_f85d_40db_a152_bc83fdcff759",
+     "label": "Donation Amount in USD",
+     "output_field_id": "b3914c90_f85d_40db_a152_bc83fdcff759",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "b6240623_a906_419f_8482_e8c87a553c16",
+     "field_id": "b6240623_a906_419f_8482_e8c87a553c16",
+     "label": "Employee Region",
+     "output_field_id": "b6240623_a906_419f_8482_e8c87a553c16",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "b7b769ad_f990_412e_9875_0bb7b7f856e8",
+     "field_id": "b7b769ad_f990_412e_9875_0bb7b7f856e8",
+     "label": "Confirm Action",
+     "output_field_id": "b7b769ad_f990_412e_9875_0bb7b7f856e8",
+     "type": "boolean"
+    },
+    {
+     "argument_field_id": "b864a786_6329_46fb_a72a_c8e79f78c02b",
+     "field_id": "b864a786_6329_46fb_a72a_c8e79f78c02b",
+     "label": "Activity State Record ID",
+     "output_field_id": "b864a786_6329_46fb_a72a_c8e79f78c02b",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "b94dbd14_5a98_42ca_872b_00e804a5833f",
+     "field_id": "b94dbd14_5a98_42ca_872b_00e804a5833f",
+     "label": "Currency Record ID",
+     "output_field_id": "b94dbd14_5a98_42ca_872b_00e804a5833f",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "bc37fa3a_9da2_4763_938c_3aaa8afc3a01",
+     "field_id": "bc37fa3a_9da2_4763_938c_3aaa8afc3a01",
+     "label": "Cancellation in Progress",
+     "output_field_id": "bc37fa3a_9da2_4763_938c_3aaa8afc3a01",
+     "type": "boolean"
+    },
+    {
+     "argument_field_id": "bd58f2c4_b532_485d_985d_bbca305b7b0f",
+     "field_id": "bd58f2c4_b532_485d_985d_bbca305b7b0f",
+     "label": "Repeating Event",
+     "output_field_id": "bd58f2c4_b532_485d_985d_bbca305b7b0f",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "c19f32dd_7a33_43af_9371_a733764e2680",
+     "field_id": "c19f32dd_7a33_43af_9371_a733764e2680",
+     "label": "Date of 6th Event",
+     "output_field_id": "c19f32dd_7a33_43af_9371_a733764e2680",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "c4ef3a4a_5dcd_4aa0_958c_e41d270bcc0a",
+     "field_id": "c4ef3a4a_5dcd_4aa0_958c_e41d270bcc0a",
+     "label": "Hours Event 4",
+     "output_field_id": "c4ef3a4a_5dcd_4aa0_958c_e41d270bcc0a",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "cb7bb8c4_ff9c_45b6_a3f1_de847e8ceb9c",
+     "field_id": "cb7bb8c4_ff9c_45b6_a3f1_de847e8ceb9c",
+     "label": "Donation Amount",
+     "output_field_id": "cb7bb8c4_ff9c_45b6_a3f1_de847e8ceb9c",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "continuation_token",
+     "field_id": "continuation_token",
+     "label": "Next Page Token",
+     "output_field_id": "continuation_token",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "d4d22a2e_f94f_4c44_844d_fd997d55ebe6",
+     "field_id": "d4d22a2e_f94f_4c44_844d_fd997d55ebe6",
+     "label": "Hours Event 8",
+     "output_field_id": "d4d22a2e_f94f_4c44_844d_fd997d55ebe6",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "dab764eb_dff8_4547_b8bb_67aae5df53c3",
+     "field_id": "dab764eb_dff8_4547_b8bb_67aae5df53c3",
+     "label": "Type",
+     "output_field_id": "dab764eb_dff8_4547_b8bb_67aae5df53c3",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "display_name",
+     "field_id": "display_name",
+     "label": "Employee ID",
+     "output_field_id": "display_name",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "e2bfdbe9_ccb2_4bfb_9c71_6d64d938d575",
+     "field_id": "e2bfdbe9_ccb2_4bfb_9c71_6d64d938d575",
+     "label": "Job Title",
+     "output_field_id": "e2bfdbe9_ccb2_4bfb_9c71_6d64d938d575",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "e39035d7_23cc_4fc5_b5f4_49a3c5be5932",
+     "field_id": "e39035d7_23cc_4fc5_b5f4_49a3c5be5932",
+     "label": "Date of 8th Event",
+     "output_field_id": "e39035d7_23cc_4fc5_b5f4_49a3c5be5932",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "e6d6384f_8eb2_4dd2_8ff6_1f0bdaa3d298",
+     "field_id": "e6d6384f_8eb2_4dd2_8ff6_1f0bdaa3d298",
+     "label": "Status",
+     "output_field_id": "e6d6384f_8eb2_4dd2_8ff6_1f0bdaa3d298",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "e8a8c5cb_6101_46bf_8573_1e1c3d26e5f9",
+     "field_id": "e8a8c5cb_6101_46bf_8573_1e1c3d26e5f9",
+     "label": "Employee ID Record ID",
+     "output_field_id": "e8a8c5cb_6101_46bf_8573_1e1c3d26e5f9",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "ec745f6d_2207_40c6_a674_5e8b6539f5eb",
+     "field_id": "ec745f6d_2207_40c6_a674_5e8b6539f5eb",
+     "label": "WC Record ID",
+     "output_field_id": "ec745f6d_2207_40c6_a674_5e8b6539f5eb",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "eff58340_4fde_41e0_963d_fb218d22f75d",
+     "field_id": "eff58340_4fde_41e0_963d_fb218d22f75d",
+     "label": "Department Name",
+     "output_field_id": "eff58340_4fde_41e0_963d_fb218d22f75d",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "f405f394_4ccf_499f_9673_c23875c72a4e",
+     "field_id": "f405f394_4ccf_499f_9673_c23875c72a4e",
+     "label": "Board Member",
+     "output_field_id": "f405f394_4ccf_499f_9673_c23875c72a4e",
+     "type": "boolean"
+    },
+    {
+     "argument_field_id": "f56cd8f8_9d3a_4879_8864_ea652f4acb05",
+     "field_id": "f56cd8f8_9d3a_4879_8864_ea652f4acb05",
+     "label": "Hours Event 1",
+     "output_field_id": "f56cd8f8_9d3a_4879_8864_ea652f4acb05",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "fabd425b_634d_49f8_8726_76ba9d3ae9bf",
+     "field_id": "fabd425b_634d_49f8_8726_76ba9d3ae9bf",
+     "label": "Hours Event 2",
+     "output_field_id": "fabd425b_634d_49f8_8726_76ba9d3ae9bf",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "file_content",
+     "field_id": "file_content",
+     "label": "File contents",
+     "output_field_id": "file_content",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "filename",
+     "field_id": "filename",
+     "label": "File name",
+     "output_field_id": "filename",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "record_id",
+     "field_id": "record_id",
+     "label": "Record ID",
+     "output_field_id": "record_id",
+     "type": "string"
+    }
+   ],
+   "name": "[SUB] Workato Cares Submission Raw Data",
+   "public_id": "13821",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_f6ecaffe74c8"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "028d15b9_ac99_401c_b25f_c44a1ce7c5db",
+     "field_id": "028d15b9_ac99_401c_b25f_c44a1ce7c5db",
+     "label": "Past Due",
+     "output_field_id": "028d15b9_ac99_401c_b25f_c44a1ce7c5db",
+     "type": "integer"
+    },
+    {
+     "argument_field_id": "0be8c260_33ba_4646_862c_ec74b765350a",
+     "field_id": "0be8c260_33ba_4646_862c_ec74b765350a",
+     "label": "Current ARR",
+     "output_field_id": "0be8c260_33ba_4646_862c_ec74b765350a",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "144af657_99db_483a_9ed8_a1324849d522",
+     "field_id": "144af657_99db_483a_9ed8_a1324849d522",
+     "label": "Salesforce Invoice ID",
+     "output_field_id": "144af657_99db_483a_9ed8_a1324849d522",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c",
+     "field_id": "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c",
+     "label": "NetSuite Invoice ID",
+     "output_field_id": "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "3faa69d3_6a7e_4d7c_aced_a1ba0b0442fe",
+     "field_id": "3faa69d3_6a7e_4d7c_aced_a1ba0b0442fe",
+     "label": "NetSuite Customer ID",
+     "output_field_id": "3faa69d3_6a7e_4d7c_aced_a1ba0b0442fe",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "595fbc67_aef7_407b_813f_dd5b723d88cd",
+     "field_id": "595fbc67_aef7_407b_813f_dd5b723d88cd",
+     "label": "Salesforce Account ID",
+     "output_field_id": "595fbc67_aef7_407b_813f_dd5b723d88cd",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "6044c826_e8b1_4524_b299_5d5d9c63a5a1",
+     "field_id": "6044c826_e8b1_4524_b299_5d5d9c63a5a1",
+     "label": "Payment Terms",
+     "output_field_id": "6044c826_e8b1_4524_b299_5d5d9c63a5a1",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "634d81b9_6dfe_4fc8_a02c_78c49ca13b0f",
+     "field_id": "634d81b9_6dfe_4fc8_a02c_78c49ca13b0f",
+     "label": "Amount",
+     "output_field_id": "634d81b9_6dfe_4fc8_a02c_78c49ca13b0f",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "665410c4_9b6f_46fe_93cd_8253dbcd3308",
+     "field_id": "665410c4_9b6f_46fe_93cd_8253dbcd3308",
+     "label": "NetSuite Invoice No.",
+     "output_field_id": "665410c4_9b6f_46fe_93cd_8253dbcd3308",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "6b5097f5_ac84_4c8d_8c21_654da728eafb",
+     "field_id": "6b5097f5_ac84_4c8d_8c21_654da728eafb",
+     "label": "Balance",
+     "output_field_id": "6b5097f5_ac84_4c8d_8c21_654da728eafb",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "7d01c55a_176b_47dc_ad8c_b06899074107",
+     "field_id": "7d01c55a_176b_47dc_ad8c_b06899074107",
+     "label": "Invoice Date",
+     "output_field_id": "7d01c55a_176b_47dc_ad8c_b06899074107",
+     "type": "date"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+     "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+     "label": "Churn Oppty ID",
+     "output_field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "continuation_token",
+     "field_id": "continuation_token",
+     "label": "Next Page Token",
+     "output_field_id": "continuation_token",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "eef0c324_141b_46ad_a5aa_dd09b57e2ecd",
+     "field_id": "eef0c324_141b_46ad_a5aa_dd09b57e2ecd",
+     "label": "Subtotal",
+     "output_field_id": "eef0c324_141b_46ad_a5aa_dd09b57e2ecd",
+     "type": "number"
+    },
+    {
+     "argument_field_id": "f9a16194_15bd_4f03_a294_678f8c953df9",
+     "field_id": "f9a16194_15bd_4f03_a294_678f8c953df9",
+     "label": "Due Date",
+     "output_field_id": "f9a16194_15bd_4f03_a294_678f8c953df9",
+     "type": "date"
+    }
+   ],
+   "name": "[QTC] Open Invoices",
+   "public_id": "1670",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_d7be172c1557"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "24313710_ea71_43c5_9694_b5f55c56a5b7",
+     "field_id": "24313710_ea71_43c5_9694_b5f55c56a5b7",
+     "label": "Examples",
+     "output_field_id": "24313710_ea71_43c5_9694_b5f55c56a5b7",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "595299b9_812f_497c_b041_d43e6172fa67",
+     "field_id": "595299b9_812f_497c_b041_d43e6172fa67",
+     "label": "Name",
+     "output_field_id": "595299b9_812f_497c_b041_d43e6172fa67",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "8389efac_4a35_447b_a378_8152c43250c4",
+     "field_id": "8389efac_4a35_447b_a378_8152c43250c4",
+     "label": "Level",
+     "output_field_id": "8389efac_4a35_447b_a378_8152c43250c4",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "<anon>aaaaaaaa_bbbb_cccc_dddd_eeeeeeeeeeee</anon>",
+     "field_id": "<anon>aaaaaaaa_bbbb_cccc_dddd_eeeeeeeeeeee</anon>",
+     "label": "Primary key",
+     "output_field_id": "<anon>aaaaaaaa_bbbb_cccc_dddd_eeeeeeeeeeee</anon>",
+     "resource_role": "primary_key"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "a65c1011_c527_429b_ad1d_ad3ed4a485b8",
+     "field_id": "a65c1011_c527_429b_ad1d_ad3ed4a485b8",
+     "label": "Description",
+     "output_field_id": "a65c1011_c527_429b_ad1d_ad3ed4a485b8",
+     "type": "string"
+    }
+   ],
+   "name": "[AC] WORKATO_INTEGRATION_LEVEL",
+   "public_id": "20686",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_f27e54a7c867"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "13b82b43_2f7a_4d98_a50d_1a5af68bc4c3",
+     "field_id": "13b82b43_2f7a_4d98_a50d_1a5af68bc4c3",
+     "label": "Quest Name",
+     "output_field_id": "13b82b43_2f7a_4d98_a50d_1a5af68bc4c3",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "3c779a6b_a7ca_44fc_acb8_69ce179d9584",
+     "field_id": "3c779a6b_a7ca_44fc_acb8_69ce179d9584",
+     "label": "Credited Date",
+     "output_field_id": "3c779a6b_a7ca_44fc_acb8_69ce179d9584",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "614e8425_fe37_4acd_b67b_1ed72fc8568a",
+     "field_id": "614e8425_fe37_4acd_b67b_1ed72fc8568a",
+     "label": "User ID",
+     "output_field_id": "614e8425_fe37_4acd_b67b_1ed72fc8568a",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "68240f61_d77a_49f4_8252_24fc373a730d",
+     "field_id": "68240f61_d77a_49f4_8252_24fc373a730d",
+     "label": "Status",
+     "output_field_id": "68240f61_d77a_49f4_8252_24fc373a730d",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "acc76697_ddd7_4d13_87fc_5a6e0b5d6860",
+     "field_id": "acc76697_ddd7_4d13_87fc_5a6e0b5d6860",
+     "label": "Quest Code",
+     "output_field_id": "acc76697_ddd7_4d13_87fc_5a6e0b5d6860",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "continuation_token",
+     "field_id": "continuation_token",
+     "label": "Next Page Token",
+     "output_field_id": "continuation_token",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "d98a88e6_2320_492f_bd4b_eb600a86e0a1",
+     "field_id": "d98a88e6_2320_492f_bd4b_eb600a86e0a1",
+     "label": "Points Earned",
+     "output_field_id": "d98a88e6_2320_492f_bd4b_eb600a86e0a1",
+     "type": "integer"
+    },
+    {
+     "argument_field_id": "ddd2fcd3_e629_4d80_9e78_fe3fb5c9f88b",
+     "field_id": "ddd2fcd3_e629_4d80_9e78_fe3fb5c9f88b",
+     "label": "$internal_value_ddd2fcd3-e629-4d80-9e78-fe3fb5c9f88b",
+     "output_field_id": "ddd2fcd3_e629_4d80_9e78_fe3fb5c9f88b",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "file_content",
+     "field_id": "file_content",
+     "label": "File contents",
+     "output_field_id": "file_content",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "filename",
+     "field_id": "filename",
+     "label": "File name",
+     "output_field_id": "filename",
+     "type": "string"
+    }
+   ],
+   "name": "[WWW] Quest Activity",
+   "public_id": "28115",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_68aa4a601ed9"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "3ac3e90c_8e9b_4b58_b019_715ecd63b3d4",
+     "field_id": "3ac3e90c_8e9b_4b58_b019_715ecd63b3d4",
+     "label": "Application ID",
+     "output_field_id": "3ac3e90c_8e9b_4b58_b019_715ecd63b3d4",
+     "resource_role": "primary_key",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "7b20b969_f842_4eaa_8f35_753fe911fbee",
+     "field_id": "7b20b969_f842_4eaa_8f35_753fe911fbee",
+     "label": "Resume URL",
+     "output_field_id": "7b20b969_f842_4eaa_8f35_753fe911fbee",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "a7ba4bb3_7e03_4298_8f2e_f302d17fff39",
+     "field_id": "a7ba4bb3_7e03_4298_8f2e_f302d17fff39",
+     "label": "Job ID",
+     "output_field_id": "a7ba4bb3_7e03_4298_8f2e_f302d17fff39",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "c90c7596_43bf_466c_8a8f_b6d9819e2169",
+     "field_id": "c90c7596_43bf_466c_8a8f_b6d9819e2169",
+     "label": "Status",
+     "output_field_id": "c90c7596_43bf_466c_8a8f_b6d9819e2169",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "d32edade_33fa_4613_b8f7_976915faf727",
+     "field_id": "d32edade_33fa_4613_b8f7_976915faf727",
+     "label": "Log",
+     "output_field_id": "d32edade_33fa_4613_b8f7_976915faf727",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "fe5cbb7e_f1ba_4cc2_8cd3_509e81f6b4d1",
+     "field_id": "fe5cbb7e_f1ba_4cc2_8cd3_509e81f6b4d1",
+     "label": "Role",
+     "output_field_id": "fe5cbb7e_f1ba_4cc2_8cd3_509e81f6b4d1",
+     "type": "string"
+    }
+   ],
+   "name": "30554",
+   "public_id": "30554",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_9888316085dd"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "1b9473c2_54ae_47f3_9576_c3ec76f3bd6d",
+     "field_id": "1b9473c2_54ae_47f3_9576_c3ec76f3bd6d",
+     "label": "target_project",
+     "output_field_id": "1b9473c2_54ae_47f3_9576_c3ec76f3bd6d",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "347bdaaf_5194_4363_a3e0_2a1e04f8aca2",
+     "field_id": "347bdaaf_5194_4363_a3e0_2a1e04f8aca2",
+     "label": "product_area",
+     "output_field_id": "347bdaaf_5194_4363_a3e0_2a1e04f8aca2",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "45e4add0_f5a6_4d3d_bcd0_2ed9e0cc15a8",
+     "field_id": "45e4add0_f5a6_4d3d_bcd0_2ed9e0cc15a8",
+     "label": "ticket_url",
+     "output_field_id": "45e4add0_f5a6_4d3d_bcd0_2ed9e0cc15a8",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "4fd3d64a_5fa4_4a8f_b5db_22a214b39b9f",
+     "field_id": "4fd3d64a_5fa4_4a8f_b5db_22a214b39b9f",
+     "label": "key",
+     "output_field_id": "4fd3d64a_5fa4_4a8f_b5db_22a214b39b9f",
+     "resource_role": "primary_key",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "5a7eb53b_e407_41fd_a227_8f93e6a9c023",
+     "field_id": "5a7eb53b_e407_41fd_a227_8f93e6a9c023",
+     "label": "customer_company",
+     "output_field_id": "5a7eb53b_e407_41fd_a227_8f93e6a9c023",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "68cbd891_51dd_4e33_92fa_8651d7e09441",
+     "field_id": "68cbd891_51dd_4e33_92fa_8651d7e09441",
+     "label": "updated",
+     "output_field_id": "68cbd891_51dd_4e33_92fa_8651d7e09441",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "75551508_f290_41de_88fd_d77306bebea5",
+     "field_id": "75551508_f290_41de_88fd_d77306bebea5",
+     "label": "summary",
+     "output_field_id": "75551508_f290_41de_88fd_d77306bebea5",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "a08c09e7_53d4_46dc_9bc7_a308696dc6c1",
+     "field_id": "a08c09e7_53d4_46dc_9bc7_a308696dc6c1",
+     "label": "status",
+     "output_field_id": "a08c09e7_53d4_46dc_9bc7_a308696dc6c1",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "b2ae037d_640f_4c56_aeee_17d61b531080",
+     "field_id": "b2ae037d_640f_4c56_aeee_17d61b531080",
+     "label": "pm_triage_breach_time",
+     "output_field_id": "b2ae037d_640f_4c56_aeee_17d61b531080",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "b57087c4_57c9_4d82_a27e_af9969896e53",
+     "field_id": "b57087c4_57c9_4d82_a27e_af9969896e53",
+     "label": "source_of_enhancement_request",
+     "output_field_id": "b57087c4_57c9_4d82_a27e_af9969896e53",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "d3779dbf_043c_4826_8c8e_d83c2e46b8fb",
+     "field_id": "d3779dbf_043c_4826_8c8e_d83c2e46b8fb",
+     "label": "description",
+     "output_field_id": "d3779dbf_043c_4826_8c8e_d83c2e46b8fb",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "d71da57a_cf54_48ca_89a5_51e4ea1bd675",
+     "field_id": "d71da57a_cf54_48ca_89a5_51e4ea1bd675",
+     "label": "product_manager",
+     "output_field_id": "d71da57a_cf54_48ca_89a5_51e4ea1bd675",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "e267c871_7ff1_4b0b_a7bc_b1e39a5ed39b",
+     "field_id": "e267c871_7ff1_4b0b_a7bc_b1e39a5ed39b",
+     "label": "created",
+     "output_field_id": "e267c871_7ff1_4b0b_a7bc_b1e39a5ed39b",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "e8bf2d92_807a_477b_9c2a_de56a876b993",
+     "field_id": "e8bf2d92_807a_477b_9c2a_de56a876b993",
+     "label": "pe_team",
+     "output_field_id": "e8bf2d92_807a_477b_9c2a_de56a876b993",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "f7651665_4dd2_413d_a704_f81972a4c1d4",
+     "field_id": "f7651665_4dd2_413d_a704_f81972a4c1d4",
+     "label": "pm_triage_breach",
+     "output_field_id": "f7651665_4dd2_413d_a704_f81972a4c1d4",
+     "type": "string"
+    }
+   ],
+   "name": "PSM Enhancements Data",
+   "public_id": "33563",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_d5e66c9a88f3"
+  },
+  {
+   "fields": [
+    {
+     "argument_field_id": "0f34f995_2a34_4fcf_b5c3_0270f8f718d0",
+     "field_id": "0f34f995_2a34_4fcf_b5c3_0270f8f718d0",
+     "label": "workspace",
+     "output_field_id": "0f34f995_2a34_4fcf_b5c3_0270f8f718d0",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "label": "Record ID",
+     "output_field_id": "11fbe9a6_a16d_4d7e_86ea_afe42ec03005",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "label": "Updated at",
+     "output_field_id": "61aae604_a95e_4519_9091_bb0bf754a67f",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "label": "Created at",
+     "output_field_id": "a5612739_5401_4ae7_bd07_782c1a6fb2d1",
+     "type": "date_time"
+    },
+    {
+     "argument_field_id": "continuation_token",
+     "field_id": "continuation_token",
+     "label": "Next Page Token",
+     "output_field_id": "continuation_token",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "db77c09c_5f9c_4681_8135_50f0c39af67a",
+     "field_id": "db77c09c_5f9c_4681_8135_50f0c39af67a",
+     "label": "package",
+     "output_field_id": "db77c09c_5f9c_4681_8135_50f0c39af67a",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "display_name",
+     "field_id": "display_name",
+     "label": "name",
+     "output_field_id": "display_name",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "fc952b5a_bf20_4985_a1bd_5cfa657e8c74",
+     "field_id": "fc952b5a_bf20_4985_a1bd_5cfa657e8c74",
+     "label": "$internal_value_fc952b5a-bf20-4985-a1bd-5cfa657e8c74",
+     "output_field_id": "fc952b5a_bf20_4985_a1bd_5cfa657e8c74",
+     "type": "string"
+    },
+    {
+     "argument_field_id": "record_id",
+     "field_id": "record_id",
+     "label": "Record ID",
+     "output_field_id": "record_id",
+     "type": "string"
+    }
+   ],
+   "name": "Workspace Package Installations",
+   "public_id": "9008",
+   "resource_kind": "data_table",
+   "resource_ref": "resource_d9c99396091b"
+  }
+ ]
+}
+
+Begin. Emit your next action as JSON.

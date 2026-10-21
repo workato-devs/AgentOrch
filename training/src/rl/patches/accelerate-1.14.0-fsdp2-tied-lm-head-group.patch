@@ -1,0 +1,19 @@
+--- a/accelerate/utils/fsdp_utils.py
++++ b/accelerate/utils/fsdp_utils.py
+@@ -763,7 +763,15 @@
+     # Tied case uses `input_embed` so the pre-forward hook fires at forward-start
+     # (embed's use of the shared tensor), not at forward-end with `output_embed`.
+     tail_embed = input_embed if is_weights_tied else output_embed
+-    tail = [m for m in (final_norm, tail_embed) if m is not None and not isinstance(m, FSDPModule)]
++    # [local patch 2026-08-29] when tied, lm_head must join the SAME FSDP group as
++    # embed_tokens: torch 2.13 FSDP2 raises 'Parameter ... is shared with a parameter
++    # already managed by another FSDP group' if it is left to the root group.
++    # Original saved as fsdp_utils.py.orig-1.14.0
++    tail_mods = (final_norm, tail_embed, output_embed) if is_weights_tied else (final_norm, tail_embed)
++    tail = []
++    for m in tail_mods:
++        if m is not None and not isinstance(m, FSDPModule) and m not in tail:
++            tail.append(m)
+     if tail:
+         fully_shard(tail, **{**fsdp2_kwargs, "reshard_after_forward": False})
+ 

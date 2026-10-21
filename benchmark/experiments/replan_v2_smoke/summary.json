@@ -1,0 +1,53 @@
+{
+ "seed": 20260828,
+ "n": 100,
+ "lanes": {
+  "qwen3.8-27b": {
+   "model": "Qwen/Qwen3.8-27B-FP8",
+   "tier_dir": "large_model/Qwen3.8-27B-FP8",
+   "eligible": 380,
+   "selected": 100,
+   "overlap_with_all_lanes": 17
+  },
+  "qwen3-4b": {
+   "model": "Qwen/Qwen3-4B-Instruct-2507",
+   "tier_dir": "small_model/Qwen3-4B-Instruct-2507",
+   "eligible": 265,
+   "selected": 100,
+   "overlap_with_all_lanes": 17
+  },
+  "gemma-3-27b": {
+   "model": "google/gemma-3-27b-it",
+   "tier_dir": "large_model/gemma-3-27b-it",
+   "eligible": 146,
+   "selected": 100,
+   "overlap_with_all_lanes": 17
+  },
+  "gemma-4-26b": {
+   "model": "google/gemma-4-26B-A4B-it",
+   "tier_dir": "medium_model/gemma-4-26B-A4B-it",
+   "eligible": 86,
+   "selected": 86,
+   "overlap_with_all_lanes": 17
+  },
+  "mistral-24b": {
+   "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "tier_dir": "large_model/Mistral-Small-3.1-24B-Instruct-2503",
+   "eligible": 222,
+   "selected": 100,
+   "overlap_with_all_lanes": 17
+  }
+ },
+ "pairwise_overlap": {
+  "qwen3.8-27b&qwen3-4b": 86,
+  "qwen3.8-27b&gemma-3-27b": 64,
+  "qwen3.8-27b&gemma-4-26b": 50,
+  "qwen3.8-27b&mistral-24b": 80,
+  "qwen3-4b&gemma-3-27b": 61,
+  "qwen3-4b&gemma-4-26b": 47,
+  "qwen3-4b&mistral-24b": 75,
+  "gemma-3-27b&gemma-4-26b": 34,
+  "gemma-3-27b&mistral-24b": 57,
+  "gemma-4-26b&mistral-24b": 42
+ }
+}

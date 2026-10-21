@@ -1,0 +1,34 @@
+{
+  "force_action_error": null,
+  "private_evaluation_context": {},
+  "public_runtime_input": {
+    "trigger_input": {
+      "request": {
+        "oppty_id": "OPP-64112882-01-NOMATCH"
+      }
+    }
+  },
+  "recipe_id": "64112882",
+  "schema": "agentorch-private-simulator-seed",
+  "seed": {
+    "workato_db_table": {
+      "tables": {
+        "1670": [
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-01-A",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-01-NUM-A",
+            "_row_id": 0,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-01-OTHERA"
+          },
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-01-B",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-01-NUM-B",
+            "_row_id": 1,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-01-OTHERB"
+          }
+        ]
+      }
+    }
+  },
+  "variant_id": "01"
+}

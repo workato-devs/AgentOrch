@@ -1,0 +1,41 @@
+| connector | actions supported | live/mock | seed supported | verify supported | cleanup supported | limitations |
+| --- | --- | --- | --- | --- | --- | --- |
+| Slack | post_message, post_reply, delete_message, get_user_by_email, open_bot_app_home, block_kit_modals, generate_menu_options, update_blocks_by_block_id, bot_command_v2_payload | simulated | yes | yes | yes | No Slack credentials or network access are used. Messages, users, App Home views, and modals are deterministic in-memory state scoped to one seed/run process. |
+| Jira | create_issue | simulated | not needed for create-only variants | yes | delete benchmark-created issue after verification | No Jira credentials or network access are used; issues are in-memory state. |
+| SFDC | search_records, update_record, create_record, upsert_record, create_records_for_seed | simulated | yes | yes | yes | Uses deterministic local records and the benchmark SOQL evaluator. Raw action adapters map Salesforce search_sobjects* to salesforce.search_records and update_sobject/composite_update_sobject to salesforce.update_record. Raw create_custom_object maps to salesforce.create_record, raw upsert_sobject maps to salesforce.upsert_record, and seed provisioning is available through harness.salesforce.seed_records. |
+| Google Sheets | add_spreadsheet_row_v4, get_spreadsheet_rows_v4, search_spreadsheet_rows_v4_new, update_row_v4_new | simulated | yes | yes | seed clears configured benchmark sheet before writing variant rows | No Google credentials or network access are used. Recipes share one in-memory sheet per seed/run process while retaining the real action and output schemas. |
+| Google Drive | create_folder | simulated | not needed for create-folder variants | yes | delete benchmark-created folder after verification | No Google credentials or network access are used. Folder IDs are deterministic and folders are scoped to the current process. |
+| Snowflake | upsert_rows_batch, update_rows, search_rows, search_rows_sql, run_custom_sql | simulated | yes | yes | yes | Snowflake tables are deterministic in-process state. The simulator supports the benchmark's constrained search, update, upsert, aggregate, and join query shapes; it does not implement arbitrary Snowflake SQL. |
+| Workato DB table | get_records, search_records, add_record, update_record, upsert_record, delete_record, truncate_table | mock | yes | yes | yes | State is isolated by recipe/variant under benchmark/output/_state/workato_db_tables. Cleanup is state overwrite/isolation rather than an external delete API. get_records paginates single-page: a continuation_token argument yields a result without a continuation_token so repeat/while loops terminate. |
+| Lookup table | get_entries, get_entry, search_entries, add_entry, update_entry, delete_entry, truncate, add_batch_of_entries | mock | yes | yes | yes | State is isolated by recipe/variant under benchmark/output/_state/lookup_tables. Cleanup is state overwrite/isolation rather than an external delete API. |
+| Workato recipe function | execute_trigger_payload, return_result | mock | yes | yes | n/a | Supports recipe-function trigger parameters and return_result only. |
+| Workato API Platform | receive_request_payload, return_response | mock | yes | yes | n/a | API request trigger and response payloads are mocked inside the benchmark harness. |
+| Workato service | receive_request_payload, send_reply, call_service, call_service_async | mock | yes | yes | n/a | Workato callable/service recipe trigger and reply are mocked inside the benchmark harness. send_reply is not terminal; a service recipe may continue executing after replying. call_service does not execute the sub-recipe: its reply is deterministic seeded state (seed.workato_service_replies keyed by step as-id or flow_id, fail-fast). call_service_async returns an acknowledgement only (no reply data) and requires no seeded reply. |
+| Workato Genie | start_workflow_payload, workflow_return_result | mock | yes | yes | n/a | Genie workflow trigger and return payloads are mocked inside the benchmark harness. |
+| Workato app trigger | job_error_payload, stop_error_payload, start_recipe, stop_recipe, rerun_jobs, list_jobs, get_recipe | mock | yes | yes | n/a | Trigger payload support plus controlled recipe-lifecycle actions (start_recipe/stop_recipe return {ok, recipe_id}; rerun_jobs returns {ok, job_ids}); no external Workato job lifecycle API is executed. list_jobs returns the seeded 'workato_app_jobs' list (fail-fast when the seed key is absent; an empty list is allowed). get_recipe returns the seeded 'workato_app_recipes'[recipe_id] object ({recipe_id, active}, fail-fast when missing). |
+| Workato pub/sub trigger | subscribe_to_topic_payload, publish_to_topic, publish_to_topic_batch | mock | yes | yes | n/a | Trigger payload support plus the publish_to_topic action (controlled, records topic_id + message) and publish_to_topic_batch (records topic_id + messages list); downstream effects run through simulated or mocked tools. |
+| Workato webhook trigger | new_event_payload | mock | yes | yes | n/a | Trigger payload support only; downstream effects run through simulated or mocked tools. |
+| Clock trigger | scheduled_event_payload, wait_for_interval | mock | yes | yes | n/a | Scheduled trigger payload and wait interval replay only; no scheduler service or real sleep is invoked. |
+| Skilljar | new_object_payload | mock | yes | yes | n/a | Trigger payload support only; downstream effects run through table tools. |
+| Namely | new_job_title_payload | mock | yes | yes | n/a | Trigger payload support only; downstream effects run through lookup table tools. |
+
+## Gmail (gap note)
+
+The benchmark safety policy defines an outbound-side-effect exception for Gmail: send
+actions must execute as live DRAFT creation, verified by reading the draft
+back, then cleaned up. The live-draft adapter is NOT implemented — no
+registered recipe currently exercises a live send path (129988557's send
+steps are skip:true dead steps). If a Gmail live-send recipe is ever
+admitted, the draft adapter must be built first; do not map sends to a mock.
+
+
+## Salesforce SOQL ORDER BY (supported subset note)
+
+The harness evaluates the SOQL ORDER BY subset the current corpus uses:
+multi-key ASC/DESC with SOQL null placement, typed comparison (numeric,
+chronological, casefolded strings, case-sensitive binary order for
+ID-shaped columns), and relationship-path keys. Locale-aware collation and
+exact per-type Salesforce ordering beyond these classes are DOCUMENTED
+APPROXIMATIONS, not full SOQL equivalence; unsupported constructs fail
+loudly rather than mis-sort. Describe this as "the SOQL subset exercised by
+the corpus" in any external write-up.

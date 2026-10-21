@@ -1,0 +1,41 @@
+{
+  "alignment": {
+    "prompt_template": "frozen public_benchmark GLOBAL_VIEW render",
+    "resource_count_distribution": "benchmark empirical per-recipe counts",
+    "seed_namespace": "global-aligned-v1",
+    "template_recipes": [
+      "100039154",
+      "100191269",
+      "100191291"
+    ],
+    "tool_surface_policy": "benchmark-aligned-64-card-surface: model-visible tools plus compiler closure, padded with distractors sampled from the public benchmark catalog and the training-wide tool pool; candidates are not workflow steps",
+    "tool_surface_size": 64
+  },
+  "counts": {
+    "benchmark_distractor_cards": 26098,
+    "distractor_cards": 177827,
+    "rows": 3000
+  },
+  "exporter_version": "terra-recipe-plan-sft-global-aligned-exporter-v1",
+  "outputs": {
+    "plan_sft.jsonl": {
+      "bytes": 413931028,
+      "rows": 3000,
+      "sha256": "8d7cba1d926978bf55f0add8dde264cf3cbebed2053d3759179d1c57d80a3bda"
+    },
+    "plan_sft_messages.jsonl": {
+      "bytes": 951474840,
+      "rows": 3000,
+      "sha256": "2ee88e3f2271a82966c56594d471a8a6476753aad959438a62240c42080dc45e"
+    }
+  },
+  "row_count": 3000,
+  "schema_version": "agentorch-plan-sft-global-aligned-v1",
+  "source": {
+    "dataset": "dataset/training_gd",
+    "manifest_content_hash": "ca186d6b14b121ac179eea4f61e8efe9b2b8457422a67f658ae2788cc4f763f2",
+    "plan_sft_sha256": "e9832d1fe9d11fcc42323616d1cb03628d22c230edd3ca1bf3bfb4db0b400a13"
+  },
+  "target_origin": "deterministic Stage-1 canonical-IR compilation from source Workato recipes",
+  "targets_unchanged_from_source": true
+}

@@ -1,0 +1,584 @@
+{
+  "allowed_tools": [
+    "workato_db_table.get_records",
+    "workato_api_platform.return_response"
+  ],
+  "details": {
+    "expect": {
+      "case": "get_records fails; the try/catch catch branch returns an HTTP 400 error response carrying the failure message",
+      "executed_action_count": 1,
+      "tool_expectations": [
+        {
+          "args_contains": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "http_status_code": "400",
+          "response_contains": {
+            "error": "benchmark forced get_records failure"
+          },
+          "tool": "workato_api_platform.return_response"
+        }
+      ],
+      "tools": [
+        "workato_api_platform.return_response"
+      ]
+    },
+    "expected_raw_tools": [
+      "workato_db_table.get_records",
+      "workato_api_platform.return_response"
+    ],
+    "final_snapshot": {
+      "ok": true,
+      "workato_db_table": {
+        "state_file": "output/_state/workato_db_tables/64112882/variant_05/tables.json",
+        "tables": {
+          "1670": [
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+              "_created_by": "seed",
+              "_row_id": 0,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+            }
+          ]
+        }
+      }
+    },
+    "ground_truth": {
+      "by_tool": {
+        "workato_api_platform.return_response": [
+          {
+            "args": {
+              "http_status_code": "400",
+              "response": {
+                "error": "benchmark forced get_records failure"
+              }
+            },
+            "as": "ac43c95c",
+            "keyword": "action",
+            "name": "return_response",
+            "number": 8,
+            "provider": "workato_api_platform",
+            "result": {
+              "http_status_code": "400",
+              "ok": true,
+              "response": {
+                "error": "benchmark forced get_records failure"
+              }
+            },
+            "tool": "workato_api_platform.return_response"
+          }
+        ]
+      },
+      "return_value": {
+        "error": "benchmark forced get_records failure"
+      }
+    },
+    "initial_snapshot": {
+      "ok": true,
+      "workato_db_table": {
+        "state_file": "output/_state/workato_db_tables/64112882/variant_05/tables.json",
+        "tables": {
+          "1670": [
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+              "_created_by": "seed",
+              "_row_id": 0,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+            }
+          ]
+        }
+      }
+    },
+    "raw_execution": {
+      "control_trace": [
+        {
+          "as": null,
+          "branch": "exception",
+          "control_type": "try",
+          "keyword": "try",
+          "name": null,
+          "number": 2,
+          "provider": null
+        }
+      ],
+      "data": {
+        "catch": {
+          "46b155df": {
+            "action": "get_records",
+            "adapter": "workato_db_table",
+            "line_number": 3,
+            "message": "benchmark forced get_records failure",
+            "type": "RawRecipeExecutionError"
+          }
+        },
+        "workato_api_platform": {
+          "8bd2b676": {
+            "request": {
+              "oppty_id": "OPP-64112882-05-CHURN"
+            }
+          },
+          "ac43c95c": {
+            "http_status_code": "400",
+            "ok": true,
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          }
+        }
+      },
+      "executed_action_count": 1,
+      "raw_action_count": 3,
+      "return_value": {
+        "error": "benchmark forced get_records failure"
+      },
+      "step_outputs": {
+        "46b155df": {
+          "action": "get_records",
+          "adapter": "workato_db_table",
+          "line_number": 3,
+          "message": "benchmark forced get_records failure",
+          "type": "RawRecipeExecutionError"
+        },
+        "8bd2b676": {
+          "request": {
+            "oppty_id": "OPP-64112882-05-CHURN"
+          }
+        },
+        "ac43c95c": {
+          "http_status_code": "400",
+          "ok": true,
+          "response": {
+            "error": "benchmark forced get_records failure"
+          }
+        }
+      },
+      "trace": [
+        {
+          "args": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "as": "ac43c95c",
+          "keyword": "action",
+          "name": "return_response",
+          "number": 8,
+          "provider": "workato_api_platform",
+          "result": {
+            "http_status_code": "400",
+            "ok": true,
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "tool": "workato_api_platform.return_response"
+        }
+      ],
+      "trigger": {
+        "request": {
+          "oppty_id": "OPP-64112882-05-CHURN"
+        }
+      },
+      "trigger_filter_matched": true
+    },
+    "raw_validation": {
+      "actions": [
+        {
+          "as": "1bd64b3a",
+          "name": "get_records",
+          "number": 3,
+          "provider": "workato_db_table"
+        },
+        {
+          "as": "c3fb8151",
+          "name": "return_response",
+          "number": 6,
+          "provider": "workato_api_platform"
+        },
+        {
+          "as": "ac43c95c",
+          "name": "return_response",
+          "number": 8,
+          "provider": "workato_api_platform"
+        }
+      ],
+      "trigger_name": "receive_request",
+      "trigger_provider": "workato_api_platform"
+    },
+    "seed_type": "api_platform_open_invoices_variant",
+    "track": "workato_api_open_invoices",
+    "trigger": {
+      "request": {
+        "oppty_id": "OPP-64112882-05-CHURN"
+      }
+    }
+  },
+  "harness_tool_calls": [
+    {
+      "args": {},
+      "result": {
+        "ok": true,
+        "workato_db_table": {
+          "state_file": "output/_state/workato_db_tables/64112882/variant_05/tables.json",
+          "tables": {
+            "1670": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+                "_created_by": "seed",
+                "_row_id": 0,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+              }
+            ]
+          }
+        }
+      },
+      "tool": "harness.workato_db_table.snapshot"
+    },
+    {
+      "args": {},
+      "result": {
+        "ok": true,
+        "workato_db_table": {
+          "state_file": "output/_state/workato_db_tables/64112882/variant_05/tables.json",
+          "tables": {
+            "1670": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+                "_created_by": "seed",
+                "_row_id": 0,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+              }
+            ]
+          }
+        }
+      },
+      "tool": "harness.workato_db_table.snapshot"
+    }
+  ],
+  "ok": true,
+  "recipe_id": "64112882",
+  "tool_calls": [
+    {
+      "args": {
+        "http_status_code": "400",
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "result": {
+        "http_status_code": "400",
+        "ok": true,
+        "response": {
+          "error": "benchmark forced get_records failure"
+        }
+      },
+      "tool": "workato_api_platform.return_response"
+    }
+  ],
+  "tool_specs": [
+    {
+      "description": "Read records from a controlled Workato data table.",
+      "input_schema": {
+        "properties": {
+          "continuation_token": {
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "properties": {
+                "field_id": {
+                  "type": "string"
+                },
+                "op": {
+                  "enum": [
+                    "eq",
+                    "ne",
+                    "gte",
+                    "gt",
+                    "lte",
+                    "lt",
+                    "starts_with",
+                    "isnull",
+                    "isnotnull"
+                  ],
+                  "type": "string"
+                },
+                "value": {}
+              },
+              "required": [
+                "field_id",
+                "op"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "order_by_field_id": {
+            "type": "string"
+          },
+          "order_direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string"
+          },
+          "table_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "table_id"
+        ],
+        "type": "object"
+      },
+      "name": "workato_db_table.get_records"
+    },
+    {
+      "description": "Controlled Workato API Platform return_response action.",
+      "input_schema": {
+        "properties": {
+          "http_status_code": {
+            "type": "string"
+          },
+          "response": {},
+          "response_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "http_status_code"
+        ],
+        "type": "object"
+      },
+      "name": "workato_api_platform.return_response"
+    }
+  ],
+  "track": "workato_api_open_invoices",
+  "verifier": {
+    "checks": [
+      {
+        "details": {
+          "trace": [
+            {
+              "args": {
+                "http_status_code": "400",
+                "response": {
+                  "error": "benchmark forced get_records failure"
+                }
+              },
+              "as": "ac43c95c",
+              "keyword": "action",
+              "name": "return_response",
+              "number": 8,
+              "provider": "workato_api_platform",
+              "result": {
+                "http_status_code": "400",
+                "ok": true,
+                "response": {
+                  "error": "benchmark forced get_records failure"
+                }
+              },
+              "tool": "workato_api_platform.return_response"
+            }
+          ]
+        },
+        "name": "raw_recipe_executed_without_harness_error",
+        "ok": true
+      },
+      {
+        "details": {
+          "executed_action_count": 1,
+          "trace_tools": [
+            "workato_api_platform.return_response"
+          ]
+        },
+        "name": "executed_actions_match_trace_length",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_trace_tools": [
+            "workato_api_platform.return_response"
+          ],
+          "canonical_expected_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ],
+          "expected_raw_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ]
+        },
+        "name": "trace_tools_are_allowed_by_raw_recipe",
+        "ok": true
+      },
+      {
+        "details": {
+          "executed_action_count": 1,
+          "expected_executed_action_count": 1,
+          "raw_action_count": 3,
+          "trace": [
+            {
+              "args": {
+                "http_status_code": "400",
+                "response": {
+                  "error": "benchmark forced get_records failure"
+                }
+              },
+              "as": "ac43c95c",
+              "keyword": "action",
+              "name": "return_response",
+              "number": 8,
+              "provider": "workato_api_platform",
+              "result": {
+                "http_status_code": "400",
+                "ok": true,
+                "response": {
+                  "error": "benchmark forced get_records failure"
+                }
+              },
+              "tool": "workato_api_platform.return_response"
+            }
+          ]
+        },
+        "name": "raw_recipe_executed_expected_path",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_tools": [
+            "workato_api_platform.return_response"
+          ],
+          "expected_tools": [
+            "workato_api_platform.return_response"
+          ]
+        },
+        "name": "tool_sequence_matches_expected",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_call": {
+            "args": {
+              "http_status_code": "400",
+              "response": {
+                "error": "benchmark forced get_records failure"
+              }
+            },
+            "result": {
+              "http_status_code": "400",
+              "ok": true,
+              "response": {
+                "error": "benchmark forced get_records failure"
+              }
+            },
+            "tool": "workato_api_platform.return_response"
+          },
+          "expected_tool": "workato_api_platform.return_response"
+        },
+        "name": "tool_0_called_expected_tool",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "comparison_mode": "raw_subset",
+          "expected_subset": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "raw_canonical_match": true
+        },
+        "diagnostic": true,
+        "name": "tool_0_args_contain_expected_fields",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "expected_subset": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          }
+        },
+        "name": "tool_0_raw_args_contain_expected_fields",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "http_status_code": "400",
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "actual_result": {
+            "http_status_code": "400",
+            "ok": true,
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          }
+        },
+        "name": "tool_0_returned_expected_response",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_result": {
+            "http_status_code": "400",
+            "ok": true,
+            "response": {
+              "error": "benchmark forced get_records failure"
+            }
+          },
+          "expected_http_status_code": "400"
+        },
+        "name": "tool_0_returned_expected_http_status",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_response": {
+            "error": "benchmark forced get_records failure"
+          },
+          "expected_subset": {
+            "error": "benchmark forced get_records failure"
+          }
+        },
+        "name": "tool_0_response_contains_expected_fields",
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+}

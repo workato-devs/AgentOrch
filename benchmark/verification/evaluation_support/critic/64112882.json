@@ -1,0 +1,97 @@
+{
+  "accepted": true,
+  "accepted_taskspec": {
+    "business_requirements": [
+      {
+        "evidence_node_ids": [
+          "step_2",
+          "step_3",
+          "step_4",
+          "step_5",
+          "step_6",
+          "step_7",
+          "step_8"
+        ],
+        "kind": "business_effect",
+        "requirement_id": "r1",
+        "text": "A successfully delivered HTTP 200 or HTTP 400 response terminates processing."
+      },
+      {
+        "evidence_node_ids": [
+          "step_2",
+          "step_3",
+          "step_4",
+          "step_5",
+          "step_6",
+          "step_7",
+          "step_8"
+        ],
+        "kind": "business_effect",
+        "requirement_id": "r2",
+        "text": "For the supplied request.oppty_id, identify the bounded result of matching open invoices for that churn opportunity. If the result contains exactly 200 invoices, terminate as an error with the message exactly \"Amount of invoices found hits table storage limit, please consider increasing search size\". If it contains fewer than 200 invoices, return HTTP 200 with the optional invoices array in ascending retrieval order, containing one item per invoice in that bounded result; each item’s id is its invoice ID and number is its invoice number, with blank source values represented as null."
+      },
+      {
+        "evidence_node_ids": [
+          "step_2",
+          "step_3",
+          "step_4",
+          "step_5",
+          "step_6",
+          "step_7",
+          "step_8"
+        ],
+        "kind": "business_effect",
+        "requirement_id": "r3",
+        "text": "If invoice retrieval, result-count evaluation, or delivery of the success response raises an error, do not retry; return HTTP 400 with the captured failure message in the required error field."
+      }
+    ],
+    "deterministic_accepted_export_recovery": {
+      "public_requirement_order": [
+        "r1",
+        "r2",
+        "r3"
+      ],
+      "schema_version": "agentorch-accepted-export-recovery-v1",
+      "source_accepted_taskspec_hash": "de4e6f81506226accdf87fc4ef37cf07f2fc1b93fe41423bd67209bd4fb6ea9f",
+      "source_row_hash": "f9b7706401cf33e19978f9c03f99e48a0434748e8ab24682782624e737615160",
+      "source_task_description_hash": "2ace28467ee20717d5b6a9d8b110354c6297c7eb8ef6f0999156b69e8d15b4f1"
+    },
+    "objective": "Provide a bounded open-invoice lookup for a supplied churn opportunity and return the appropriate terminal result to the API caller.",
+    "recipe_id": "64112882",
+    "relevant_input_concepts": [],
+    "schema_version": "agentorch-taskspec-v1",
+    "success_criteria": [
+      "A successfully delivered HTTP 200 or HTTP 400 response terminates processing.",
+      "For the supplied request.oppty_id, identify the bounded result of matching open invoices for that churn opportunity. If the result contains exactly 200 invoices, terminate as an error with the message exactly \"Amount of invoices found hits table storage limit, please consider increasing search size\". If it contains fewer than 200 invoices, return HTTP 200 with the optional invoices array in ascending retrieval order, containing one item per invoice in that bounded result; each item’s id is its invoice ID and number is its invoice number, with blank source values represented as null.",
+      "If invoice retrieval, result-count evaluation, or delivery of the success response raises an error, do not retry; return HTTP 400 with the captured failure message in the required error field."
+    ]
+  },
+  "accepted_taskspec_hash": "85b4971817e81394d749f13e44ce441cd5794d0c097a89d3fcd51e6a78a19415",
+  "critic_artifact_hash": "07ebc403c7902a347d3d58aa6dc86939e683d329948225b4b224e54efab6e834",
+  "critic_passes": [],
+  "deterministic_accepted_export_recovery": {
+    "model_call_replayed": false,
+    "source_critic": {
+      "accepted": true,
+      "model": "gpt-5.6-sol",
+      "prompt_version": "business-goal-task-critic"
+    },
+    "source_row_hash": "f9b7706401cf33e19978f9c03f99e48a0434748e8ab24682782624e737615160"
+  },
+  "generator_model": "gpt-5.6-terra",
+  "model": "gpt-5.6-sol",
+  "model_independence": true,
+  "precritic_public_wording_repair": {
+    "accepted_export_recovery": true,
+    "applied": false,
+    "repair_count": 0,
+    "repairs": [],
+    "schema_version": "agentorch-public-wording-repair-v1"
+  },
+  "prompt_version": "business-goal-task-critic",
+  "public_context_hash": "62b24cddfe11c0f6bca2b43f7ce38ed374c3300748784000c18032bb03c511c1",
+  "recipe_id": "64112882",
+  "schema_version": "absolute-critic-artifact-v1",
+  "semantic_repair_used": false,
+  "source_draft_taskspec_hash": "85b4971817e81394d749f13e44ce441cd5794d0c097a89d3fcd51e6a78a19415"
+}

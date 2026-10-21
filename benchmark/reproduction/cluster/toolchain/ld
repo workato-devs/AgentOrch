@@ -1,0 +1,4 @@
+#!/bin/sh
+# Conda-provided linker for runtime kernel builds; AGENTORCH_CONDA_BIN comes
+# from benchmark/reproduction/cluster/env.sh (exported by every .sbatch).
+exec "${AGENTORCH_CONDA_BIN:?set AGENTORCH_CONDA_BIN in benchmark/reproduction/cluster/env.sh}/x86_64-conda-linux-gnu-ld" "$@"

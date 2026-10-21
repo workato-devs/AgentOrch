@@ -1,0 +1,23 @@
+mode,metric,value,n
+plan_execute,Replay success rate,1.0,3220
+plan_execute,Tool selection,0.6168,3220
+plan_execute,Tool order,0.6168,3220
+plan_execute,Tool execution,0.6099,3220
+plan_execute,Required arguments,0.9034,3220
+plan_execute,Control path,0.6168,3220
+plan_execute,Execution Trace Accuracy,0.6727,3220
+plan_execute,Side-Effect Accuracy,0.8155,3220
+plan_execute,Terminal Output Accuracy,0.7143,3220
+plan_execute,Final Accuracy,0.5683,3220
+plan_execute,Orchestration Accuracy,0.7441,3220
+react,Replay success rate,1.0,3220
+react,Tool selection,0.972,3220
+react,Tool order,0.972,3220
+react,Tool execution,0.972,3220
+react,Required arguments,0.9997,3220
+react,Control path,0.972,3220
+react,Execution Trace Accuracy,0.9776,3220
+react,Side-Effect Accuracy,0.9932,3220
+react,Terminal Output Accuracy,0.768,3220
+react,Final Accuracy,0.7652,3220
+react,Orchestration Accuracy,0.9854,3220
