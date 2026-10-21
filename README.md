@@ -138,23 +138,21 @@ percentage points. Additional checkpoint sweeps are recorded in the
 
 ## Quick start
 
-Use **Python 3.12**. The CPU smoke suite runs on the recipe included in Git;
-it needs no model, GPU, provider credentials, or dataset download.
+Use **Python 3.12**. Run one sample workflow on the deterministic connector
+simulator with no model, GPU, credentials, or data download:
 
 ```bash
 git clone https://github.com/jesseliu0913/AgentOrch.git
 cd AgentOrch
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements-dev.txt
-python scripts/release_check.py --smoke --allow-incomplete-metadata
+python -m pip install jsonschema==4.26.0
+
+PYTHONPATH=benchmark python -m verification.connector_runner \
+  --backend simulated --recipe-id 64112882 --variant 0
 ```
 
-A successful run ends with `PASS: 0 failing check(s)`. It exercises the
-Global and ReAct example adapters, a simulated connector execution, and the
-evaluator tests. The metadata option allows the pending repository license
-and citation files during development; the strict publication check is in
-[RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
+The final JSON object should contain `"verifier_ok": true`.
 
 ## Datasets
 
@@ -199,9 +197,7 @@ and `replan` (3,220). The Hub's `train` split name is a storage convention;
 these are **benchmark evaluation prompts**. The training dataset provides
 `sft_messages_v1`, `sft_v1_80k`, `rl_verl_v1`, `rl_trl_v1`, and
 `rl_trl_v1_31b`. Configs, fields, and subset sizes are described in the dataset
-cards. The Hub viewer currently has only partial ReAct / Replan conversions
-and does not render the verl config; use the pinned source archives and
-prepared files for complete evaluation and training.
+cards.
 
 ## Models
 
@@ -249,37 +245,41 @@ For provider credentials, copy [.env.example](.env.example) to `.env` and
 fill the relevant fields. Setup, model integration, and optional Slurm
 launchers are documented in the [evaluation guide](benchmark/README.md).
 
-## Train and reproduce
+## Train a model
 
-The [training guide](training/README.md) covers data preparation, LoRA SFT,
-GRPO with verl or TRL, checkpoint merging, and evaluation. Use separate
-training environments and configure `training/scripts/env.sh` before using
-the Slurm launchers. The [experiment record](training/results/EXPERIMENTS.md)
-includes checkpoint sweeps and negative results.
+Run LoRA SFT with the prepared training set in a separate environment. The
+following Qwen3.8-27B example uses eight GPUs:
 
-| Entry point | Purpose |
+```bash
+conda create -n agentorch-train python=3.12 -y
+conda activate agentorch-train
+python -m pip install -r training/requirements-sft.txt
+python scripts/download_data.py --only training --prepared
+
+WANDB_MODE=offline torchrun --nproc-per-node 8 training/src/sft/train_sft_local.py \
+  --model Qwen/Qwen3.8-27B \
+  --data training/data/sft_v1_80k/train.jsonl \
+  --epochs 5 --max-len 81920 --save-every-steps 158 \
+  --lora-r 16 --lora-alpha 32 --lr 1e-4 --seed 0 \
+  --run-name sft-27b-80k-5ep \
+  --output training/output/checkpoints/sft-27b-80k-5ep-lora
+```
+
+Adapters are saved under `training/output/checkpoints/`. The reported 27B SFT
+checkpoint is `step-474`. For checkpoint merging, GRPO with verl or TRL, and
+Slurm launchers, see the [training guide](training/README.md).
+
+## Project structure
+
+| Directory | Contents |
 | --- | --- |
-| [benchmark/](benchmark/README.md) | Evaluator, connector simulator, metrics, and model integration |
-| [training/](training/README.md) | Dataset builders, SFT / GRPO, and external transfer evaluation |
+| [benchmark/](benchmark/README.md) | Evaluation harness, connector simulator, metrics, and experiment drivers |
+| [training/](training/README.md) | Data preparation, SFT / GRPO, checkpoint merging, and transfer evaluation |
 | [results/](results/combined_leaderboard.md) | Combined base / SFT / RL leaderboard |
-| [benchmark/reproduction/](benchmark/reproduction/README.md) | Offline scoring of your own runs and optional cluster launchers |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup and automated checks |
+| [benchmark/reproduction/](benchmark/reproduction/README.md) | Offline scoring and reproduction scripts |
+| [scripts/](scripts/) | Dataset downloader and leaderboard builder |
 
-Evaluation uses the deterministic **simulated** backend. Ground truth and
-simulator state are public for local evaluation and must stay out of model
-prompts. The maintainers' approximately 80 GB of per-variant run traces are
-not distributed; published aggregate leaderboards are included in Git.
-Fine-tuning is not bit-exact across hardware. See the [data card](DATA_CARD.md)
-for provenance and limitations.
-
-## License and citation
-
-Hugging Face artifact cards currently declare `apache-2.0`. This Git snapshot
-still has no top-level `LICENSE`; project licensing and formal citation
-metadata remain tracked in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
-Third-party components are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-
-### Citation
+## Citation
 
 ```bibtex
 @misc{liu2026agentorch,
