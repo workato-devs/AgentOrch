@@ -21,7 +21,8 @@ The CPU-only validation path needs Python 3.12:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install jsonschema==4.26.0 pytest==9.1.1
+python -m pip install -r requirements-dev.txt
+python -m pytest scripts/tests -q
 python scripts/release_check.py --smoke --allow-incomplete-metadata
 ```
 
@@ -40,8 +41,9 @@ separate SFT and RL environments as described in
 4. Run `python scripts/release_check.py --smoke --allow-incomplete-metadata`
    from the repository root. Omit the final option when validating a release.
 5. If files changed, regenerate `SHA256SUMS` with
-   `python scripts/release_check.py --write-checksums` and include it in the
-   same pull request.
+   `python scripts/release_check.py --write-checksums --allow-incomplete-metadata`
+   and include it in the same pull request. New non-ignored files are included;
+   review `git status --short` first. Omit the metadata exception for a release.
 6. Complete the pull-request template, including reproducibility and data-risk
    notes.
 
@@ -56,3 +58,16 @@ ground-truth plans, simulator state, dataset membership, or headline numbers
 need a clear migration note because they can invalidate comparisons with the
 frozen release. Maintainers may ask for a new versioned benchmark snapshot
 instead of changing the existing contract in place.
+
+## Automated checks
+
+GitHub Actions runs the CPU regression tests, sample-recipe smoke checks,
+relative-link and result-table checks, and `SHA256SUMS` verification on pushes
+and pull requests. It uses the sample committed in Git and needs no downloaded
+data or provider credentials. Development CI allows unfinished publication
+metadata; the strict release command in `RELEASE_CHECKLIST.md` still requires it.
+
+`python scripts/build_combined_leaderboard.py --check` checks the generated
+tables without writing them. Run the builder without `--check` after an
+intentional source-table update. Release smoke checks use a temporary run
+directory and preserve existing connector outputs and Python caches.

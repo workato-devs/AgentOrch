@@ -15,13 +15,14 @@ Checks (all offline, no model, CPU only):
      the source manifest (rows, budget); optional byte check of
      data/sft_messages_v1.jsonl against source_manifest_v1.json when present
   3. result tables parse and the combined leaderboard regenerates identically
-  4. no personal paths, site-specific node names or credentials in code/docs
+  4. no personal paths, site-specific node names or credentials in tracked
+     code/docs and non-ignored local additions
   5. every relative link in Markdown documentation resolves
   6. community-health files and publication blockers
   7. --smoke: the scripted self-test (example adapter, global + react), one
      connector-runner cycle and the vendored evaluator tests
-  8. --write-checksums: SHA256SUMS over every file tracked by Git (downloaded
-     data is covered by scripts/data_release.json instead)
+  8. --write-checksums: SHA256SUMS over tracked files and non-ignored local
+     additions (downloaded data is covered by scripts/data_release.json)
 Exit status is non-zero when any check fails.
 """
 
@@ -33,9 +34,9 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +44,16 @@ BENCH = ROOT / "benchmark"
 TRAIN = ROOT / "training"
 IGNORED_DIRS = {"__pycache__", ".pytest_cache", ".venv", "outputs", "output", ".git", "wandb"}
 FAILS: list[str] = []
+
+
+def repository_files() -> list[Path]:
+    """Include local additions, excluding ignored data, outputs and caches."""
+    result = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=ROOT, capture_output=True, check=True,
+    )
+    return sorted({ROOT / os.fsdecode(rel) for rel in result.stdout.split(b"\0")
+                   if rel and (ROOT / os.fsdecode(rel)).is_file()})
 
 
 def fail(msg: str) -> None:
@@ -150,11 +161,13 @@ def check_tables() -> None:
             except Exception:
                 bad += 1
         (ok if not bad else fail)(f"{lb.relative_to(ROOT)}: {len(list(lb.glob('*.json')))} files, {bad} unparsable")
-    before = {p.name: p.read_bytes() for p in (ROOT / "results").glob("combined_leaderboard.*")}
-    subprocess.run([sys.executable, str(ROOT / "scripts" / "build_combined_leaderboard.py")],
-                   check=True, capture_output=True)
-    after = {p.name: p.read_bytes() for p in (ROOT / "results").glob("combined_leaderboard.*")}
-    (ok if before == after else fail)("results/combined_leaderboard.* regenerate identically")
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "build_combined_leaderboard.py"), "--check"],
+        capture_output=True, text=True,
+    )
+    (ok if result.returncode == 0 else fail)("results/combined_leaderboard.* regenerate identically")
+    if result.returncode:
+        print(result.stdout or result.stderr)
 
 
 PERSONAL = re.compile(
@@ -180,7 +193,7 @@ def check_personal() -> None:
     print("[4] personal paths / credentials")
     hits = []
     frozen_hits = []
-    for p in ROOT.rglob("*"):
+    for p in repository_files():
         if not p.is_file() or p.suffix not in CODE_EXT:
             continue
         rel = str(p.relative_to(ROOT))
@@ -216,7 +229,7 @@ SKIP_LINKS = ("benchmark/verification/dataset/", "benchmark/input/", "training/i
 def check_links() -> None:
     print("[5] Markdown links")
     bad = []
-    for md in ROOT.rglob("*.md"):
+    for md in (p for p in repository_files() if p.suffix == ".md"):
         if any(part in IGNORED_DIRS for part in md.parts):
             continue
         rel = str(md.relative_to(ROOT))
@@ -263,9 +276,16 @@ def check_community_health(require_publication_metadata: bool) -> None:
 
 
 def check_smoke() -> None:
+    output_root = BENCH / "outputs"
+    output_root.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="release-check-", dir=output_root) as temporary:
+        _check_smoke(Path(temporary))
+
+
+def _check_smoke(output_dir: Path) -> None:
     print("[7] smoke: scripted self-test, connector runner, vendored tests")
-    env = {**os.environ, "PYTHONPATH": str(BENCH)}
-    run = "release-check-smoke"
+    env = {**os.environ, "PYTHONPATH": str(BENCH), "PYTHONDONTWRITEBYTECODE": "1"}
+    run = output_dir.name
     for mode in ("global", "react"):
         r = subprocess.run([sys.executable, "-m", "examples.smoke_adapter.eval", "--mode", mode, "--adapter",
                             "examples.smoke_adapter.example_adapter:build", "--model-id", "smoke-test", "--run-name", run,
@@ -274,29 +294,23 @@ def check_smoke() -> None:
         good = r.returncode == 0 and '"n": 1' in last
         (ok if good else fail)(f"smoke adapter --mode {mode}: {'n=1 scored' if good else r.stderr[-300:]}")
     r = subprocess.run([sys.executable, "-m", "verification.connector_runner", "--backend", "simulated",
-                        "--recipe-id", "64112882", "--variant", "0"], cwd=ROOT, env=env, capture_output=True, text=True)
+                        "--recipe-id", "64112882", "--variant", "0", "--output-dir", str(output_dir / "connector")], cwd=ROOT, env=env, capture_output=True, text=True)
     good = r.returncode == 0 and '"verifier_ok": true' in r.stdout
     (ok if good else fail)(f"connector_runner simulated 64112882/00: {'verifier_ok' if good else r.stderr[-300:]}")
-    env2 = {**os.environ, "PYTHONPATH": f"{BENCH}/verification/backends/simulated/src:{BENCH}/verification/backends/shared/src"}
+    env2 = {**env, "PYTHONPATH": f"{BENCH}/verification/backends/simulated/src:{BENCH}/verification/backends/shared/src"}
     r = subprocess.run([sys.executable, "-m", "pytest", "verification/backends/shared/src/tests", "-q", "-x", "-p", "no:cacheprovider"],
                        cwd=BENCH, env=env2, capture_output=True, text=True)
     tail = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr[-300:]
     (ok if r.returncode == 0 else fail)(f"vendored evaluator tests: {tail}")
-    shutil.rmtree(BENCH / "outputs" / run, ignore_errors=True)
-    shutil.rmtree(BENCH / "outputs" / "connector-runtime", ignore_errors=True)
-    for cache in ROOT.rglob("__pycache__"):
-        shutil.rmtree(cache, ignore_errors=True)
 
 
 def write_checksums() -> None:
     print("[8] SHA256SUMS")
     out = ROOT / "SHA256SUMS"
     skip_names = {"SHA256SUMS", ".env", "sft_messages_v1.jsonl", "sft_messages_v2.jsonl"}
-    tracked = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout
     files = []
-    for rel in tracked.decode().split("\0"):
-        p = ROOT / rel
-        if not rel or not p.is_file() or p.name in skip_names or p.name.startswith(".env."):
+    for p in repository_files():
+        if p.name in skip_names or p.name.startswith(".env."):
             continue
         files.append(p)
     files.sort()

@@ -1,50 +1,83 @@
+<div align="center">
+
 # AgentOrch
 
-**How close can global orchestration come to step-by-step interaction?**
+### How Close Can Global Orchestration Come to Step-by-Step Interaction?
 
-Zijie Liu<sup>1</sup>, Qi Yang Huang<sup>2</sup>, Jinhao Duan<sup>1</sup>, Yueh Che Lee<sup>2</sup>, Thomas A. Joseph<sup>2</sup>,
-Zayne Turner<sup>2</sup>, Adam Seligman<sup>2</sup>, Tianlong Chen<sup>1</sup>, Zhaozhuo Xu<sup>2</sup>
-<br><sup>1</sup>University of North Carolina at Chapel Hill &nbsp; <sup>2</sup>Workato
+Zijie Liu¹, Qi Yang Huang², Jinhao Duan¹, Yueh Che Lee², Thomas A. Joseph²,<br>
+Zayne Turner², Adam Seligman², Tianlong Chen¹, Zhaozhuo Xu²
+
+¹ University of North Carolina at Chapel Hill · ² Workato
 
 [Benchmark data](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark) ·
 [Training data](https://huggingface.co/datasets/JesseLiu/agentorch-training) ·
-[Checkpoints](#released-artifacts) ·
-[Leaderboard](#leaderboard) ·
-[Citation](#citation)
+[Models](#models) · [Results](#results) · [Quick start](#quick-start) · [Citation](#citation)
 
-Enterprise workflow agents usually work **step by step**: run one action,
-observe the result, and call the LLM again. **Global orchestration** instead
-has the LLM write one complete executable workflow up front, which then runs
-with no further LLM calls. AgentOrch compares the two directly on 650
-enterprise SOPs and 3,220 runtime variants, using the same tools, the same
-simulated environment, and the same scorer for both.
+</div>
 
-![AgentOrch benchmark construction and evaluation pipeline](benchmark/figures/agentorch_pipeline.png)
+**AgentOrch evaluates whether an LLM can write an entire executable workflow
+up front, and how that compares with choosing tools one step at a time.**
+Both approaches solve the same enterprise tasks with the same tools,
+deterministic connector simulator, and execution-based scorer.
 
-## Key findings
+The benchmark contains **650 standard operating procedures (SOPs), 3,220
+runtime variants, and a 64-tool interface**. A separate **3,000-recipe
+training set**, disjoint by recipe ID, supports supervised fine-tuning (SFT)
+and reinforcement learning (GRPO). This repository provides the evaluator,
+simulator, training code, and published results; the full datasets and
+**10 merged SFT / RL checkpoints** are available on Hugging Face.
 
-- **Step-by-Step is more accurate for every one of the 31 models**, but the
-  gap has shrunk by about 79%: from 40.67 pp for GPT-3.5 Turbo to 8.53 pp for
-  Claude Opus 5 Thinking.
-- **Global is much cheaper.** Step-by-Step makes 15.4×–35.4× more LLM calls
-  and generates 1.42×–5.29× more completion tokens.
-- **Scale, newer generations, and reasoning do not reliably close the gap.**
-  Giving Global the concrete runtime input changes its accuracy by only
-  −0.18 pp on average.
-- **Three routes narrow it:**
-  - incremental workflow construction (Local): +9.98 pp, with no execution
-    feedback;
-  - execution-feedback revision (Replan): +6.13 pp on held-out variants;
-  - training on complete workflows: +12.18 pp across five models.
-- **The bottleneck is specifying calls before execution.** 83.9% of the
-  workflows Replan repairs parse correctly but get tool arguments or
-  references between steps wrong.
+![AgentOrch: benchmark construction and evaluation pipeline](benchmark/figures/agentorch_pipeline.png)
 
-## Leaderboard
+## What AgentOrch measures
 
-Orchestration Accuracy (%) on all 650 SOPs / 3,220 variants. Each score is the
-mean of Execution Trace Accuracy and Side-Effect Accuracy per variant, and
-failed executions score zero. Gap = Step-by-Step − Global. Paper Table 20.
+An SOP specifies the business task. Runtime variants change the concrete
+inputs and connector state under which that task must succeed. Evaluation
+checks the executed calls, their effects on the environment, and the final
+response.
+
+| Protocol | How the model solves the task | Evaluator mode |
+| --- | --- | --- |
+| **Global** | Generates one complete workflow before seeing concrete runtime inputs; the workflow is reused across the SOP's variants. | `plan_execute` |
+| **Step-by-Step** | Chooses one tool call at a time, observing the input and intermediate execution results. | `react` |
+| **Local** | Builds a workflow incrementally with editor and validation feedback, without executing it during construction. | `incremental_workflow` |
+| **Replan** | Revises a Global workflow using execution feedback, then runs the revised workflow without further LLM calls. | `replan` |
+
+The primary comparison is **Global versus Step-by-Step**. Local, Replan, SFT,
+and GRPO examine ways to improve global workflow orchestration. See the
+[pipeline](benchmark/doc/pipeline.md) and [worked case](benchmark/doc/case.md)
+for the execution and scoring details.
+
+## Results
+
+- **Step-by-Step leads across all 31 models in the main comparison.** The
+  Orchestration Accuracy gap is 40.67 percentage points for GPT-3.5 Turbo
+  and 8.53 points for Claude Opus 5 Thinking.
+- **Global amortizes planning across runtime variants.** One generated
+  workflow serves multiple executions. The [cost table](benchmark/results/COST.csv)
+  records model calls, completion tokens, and the coverage of token counters.
+- **Complete-workflow training improves Global accuracy.** Across five model
+  families, the better of the reported SFT and SFT + RL checkpoints improves
+  over the base model by 12.18 percentage points on average.
+
+### Global versus Step-by-Step
+
+Orchestration Accuracy (%) on all 3,220 variants. For each variant, this is
+`0.5 × execution-trace accuracy + 0.5 × side-effect accuracy`. Failed
+generations and executions remain in the denominator at zero. Gap is
+Step-by-Step minus Global, in percentage points.
+
+| Model | Global | Step-by-Step | Gap |
+| --- | ---: | ---: | ---: |
+| Claude Opus 5 Thinking | 59.88 | 68.41 | 8.53 |
+| GPT-5.6 Sol Thinking | 51.76 | 66.88 | 15.12 |
+| Claude Opus 5 | 46.44 | 63.52 | 17.08 |
+| Qwen 3.8 27B FP8 | 28.57 | 53.31 | 24.74 |
+| GPT-4o | 28.09 | 50.12 | 22.03 |
+| DeepSeek V4 Flash | 27.01 | 58.99 | 31.98 |
+
+<details>
+<summary>All 31 models in the main comparison</summary>
 
 | # | Model | Global | Step-by-Step | Gap |
 |--:|---|--:|--:|--:|
@@ -80,121 +113,101 @@ failed executions score zero. Gap = Step-by-Step − Global. Paper Table 20.
 | 30 | Qwen 2.5 0.5B | 0.13 | 36.46 | 36.33 |
 | 31 | Llama 3.2 1B | 0.00 | 36.93 | 36.93 |
 
-Every model, mode, and metric (Final, Side-Effect, Trace, Terminal, Error
-Rate) is in [`benchmark/results/`](benchmark/results/) and
-[`results/combined_leaderboard.md`](results/combined_leaderboard.md).
+</details>
 
-### Training for global orchestration
+Full results, additional models and protocols, confidence intervals, and
+error rates are in [benchmark/results/](benchmark/results/). The
+[combined leaderboard](results/combined_leaderboard.md) brings base, SFT,
+and RL runs together. [Metric definitions](benchmark/doc/metric.md) describe
+the individual checks and aggregation.
 
-Global Orchestration Accuracy (%) after training on 3,000 source recipes that
-do not overlap with the benchmark. Δ compares the better of SFT and RL with the
-base model (paper Table 8).
+### Training for Global orchestration
+
+Global Orchestration Accuracy (%) for the checkpoints linked below.
+Δ is the better of SFT and SFT + RL minus the base score; it is measured in
+percentage points. Additional checkpoint sweeps are recorded in the
+[training results](training/results/training.csv).
 
 | Model | Base | SFT | SFT + RL | Δ |
-|---|--:|--:|--:|--:|
-| Gemma-4-26B-A4B | 4.05 | 19.89 | **23.93** | +19.88 |
-| Qwen3-4B | 13.75 | 25.46 | **27.16** | +13.41 |
+| --- | ---: | ---: | ---: | ---: |
 | Qwen3.8-27B | 28.57 | **41.96** | 41.14 | +13.39 |
+| Qwen3-4B | 13.75 | 25.46 | **27.16** | +13.41 |
+| Gemma-4-26B-A4B | 4.05 | 19.89 | **23.93** | +19.88 |
 | Gemma-4-12B | 14.26 | 17.92 | **21.66** | +7.40 |
 | Gemma-4-31B | 12.71 | **19.55** | 19.10 | +6.84 |
 
 ## Quick start
 
-A CPU-only check needs no model, credentials, GPU, or downloaded data. It runs
-the simulator and scorer on the sample recipe committed in this repository:
+Use **Python 3.12**. The CPU smoke suite runs on the recipe included in Git;
+it needs no model, GPU, provider credentials, or dataset download.
 
 ```bash
-git clone https://github.com/jesseliu0913/AgentOrch.git && cd AgentOrch
-python3 -m venv .venv && source .venv/bin/activate
-pip install jsonschema==4.26.0 pytest==9.1.1
-
-PYTHONPATH=benchmark python -m verification.connector_runner \
-  --backend simulated --recipe-id 64112882 --variant 0     # expect "verifier_ok": true
+git clone https://github.com/jesseliu0913/AgentOrch.git
+cd AgentOrch
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-dev.txt
 python scripts/release_check.py --smoke --allow-incomplete-metadata
 ```
 
-## Get the data
+A successful run ends with `PASS: 0 failing check(s)`. It exercises the
+Global and ReAct example adapters, a simulated connector execution, and the
+evaluator tests. The metadata option allows the pending repository license
+and citation files during development; the strict publication check is in
+[RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
 
-This repository holds code, docs, result tables, and one sample recipe
-(`64112882`). Everything else is on the Hugging Face Hub and unpacks into the
-paths the code expects:
+## Datasets
 
-```bash
-pip install huggingface_hub
-python scripts/download_data.py              # benchmark + training recipes (~250 MB)
-python scripts/download_data.py --prepared   # also the prepared SFT / RL files (~930 MB)
-python scripts/download_data.py --only benchmark
-```
+| Dataset | Contents | Hugging Face |
+| --- | --- | --- |
+| **Benchmark** | 650 SOPs / 3,220 variants; prompts, reference workflows, and simulator fixtures | [agentorch-benchmark](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark) |
+| **Training** | 3,000 disjoint recipes; reference workflows and prepared SFT / GRPO sets | [agentorch-training](https://huggingface.co/datasets/JesseLiu/agentorch-training) |
 
-| Data | Hugging Face | Unpacks to |
-|---|---|---|
-| Benchmark: 650 SOPs, 3,220 variants, ground truth, evaluator state | [`JesseLiu/agentorch-benchmark`](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark) `source/` | `benchmark/input/`, `benchmark/groundtruth/`, `benchmark/verification/{dataset,evaluation_support,groundtruth,seeds}/` |
-| Training: 3,000 recipes, prompts and reference workflows | [`JesseLiu/agentorch-training`](https://huggingface.co/datasets/JesseLiu/agentorch-training) `source/` | `training/input/`, `training/groundtruth/` |
-| Prepared SFT / RL files, exactly as trained on | [`JesseLiu/agentorch-training`](https://huggingface.co/datasets/JesseLiu/agentorch-training) | `training/data/` |
-
-Archives are pinned to a Hub revision and verified against the SHA-256 values
-in [`scripts/data_release.json`](scripts/data_release.json) before
-extraction. To use the model-visible prompts without this repository, load the
-`global`, `local`, `react`, or `replan` config of `JesseLiu/agentorch-benchmark`
-with `datasets`.
-
-## Evaluate a model
+**For evaluation or training in this repository**, download the pinned
+archives into the paths expected by the code:
 
 ```bash
-pip install -r benchmark/requirements.txt
-python scripts/download_data.py --only benchmark
-
-# smoke: one recipe; remove --limit and add --resume for the comparable full run
-PYTHONPATH=benchmark python -m evaluation.full_eval \
-  --run-name my-model --backend simulated \
-  --model hf:Qwen/Qwen3-4B-Instruct-2507 \
-  --modes plan_execute,react --variants all --limit 1
+python -m pip install huggingface_hub
+python scripts/download_data.py --only benchmark          # evaluation fixtures
+python scripts/download_data.py --only training --prepared # training + prepared SFT / RL sets
 ```
 
-| Paper protocol | `--modes` value | What the model does |
-|---|---|---|
-| Global | `plan_execute` | writes one complete workflow before seeing runtime inputs; it is reused for every variant |
-| Step-by-Step | `react` | sees the runtime input, makes one tool call per turn, and observes each result |
-| Local | `incremental_workflow` | builds the workflow node by node through a validating editor, with no execution |
-| Replan | `replan` | revises its Global workflow from execution feedback; still no LLM calls at run time |
+Source archives total approximately 250 MB compressed. The downloader pins
+Hub revisions and verifies each source archive's SHA-256 before extraction;
+revision IDs and checksums are in [scripts/data_release.json](scripts/data_release.json).
 
-`--model` accepts:
-- `hf:<org>/<name>`: a local checkpoint served through vLLM (`HF_LOCAL_ENGINE=vllm`);
-- `gpt-*` / `claude-*`: the provider APIs (credentials in `.env`, see `.env.example`);
-- any model id served by an OpenAI-compatible endpoint at `LOCAL_LLM_BASE_URL`.
-
-Comparable scores must come from `evaluation.full_eval` with the simulated
-backend, `--variants all`, and no prompt access to `groundtruth/` or
-`verification/`. Scoring details, launchers, and every reproduction command are
-in [`benchmark/README.md`](benchmark/README.md).
-
-## Train a model
+**For direct access to the model-visible prompts**, use Hugging Face Datasets:
 
 ```bash
-pip install -r training/requirements-sft.txt
-python scripts/download_data.py --only training --prepared
-cd training
-sbatch src/sft/sbatch_sft.sh --model Qwen/Qwen3.8-27B \
-       --epochs 5 --max-len 81920 --save-every-steps 158 \
-       --run-name sft-27b-80k-5ep --output output/checkpoints/sft-27b-80k-5ep-lora
+python -m pip install datasets
 ```
 
-The reported 27B SFT model is step 474 (three passes) of this five-epoch cosine
-schedule. A standalone `--epochs 3` run uses a different learning-rate curve.
-SFT uses LoRA (r=16, α=32). RL uses GRPO with verl for Qwen and TRL for Gemma
-4. The reward compares the sampled workflow with the reference without
-executing it. Data preparation, RL, and the full experiment record are in
-[`training/README.md`](training/README.md).
+```python
+from datasets import load_dataset
 
-## Released artifacts
+prompts = load_dataset(
+    "JesseLiu/agentorch-benchmark",
+    "global",
+    split="train",
+    revision="a0328e666e7039f118b7799dffb85d6f4700a9f1",
+)
+print(prompts[0]["task"])
+```
 
-| Artifact | Link |
-|---|---|
-| Benchmark prompts and source fixtures | [`JesseLiu/agentorch-benchmark`](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark) |
-| Training recipes and prepared SFT / RL sets | [`JesseLiu/agentorch-training`](https://huggingface.co/datasets/JesseLiu/agentorch-training) |
+The benchmark configs are `global` (650 rows), `local` (650), `react` (3,220),
+and `replan` (3,220). The Hub's `train` split name is a storage convention;
+these are **benchmark evaluation prompts**. The training dataset provides
+`sft_messages_v1`, `sft_v1_80k`, `rl_verl_v1`, `rl_trl_v1`, and
+`rl_trl_v1_31b`. Configs, fields, and subset sizes are described in the dataset
+cards. The Hub viewer currently has only partial ReAct / Replan conversions
+and does not render the verl config; use the pinned source archives and
+prepared files for complete evaluation and training.
 
-Fine-tuned checkpoints (merged weights). **Bold** marks the one reported in the
-training table above.
+## Models
+
+All ten checkpoints below are public, merged weights with model configuration
+and tokenizer files. Bold links identify the better of SFT and SFT + RL for
+each family in the training table above.
 
 | Base model | SFT | SFT + RL |
 |---|---|---|
@@ -204,59 +217,69 @@ training table above.
 | Gemma-4-12B | [agentorch-sft-gemma12b-v1-2ep](https://huggingface.co/JesseLiu/agentorch-sft-gemma12b-v1-2ep) | [**agentorch-rl-gemma12b-final**](https://huggingface.co/JesseLiu/agentorch-rl-gemma12b-final) |
 | Gemma-4-31B | [**agentorch-sft-gemma31b-v1-1ep**](https://huggingface.co/JesseLiu/agentorch-sft-gemma31b-v1-1ep) | [agentorch-rl-gemma31b-final](https://huggingface.co/JesseLiu/agentorch-rl-gemma31b-final) |
 
-## Repository layout
+The Qwen3.8-27B SFT checkpoint is **step 474 of a five-epoch cosine schedule**,
+corresponding to three passes through the data. Training a separate three-epoch
+schedule does not reproduce that checkpoint. Model cards record base revisions,
+training settings, evaluation runs, and scores.
 
-```text
-AgentOrch/
-  benchmark/
-    evaluation/        full_eval.py (canonical harness) and model roster
-    verification/      connector simulator, recipe engine, frozen scorer (backends/);
-                       evaluator-private fixtures are downloaded
-    input/ groundtruth/  model-visible prompts / per-variant references (downloaded)
-    examples/ experiments/ reproduction/   smoke adapter, ablation drivers, launchers
-    results/ figures/ doc/                 published tables, figures, metric definitions
-  training/
-    src/               data converters, LoRA SFT, GRPO (verl / TRL), external transfer evals
-    input/ groundtruth/  3,000 training recipes and reference workflows (downloaded)
-    data/              source manifests; prepared SFT / RL files (downloaded with --prepared)
-    results/           training.csv, experiment record, leaderboards
-  results/             combined leaderboard: every model as base / sft / rl
-  scripts/             download_data.py, data_release.json, release_check.py
+## Evaluate your model
+
+Install the evaluation stack in a separate environment and fetch the benchmark:
+
+```bash
+python -m pip install -r benchmark/requirements.txt
+python scripts/download_data.py --only benchmark
+
+# Local checkpoints require a compatible GPU and enough GPU memory.
+export HF_LOCAL_ENGINE=vllm
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name my-model --backend simulated \
+  --model hf:JesseLiu/agentorch-sft-4b-v1-2ep \
+  --modes plan_execute,react --variants all --limit 1
 ```
 
-## Scope and reproducibility
+This command checks one SOP. Remove `--limit 1` and add `--resume` for a full
+run. To reproduce the published protocol, also apply the decoding settings in
+[benchmark/README.md](benchmark/README.md#the-canonical-evaluator). Results
+are written under `benchmark/outputs/full_eval/<run-name>/`.
 
-- **Evaluation runs locally against public ground truth.** The scorer and the
-  ground truth ship with the release and are hidden from the model only at run
-  time. Nothing is held out on a server for blind scoring.
-- **The simulator matches the real connectors.** Replaying the recorded
-  real-connector actions in the simulator gives 98.54% Orchestration Accuracy
-  (paper Appendix D).
-- **Per-variant traces are not published.** The 80 GB per-variant result
-  archive stays with the maintainers. Aggregate `leaderboard.json` files for
-  every run are in `benchmark/results/leaderboards/` and
-  `training/results/leaderboards/`.
-- **Training data rebuilds exactly.** `training/src/data/build_sft_messages.py`
-  and `prepare_dataset.py` reproduce the prepared files byte for byte
-  (SHA-256 in `training/data/source_manifest_v1.json`).
-- **Fine-tuning reruns are close but not bit-exact.** Base revisions are
-  pinned in `training/src/sft/base_models.json`, and RL library patches are in
-  `training/src/rl/patches/`. Multi-GPU bf16 LoRA is not bit-exact across
-  hardware.
+The same evaluator accepts `hf:<org>/<model>` or local checkpoint paths,
+provider model IDs, and model IDs served by an OpenAI-compatible endpoint.
+For provider credentials, copy [.env.example](.env.example) to `.env` and
+fill the relevant fields. Setup, model integration, and optional Slurm
+launchers are documented in the [evaluation guide](benchmark/README.md).
 
-See [`DATA_CARD.md`](DATA_CARD.md) for provenance, intended use, and
-limitations. The benchmark covers structured enterprise workflows over 64 tool
-interfaces. It is not evidence that a model can safely run arbitrary workflows
-against live business systems.
+## Train and reproduce
 
-## License
+The [training guide](training/README.md) covers data preparation, LoRA SFT,
+GRPO with verl or TRL, checkpoint merging, and evaluation. Use separate
+training environments and configure `training/scripts/env.sh` before using
+the Slurm launchers. The [experiment record](training/results/EXPERIMENTS.md)
+includes checkpoint sweeps and negative results.
 
-No license has been selected yet, so the code and data are not yet licensed
-for reuse. Open items are tracked in
-[`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md). Third-party material is listed
-in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+| Entry point | Purpose |
+| --- | --- |
+| [benchmark/](benchmark/README.md) | Evaluator, connector simulator, metrics, and model integration |
+| [training/](training/README.md) | Dataset builders, SFT / GRPO, and external transfer evaluation |
+| [results/](results/combined_leaderboard.md) | Combined base / SFT / RL leaderboard |
+| [benchmark/reproduction/](benchmark/reproduction/README.md) | Offline scoring of your own runs and optional cluster launchers |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup and automated checks |
 
-## Citation
+Evaluation uses the deterministic **simulated** backend. Ground truth and
+simulator state are public for local evaluation and must stay out of model
+prompts. The maintainers' approximately 80 GB of per-variant run traces are
+not distributed; published aggregate leaderboards are included in Git.
+Fine-tuning is not bit-exact across hardware. See the [data card](DATA_CARD.md)
+for provenance and limitations.
+
+## License and citation
+
+Hugging Face artifact cards currently declare `apache-2.0`. This Git snapshot
+still has no top-level `LICENSE`; project licensing and formal citation
+metadata remain tracked in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md).
+Third-party components are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+### Citation
 
 ```bibtex
 @misc{liu2026agentorch,
@@ -267,4 +290,4 @@ in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 }
 ```
 
-Contact: Zijie Liu ([jesseliu@cs.unc.edu](mailto:jesseliu@cs.unc.edu))
+Contact: Zijie Liu ([jesseliu@cs.unc.edu](mailto:jesseliu@cs.unc.edu)).

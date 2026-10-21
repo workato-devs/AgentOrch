@@ -22,9 +22,10 @@ blocking item below is complete.
 
 - [x] Upload the fine-tuned checkpoints (10 `agentorch-*` model repos on the Hugging Face Hub,
   linked from the README).
-- [ ] Fill the `hf_repo` column in `training/results/training.csv` for those rows.
-- [ ] Decide whether and where the 80 GB per-variant result archive will be
-  distributed; document a version and checksum if published.
+- [x] Fill the `hf_repo` column in `training/results/training.csv` for the
+  10 checkpoints linked in the README (including their mode-transfer rows).
+- [x] Document the result-archive policy: the 80 GB per-variant archive stays
+  with the maintainers; aggregate leaderboards are committed (see README).
 - [x] From a clean clone, run `python scripts/download_data.py --prepared` and
   confirm every archive passes its checksum (done 2026-10-21).
 - [ ] Create a versioned GitHub release and attach immutable release notes.
