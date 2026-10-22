@@ -220,30 +220,81 @@ training settings, evaluation runs, and scores.
 
 ## Evaluate your model
 
-Install the evaluation stack in a separate environment and fetch the benchmark:
+### Any model behind a Chat Completions endpoint
+
+Run the evaluator on a CPU machine while your model runs on its own server.
+This route needs no local PyTorch, CUDA, or vLLM installation:
+
+```bash
+python3.12 -m venv .venv-eval
+source .venv-eval/bin/activate
+python -m pip install -r benchmark/requirements-api.txt
+python scripts/download_data.py --only benchmark
+
+export LOCAL_LLM_BASE_URL=http://localhost:8000/v1
+export LOCAL_LLM_API_KEY=your-server-key  # omit for an unauthenticated server
+
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name my-model --backend simulated \
+  --model compat:my-served-model \
+  --modes plan_execute,react --ids 64112882 --variants all
+```
+
+Replace the endpoint and `my-served-model` with your server's values. The
+`compat:` prefix selects your endpoint even when the served model name starts
+with `gpt-` or `claude-`; the prefix is removed before sending the request.
+The server must accept `POST /v1/chat/completions` and return the model's JSON
+plan or tool call as text in `choices[0].message.content`. AgentOrch supplies
+the prompts and executes the tools.
+
+This first run evaluates all five variants of the included SOP. For the full
+**650-SOP / 3,220-variant** benchmark, remove `--ids 64112882`. Add `--resume`
+with the same run name, model, and protocol to continue an interrupted run.
+Use a new run name when changing the model or generation settings.
+
+### Hugging Face checkpoints loaded locally
+
+Install the local GPU stack in a separate Python 3.12 environment:
 
 ```bash
 python -m pip install -r benchmark/requirements.txt
 python scripts/download_data.py --only benchmark
-
-# Local checkpoints require a compatible GPU and enough GPU memory.
 export HF_LOCAL_ENGINE=vllm
+
 PYTHONPATH=benchmark python -m evaluation.full_eval \
-  --run-name my-model --backend simulated \
+  --run-name local-model --backend simulated \
   --model hf:JesseLiu/agentorch-sft-4b-v1-2ep \
-  --modes plan_execute,react --variants all --limit 1
+  --modes plan_execute,react --ids 64112882 --variants all
 ```
 
-This command checks one SOP. Remove `--limit 1` and add `--resume` for a full
-run. To reproduce the published protocol, also apply the decoding settings in
-[benchmark/README.md](benchmark/README.md#the-canonical-evaluator). Results
-are written under `benchmark/outputs/full_eval/<run-name>/`.
+Use `hf:<org>/<model>` for a Hub checkpoint or `hf:/absolute/checkpoint/path`
+for your own weights. Set `VLLM_TENSOR_PARALLEL` for models that span multiple
+GPUs. The default local protocol reserves 122,880 input tokens plus up to
+8,192 output tokens in a 131,072-token context; the Global output cap is
+4,096. [The evaluation guide](benchmark/README.md#the-canonical-evaluator)
+provides the generation settings and context options.
 
-The same evaluator accepts `hf:<org>/<model>` or local checkpoint paths,
-provider model IDs, and model IDs served by an OpenAI-compatible endpoint.
-For provider credentials, copy [.env.example](.env.example) to `.env` and
-fill the relevant fields. Setup, model integration, and optional Slurm
-launchers are documented in the [evaluation guide](benchmark/README.md).
+### Provider APIs and results
+
+Provider model IDs are also supported: set `OPENAI_API_MODE=direct` and
+`OPENAI_API_KEY` for OpenAI, the `AZURE_OPENAI_*` settings for Azure, or
+`ANTHROPIC_API_KEY` for Claude. Credentials can go in `.env` using
+[.env.example](.env.example). Run the same command with `--model <provider-model-id>`.
+
+Each protocol writes `results.jsonl`, `trajectories.jsonl`, and
+`leaderboard.json` under:
+
+```text
+benchmark/outputs/full_eval/<run-name>/<model>/<mode>/
+```
+
+For example, `compat:my-served-model` produces
+`my-model/compat:my-served-model/plan_execute/leaderboard.json` beneath
+`benchmark/outputs/full_eval/`. Read `n`, `orchestration_accuracy`,
+`final_accuracy`, and `error_rate` from that JSON. A complete single-run
+benchmark has `n = 3220` for each protocol. Failed generations, context-limit
+errors, and failed executions stay in the denominator. Additional protocols,
+provider examples, and model integration are in the [evaluation guide](benchmark/README.md#run-an-evaluation).
 
 ## Train a model
 

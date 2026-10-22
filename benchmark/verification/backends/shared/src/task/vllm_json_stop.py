@@ -48,9 +48,9 @@ class CompleteJSONLogitsProcessor(AdapterLogitsProcessor):
         escaped = False
         started = False
         complete = False
-        react_hard_limit = int(os.environ.get("HF_REACT_MAX_NEW_TOKENS", "0"))
+        react_hard_limit = int(os.environ.get("HF_REACT_MAX_NEW_TOKENS", "8192"))
         react_soft_limit = int(
-            os.environ.get("HF_REACT_SOFT_MAX_NEW_TOKENS", "0")
+            os.environ.get("HF_REACT_SOFT_MAX_NEW_TOKENS", "1024")
         )
         apply_soft_limit = bool(
             react_soft_limit

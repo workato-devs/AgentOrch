@@ -79,7 +79,7 @@ model, run:
 PYTHONPATH=benchmark python -m evaluation.full_eval \
   --run-name install-check --backend simulated --state-namespace install-check \
   --model scripted-selftest --modes plan_execute,react \
-  --variants all --limit 1 --scripted-selftest
+  --variants all --ids 64112882 --scripted-selftest
 ```
 
 This second command is a harness integrity test, not a model result. The
@@ -240,13 +240,17 @@ benchmark/
 ```bash
 conda create -n benchmark python=3.12 -y
 conda activate benchmark
-pip install -r benchmark/requirements.txt
+python -m pip install -r benchmark/requirements-api.txt
 ```
 
-`requirements.txt` pins the stack every published number was produced with.
-If you only need the scorer, the simulator and the smoke harness,
-`pip install jsonschema` is enough; torch, transformers, vLLM and
-lm-format-enforcer are needed only to run local checkpoints.
+This CPU environment runs the canonical evaluator against HTTP endpoints
+(self-hosted models, OpenAI, Azure, or Anthropic), the simulator, and the
+scorer. It does not need a GPU or provider SDK.
+
+For checkpoints loaded inside the evaluator, use a separate environment and
+install `python -m pip install -r benchmark/requirements.txt`. That file pins
+the local GPU and analysis stack used for the published runs. A compatible
+GPU and enough memory for the model and long prompts are required.
 
 vLLM builds a few kernels at job start and needs a CUDA toolkit. The launchers
 take it from `AGENTORCH_CUDA_HOME` (step 4); leave it empty if `nvcc` is
@@ -326,6 +330,65 @@ PYTHONPATH=verification/backends/simulated/src:verification/backends/shared/src 
 
 ## Run an evaluation
 
+### Evaluate a self-hosted or third-party model
+
+Use the CPU environment above and start your model server separately. It
+must implement the Chat Completions messages API. For vLLM, SGLang, or another
+compatible server, use its API root including `/v1` and its served model name:
+
+```bash
+export LOCAL_LLM_BASE_URL=http://localhost:8000/v1
+export LOCAL_LLM_API_KEY=your-server-key  # optional for servers without authentication
+
+# One SOP, all five variants; also works before downloading the full dataset.
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name my-model --backend simulated \
+  --model compat:my-served-model --ids 64112882 \
+  --modes plan_execute,react --variants all
+
+# Full benchmark; retain the same run/model/settings to continue the sample run.
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name my-model --backend simulated \
+  --model compat:my-served-model \
+  --modes plan_execute,react --variants all --resume
+```
+
+The `compat:` prefix is stripped from the request's `model` field. It always
+selects `LOCAL_LLM_BASE_URL`, including when the served name starts with
+`gpt-`, `claude-`, or contains a Hub namespace. Without the explicit prefix,
+provider-looking model IDs select their provider client.
+
+The harness sends system/user messages, `temperature: 0`, and a 4,096-token
+completion cap. The endpoint returns text in `choices[0].message.content`:
+a JSON workflow (`{"plan": [...]}`) for Global, or one JSON tool call
+(`{"tool": "...", "args": {...}}`) per ReAct turn. The prompt specifies the
+complete format. Tool execution belongs to the benchmark; the server does
+not execute business connectors. Configure the server's context window for
+the task lengths; the published local protocol uses 131,072 tokens. Server
+context errors are recorded as failed rows, without removing those variants
+from the aggregate.
+
+### Evaluate a provider API
+
+Install `requirements-api.txt`, fetch the benchmark, and set credentials in
+`.env` or the environment. For example:
+
+```bash
+export OPENAI_API_MODE=direct
+export OPENAI_API_KEY=your-provider-key
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name my-openai-run --model gpt-4o \
+  --ids 64112882 --modes plan_execute,react --variants all
+```
+
+For Azure, set `OPENAI_API_MODE=azure`, `AZURE_OPENAI_ENDPOINT`,
+`AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_DEPLOYMENT`, and the API version.
+For Claude, set `ANTHROPIC_API_KEY` and pass its model ID to `--model`.
+`OPENAI_MAX_TOKENS`, `OPENAI_REASONING_EFFORT`, `ANTHROPIC_MAX_TOKENS`, and
+`ANTHROPIC_THINKING` configure provider-specific generation. Reasoning effort
+is model-dependent; GPT-3/4 chat requests omit that parameter. See the model
+roster and campaign settings for the configurations used in the paper.
+
 ### The canonical evaluator
 
 `evaluation.full_eval` is the entry point behind every released number. It
@@ -333,9 +396,12 @@ activates one vendored connector backend, points the canonical scorer at the
 evaluator-private fixtures, and runs the selected modes over every recipe and
 variant:
 
-`python -m evaluation.full_eval --help` currently shows only the wrapper's
-three options; model, mode, variant, shard, and resume options are forwarded to
-the canonical evaluator and are documented in the table below.
+`PYTHONPATH=benchmark python -m evaluation.full_eval --help` lists the
+model, recipe selection, protocol, and resume options. Commands run from the
+release root. Before the model is loaded or called, the evaluator checks that
+the selected recipe packages and per-variant simulator/reference files exist.
+Download the full fixtures with `python scripts/download_data.py --only benchmark`;
+a fresh clone can run `--ids 64112882` immediately.
 
 ```bash
 PYTHONPATH=benchmark python -m evaluation.full_eval \
@@ -350,7 +416,7 @@ PYTHONPATH=benchmark python -m evaluation.full_eval \
 | --- | --- |
 | `--run-name` | output folder under `benchmark/outputs/full_eval/` |
 | `--backend` | `simulated` (deterministic, default) or `real` (credentialed live connectors) |
-| `--model` | `hf:<org>/<name>` or `hf:<local dir>` for a checkpoint; `gpt-*`/`o*` for OpenAI or Azure; `claude-*` for Anthropic; any other id is sent to an OpenAI-compatible server at `LOCAL_LLM_BASE_URL` |
+| `--model` | `compat:<served-model>` for your Chat Completions endpoint; `hf:<org>/<name>` or `hf:/absolute/path` for a local checkpoint; `gpt-*`/`o*` for OpenAI or Azure; `claude-*` for Anthropic |
 | `--modes` | comma list of `plan_execute`, `global_input`, `incremental_workflow`, `react`, `replan` |
 | `--variants` | `all` for the full 3,220-row protocol |
 | `--limit N` / `--ids ...` | restrict to the first N recipes or an explicit id list (smoke tests, shards) |
@@ -361,7 +427,7 @@ PYTHONPATH=benchmark python -m evaluation.full_eval \
 Local checkpoints load through vLLM when `HF_LOCAL_ENGINE=vllm` (the
 published protocol) and through plain transformers otherwise. The decoding
 protocol is set by environment variables; the values used for every published
-row are:
+row are (also the default local token budgets):
 
 ```bash
 export HF_LOCAL_ENGINE=vllm
@@ -370,7 +436,7 @@ export HF_REACT_MAX_NEW_TOKENS=8192      # ReAct turn hard cap, local models
 export HF_REACT_SOFT_MAX_NEW_TOKENS=1024 # ReAct turn soft cap (early JSON stop)
 export HF_MODEL_CONTEXT_TOKENS=131072
 export HF_MAX_INPUT_TOKENS=122880
-export HF_MODEL_REVISION=<pinned commit from evaluation/global_react_models.json>
+export HF_MODEL_REVISION="<pinned commit from evaluation/global_react_models.json>"
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 ```
 
@@ -388,6 +454,33 @@ benchmark/outputs/full_eval/<run-name>/<model>/<mode>/
   leaderboard.json     the aggregate: three primary metrics with bootstrap CIs
   artifacts/           frozen-plan artifacts (planning modes)
 ```
+
+### Read results and resume a run
+
+Each model/protocol directory contains `results.jsonl`, `trajectories.jsonl`,
+and `leaderboard.json`. For the endpoint example above:
+
+```bash
+python - <<'PYRESULT'
+import json
+from pathlib import Path
+root = Path("benchmark/outputs/full_eval/my-model/compat:my-served-model")
+for mode in ("plan_execute", "react"):
+    board = json.loads((root / mode / "leaderboard.json").read_text())
+    print(mode, {k: board[k] for k in
+                 ("n", "orchestration_accuracy", "final_accuracy", "error_rate")})
+PYRESULT
+```
+
+A full single-run evaluation has `n = 3220` **per protocol**. The sample SOP
+has `n = 5`. Scores are proportions in `[0, 1]`; multiply by 100 for percent.
+Failed rows count as zero and remain in `n`, so inspect `error_rate` and the
+row-level `status` / `error` fields when diagnosing a run.
+
+Use `--resume` with the same run name, model, modes, and generation settings.
+Completed task rows are not sent to the model again; cached Global plans are
+reused. Use a new run name when changing a checkpoint, endpoint, prompt, or
+generation settings. A run without `--resume` rewrites its result files.
 
 ### Slurm launchers
 
@@ -441,7 +534,8 @@ Two routes, depending on how deep you want to integrate:
 2. **Client in the canonical evaluator.** `build_client()` in
    `verification/backends/shared/src/task/llm_client.py` maps a model id to a
    client class. Any OpenAI-compatible server works without code changes:
-   set `LOCAL_LLM_BASE_URL` and pass the served model id to `--model`.
+   set `LOCAL_LLM_BASE_URL` and pass `compat:<served-model>` to `--model`.
+   This explicit prefix avoids provider-name routing for your own server.
 
 Whatever the route, the model only ever receives files from `input/` and the
 public tool observations; `groundtruth/`, `verification/seeds/` and the
@@ -496,14 +590,14 @@ cd benchmark
 PYTHONPATH=. python -m reproduction.offline.reproduce_scores --all
 
 # Rebuild a leaderboard from existing result rows
-PYTHONPATH=. python -m reproduction.offline.recompute_leaderboard outputs/full_eval/<run>/<model>/<mode>
+PYTHONPATH=. python -m reproduction.offline.recompute_leaderboard "outputs/full_eval/<run>/<model>/<mode>"
 
 # Re-execute and re-score cached Global View plans against the current contract
-PYTHONPATH=. python -m reproduction.offline.rescore_frozen_plans --run-name <run> --model <model-id>
+PYTHONPATH=. python -m reproduction.offline.rescore_frozen_plans --run-name "<run>" --model "<model-id>"
 
 # Row-level parity audit of the standalone public scorer against stored verdicts
 PYTHONPATH=. python -m reproduction.offline.verify_calacc_parity \
-  outputs/full_eval/<run>/<model>/<mode>
+  "outputs/full_eval/<run>/<model>/<mode>"
 ```
 
 ### Raw outputs

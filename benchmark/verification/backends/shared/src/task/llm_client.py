@@ -644,18 +644,23 @@ class AzureOpenAIClient:
 class OpenAIDirectClient:
     """Direct OpenAI /v1/chat/completions (api.openai.com, Bearer auth).
 
-    Built for the GPT-5 reasoning family under the benchmark's shared
-    protocol: ``reasoning_effort`` is pinned from OPENAI_REASONING_EFFORT
-    (``none`` keeps hidden reasoning at zero tokens, mirroring the Claude
-    ``thinking: disabled`` setting), the visible-output budget rides
-    ``max_completion_tokens``, and ``temperature`` is omitted because
-    reasoning models accept only the API default."""
+    Uses ``max_completion_tokens`` for the output budget. GPT-3/4 chat
+    models use greedy sampling without reasoning parameters. Reasoning models
+    omit temperature; OPENAI_REASONING_EFFORT overrides the model default,
+    with ``none`` retained for the published GPT-5.x lanes."""
 
     def __init__(self, model: str, api_key: str | None = None,
                  timeout: int = 300, max_tokens: int = 4096) -> None:
         self.model = model
-        self.temperature = None
-        self.effort = (_setting("OPENAI_REASONING_EFFORT") or "none").lower()
+        # GPT-3/4 chat models reject reasoning_effort. For other families,
+        # omit it unless configured, retaining the published GPT-5.x protocol.
+        non_reasoning = model.lower().startswith(("gpt-3", "gpt-4", "chatgpt-4"))
+        self.temperature = 0.0 if non_reasoning else None
+        configured_effort = _setting("OPENAI_REASONING_EFFORT")
+        if configured_effort:
+            configured_effort = configured_effort.strip().lower()
+        default_effort = "none" if re.match(r"gpt-5\.[1-9]", model.lower()) else None
+        self.effort = None if non_reasoning else (configured_effort or default_effort)
         # Reasoning tokens are billed inside max_completion_tokens; thinking
         # lanes raise the cap the same way ANTHROPIC_MAX_TOKENS does.
         configured = _setting("OPENAI_MAX_TOKENS")
@@ -676,12 +681,16 @@ class OpenAIDirectClient:
         self._max_attempts = max(1, int(_setting("API_MAX_ATTEMPTS") or "5"))
 
     def _body(self, system: str, messages: list[dict[str, str]]) -> dict:
-        return {
+        body = {
             "model": self.model,
             "messages": [{"role": "system", "content": system}] + messages,
             "max_completion_tokens": self.max_tokens,
-            "reasoning_effort": self.effort,
         }
+        if self.effort is not None:
+            body["reasoning_effort"] = self.effort
+        if self.temperature is not None:
+            body["temperature"] = self.temperature
+        return body
 
     def complete(self, system: str, messages: list[dict[str, str]]) -> str:
         with self._request_semaphore:
@@ -743,7 +752,7 @@ class OpenAICompatClient:
         url = base_url or _setting("LOCAL_LLM_BASE_URL")
         if not url:
             raise LLMError(f"missing LOCAL_LLM_BASE_URL for local model {model!r} "
-                           "(start a serve job: eval_serving/run_open_model.sh)")
+                           "(set it to your server's API root, e.g. http://localhost:8000/v1)")
         self._url = url.rstrip("/") + "/chat/completions"
         self._key = api_key or _setting("LOCAL_LLM_API_KEY") or "sk-local"
         self._timeout = timeout
@@ -956,23 +965,23 @@ class TransformersClient:
         self.model = model
         self.revision = revision or _setting("HF_MODEL_REVISION") or "main"
         self.max_new_tokens = max_new_tokens or int(
-            _setting("HF_MAX_NEW_TOKENS") or "512"
+            _setting("HF_MAX_NEW_TOKENS") or "4096"
         )
         self.react_max_new_tokens = int(
-            _setting("HF_REACT_MAX_NEW_TOKENS") or str(self.max_new_tokens)
+            _setting("HF_REACT_MAX_NEW_TOKENS") or "8192"
         )
         self.react_soft_max_new_tokens = int(
             _setting("HF_REACT_SOFT_MAX_NEW_TOKENS")
-            or str(self.react_max_new_tokens)
+            or "1024"
         )
         self.dtype = "bfloat16"
         self.temperature = 0.0
         self.calls = 0
         self.total_tokens = 0
         self.last_completion_token_counts: list[int] = []
-        requested_input = int(_setting("HF_MAX_INPUT_TOKENS") or "65536")
+        requested_input = int(_setting("HF_MAX_INPUT_TOKENS") or "122880")
         requested_context = int(
-            _setting("HF_MODEL_CONTEXT_TOKENS") or str(requested_input)
+            _setting("HF_MODEL_CONTEXT_TOKENS") or str(requested_input + max(self.max_new_tokens, self.react_max_new_tokens))
         )
         if requested_input > requested_context:
             raise LLMError(
@@ -1220,14 +1229,14 @@ class VLLMClient:
         self.batch_initial_plans = True
         self.revision = revision or _setting("HF_MODEL_REVISION") or "main"
         self.max_new_tokens = max_new_tokens or int(
-            _setting("HF_MAX_NEW_TOKENS") or "512"
+            _setting("HF_MAX_NEW_TOKENS") or "4096"
         )
         self.react_max_new_tokens = int(
-            _setting("HF_REACT_MAX_NEW_TOKENS") or str(self.max_new_tokens)
+            _setting("HF_REACT_MAX_NEW_TOKENS") or "8192"
         )
         self.react_soft_max_new_tokens = int(
             _setting("HF_REACT_SOFT_MAX_NEW_TOKENS")
-            or str(self.react_max_new_tokens)
+            or "1024"
         )
         self.dtype = "bfloat16"
         # Greedy by default; HF_TEMPERATURE>0 enables temperature sampling
@@ -1254,9 +1263,9 @@ class VLLMClient:
             / self.revision
         )
         engine_model = str(snapshot_path) if snapshot_path.is_dir() else model
-        requested_input = int(_setting("HF_MAX_INPUT_TOKENS") or "65536")
+        requested_input = int(_setting("HF_MAX_INPUT_TOKENS") or "122880")
         requested_context = int(
-            _setting("HF_MODEL_CONTEXT_TOKENS") or str(requested_input)
+            _setting("HF_MODEL_CONTEXT_TOKENS") or str(requested_input + max(self.max_new_tokens, self.react_max_new_tokens))
         )
         if requested_input + max(
             self.max_new_tokens, self.react_max_new_tokens
@@ -1578,6 +1587,11 @@ class VLLMClient:
 
 
 def build_client(model: str):
+    if model.startswith("compat:"):
+        served_model = model.removeprefix("compat:")
+        if not served_model:
+            raise LLMError("compat: requires a served model name")
+        return OpenAICompatClient(served_model)
     if model.startswith("codex:"):
         return CodexCLIClient(model)
     if model.startswith("hf:"):

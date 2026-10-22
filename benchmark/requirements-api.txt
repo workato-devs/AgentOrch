@@ -1,0 +1,3 @@
+# CPU-side evaluator for HTTP model APIs, Python 3.12. No torch/CUDA required.
+jsonschema==4.26.0
+huggingface_hub==1.22.0
