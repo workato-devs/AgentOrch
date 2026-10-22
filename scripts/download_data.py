@@ -92,7 +92,7 @@ def main() -> int:
                           allow_patterns=prep["allow_patterns"], local_dir=ROOT / "training" / "data",
                           cache_dir=a.cache_dir)
 
-    print("done. Check the tree with: python scripts/release_check.py --allow-incomplete-metadata")
+    print("done. Check the tree with: python scripts/check_repository.py")
     return 0
 
 

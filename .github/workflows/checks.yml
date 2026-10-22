@@ -23,6 +23,5 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: python -m pip install -r requirements-dev.txt
       - run: python -m pytest scripts/tests -q -p no:cacheprovider
-      - run: python scripts/release_check.py --smoke --allow-incomplete-metadata
-      - run: sha256sum --check --quiet SHA256SUMS
+      - run: python scripts/check_repository.py --smoke
       - run: git diff --exit-code

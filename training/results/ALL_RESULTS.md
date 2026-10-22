@@ -1,6 +1,6 @@
 # AgentOrch training project — all results
 
-AgentOrch: frozen public harness, global/plan_execute, all 3,220 variants (reproduce a retained run with `PYTHONPATH=benchmark python -m reproduction.offline.reproduce_scores`). External: WorkflowBench CodeBLEU and Seal-Tools F1_api (upstream scorer; `relaxed` = parser not requiring the `responses` key, see other_benchmark/results/FINDINGS.md). Target: claude-opus-5 orch 0.4644 / error 0.1916 / final 0.2354.
+AgentOrch: frozen public harness, global/plan_execute, all 3,220 variants (reproduce a retained run with `PYTHONPATH=benchmark python -m reproduction.offline.reproduce_scores`). External: WorkflowBench CodeBLEU and Seal-Tools F1_api (upstream scorer; `relaxed` = parser not requiring the `responses` key, see [external findings](external/FINDINGS.md)). Target: claude-opus-5 orch 0.4644 / error 0.1916 / final 0.2354.
 
 | family | model | kind | AO orch | AO error | AO final | %opus orch | WFB-ID | WFB-OOD | Seal-in | Seal-out | Seal-in64 | Seal-out64 | Seal-out64 relaxed |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|

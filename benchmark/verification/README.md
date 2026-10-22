@@ -30,13 +30,9 @@ external benchmark-owned resources as declared in
 `backends/real/CONNECTOR_CAPABILITIES.md`. Its existing ownership, seeding,
 verification, and cleanup guards remain active.
 
-Credentials, private keys, `.env`, mutable outputs, caches, and source test
-suites are excluded from the vendored tree. `backends/manifest.json` binds
-every copied runtime and private fixture file to its source path and SHA-256.
+## Runtime layout
 
-## Vendored-copy provenance
-
-The community release contains a fixed, manifest-bound snapshot of the shared,
-simulated, and real runtimes. The internal repository synchronization utility
-is not shipped because it depends on source trees outside this release. Use
-`backends/manifest.json` to audit every included runtime and fixture file.
+The shared recipe executor, simulated connectors, and optional live
+connectors are included under `backends/`. Their source layout is recorded
+in `backends/manifest.json`. Dataset and reference fixtures are downloaded
+with `python scripts/download_data.py --only benchmark`.

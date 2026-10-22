@@ -170,9 +170,9 @@ python scripts/download_data.py --only benchmark          # evaluation fixtures
 python scripts/download_data.py --only training --prepared # training + prepared SFT / RL sets
 ```
 
-Source archives total approximately 250 MB compressed. The downloader pins
-Hub revisions and verifies each source archive's SHA-256 before extraction;
-revision IDs and checksums are in [scripts/data_release.json](scripts/data_release.json).
+Source archives total approximately 250 MB compressed. The downloader places
+files in the paths expected by the evaluator. Dataset specifications are in
+[scripts/data_release.json](scripts/data_release.json).
 
 **For direct access to the model-visible prompts**, use Hugging Face Datasets:
 
@@ -187,7 +187,6 @@ prompts = load_dataset(
     "JesseLiu/agentorch-benchmark",
     "global",
     split="train",
-    revision="a0328e666e7039f118b7799dffb85d6f4700a9f1",
 )
 print(prompts[0]["task"])
 ```

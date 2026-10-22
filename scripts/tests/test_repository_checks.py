@@ -33,10 +33,10 @@ def test_table_check_reports_stale_tables_without_rewriting(tmp_path, monkeypatc
 
 
 def test_smoke_preserves_existing_outputs_and_caches(tmp_path, monkeypatch):
-    checker = load_script("release_check")
+    checker = load_script("check_repository")
     monkeypatch.setattr(checker, "BENCH", tmp_path)
     existing = [tmp_path / "outputs/connector-runtime/run.json",
-                tmp_path / "outputs/release-check-smoke/run.json",
+                tmp_path / "outputs/existing-smoke/run.json",
                 tmp_path / "__pycache__/keep.pyc"]
     for path in existing:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -46,7 +46,7 @@ def test_smoke_preserves_existing_outputs_and_caches(tmp_path, monkeypatch):
         if "verification.connector_runner" in command:
             output = Path(command[command.index("--output-dir") + 1])
             assert output.is_relative_to(tmp_path / "outputs")
-            assert output.parent.name.startswith("release-check-")
+            assert output.parent.name.startswith("benchmark-check-")
         return SimpleNamespace(returncode=0, stdout='{"n": 1, "verifier_ok": true}', stderr="")
 
     monkeypatch.setattr(checker.subprocess, "run", run)
@@ -54,4 +54,4 @@ def test_smoke_preserves_existing_outputs_and_caches(tmp_path, monkeypatch):
     assert not checker.FAILS
     assert all(path.read_bytes() == b"keep" for path in existing)
     assert sorted(p.name for p in (tmp_path / "outputs").iterdir()) == [
-        "connector-runtime", "release-check-smoke"]
+        "connector-runtime", "existing-smoke"]

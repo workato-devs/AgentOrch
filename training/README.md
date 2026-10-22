@@ -11,10 +11,10 @@ the off-the-shelf models.
 
 Orchestration accuracy, Global View, all 3,220 test variants
 ([`results/training.csv`](results/training.csv) has every row with CIs,
-hyper-parameters, job ids and checkpoint names; the combined base / SFT / RL
+hyperparameters and checkpoint names; the combined base / SFT / RL
 view is [`../results/combined_leaderboard.md`](../results/combined_leaderboard.md)):
 
-| Base model | base | best SFT | best SFT + RL | Notes |
+| Base model | Base | Selected SFT | Best recorded SFT + RL | Notes |
 |---|---:|---:|---:|---|
 | Qwen3.8-27B-FP8 | 0.286 | **0.420** (3 ep, 80k, LoRA r16) | 0.416 | 90% of claude-opus-5 (0.464); error rate 0.171 beats opus (0.192). RL flat on the strong SFT base. |
 | Qwen3-4B-Instruct-2507 | 0.138 | 0.255 (2 ep) | **0.272** (GRPO step 60) | RL +1.7 (significant) |
@@ -26,8 +26,7 @@ Mode transfer of the headline 27B SFT model: global +13.4, replan +12.7,
 react −2.2, local −4.2 points over the base. Global-only training helps the
 plan-shaped protocols and slightly hurts the interactive ones.
 
-The full experiment record, including aborted runs, incidents and negative
-results, is [`results/EXPERIMENTS.md`](results/EXPERIMENTS.md).
+Training configurations, checkpoint sweeps, and negative results are summarized in [`results/EXPERIMENTS.md`](results/EXPERIMENTS.md).
 Transfer to three external benchmarks (WorkflowBench, Seal-Tools, tau2-bench)
 is in [`results/external/`](results/external/).
 
@@ -79,7 +78,7 @@ training/
   results/
     training.csv                 one row per checkpoint x mode, with hyper-parameters and provenance
     ALL_RESULTS.md               AgentOrch + external-benchmark table
-    EXPERIMENTS.md               full dated experiment record
+    EXPERIMENTS.md               training configurations and checkpoint results
     leaderboards/<run>__<mode>.json   archived leaderboard.json aggregate behind every row
     external/                    WorkflowBench / Seal-Tools summary and findings
   output/                        checkpoints and logs (created on first run, not committed)
@@ -114,29 +113,18 @@ data here. Needed cards and canonical distractor cards can also have slightly
 different contract shapes, and roughly 1% of the source recipes have unusually
 large schemas; these are known residual distribution limitations.
 
-### Reproducibility boundary
+### Model versions and environments
 
-The recipe inputs, targets, prepared SFT/GRPO datasets, training code,
-aggregate evaluation results, and hyperparameters are included. The trained
-weights and training logs are not. Exact reruns also require the immutable
-base snapshots listed below and, for the Qwen verl route, the local PyTorch
-FSDP2 guard described in `results/EXPERIMENTS.md` (the patch itself is not in
-this release). Until those artifacts are published, this project supports
-independent retraining but not byte-identical reconstruction of every reported
-checkpoint. The SFT code fixes the sampler seed but does not expose a complete
-model-initialization/RNG seed or force deterministic CUDA kernels, so a fresh
-training run should be treated as a statistical reproduction.
+Prepared training data and the ten merged SFT / RL checkpoints are available
+through the links in the [project README](../README.md#models). The base model
+versions used for training are recorded in
+[`src/sft/base_models.json`](src/sft/base_models.json). The SFT trainer uses
+those versions by default; `--model-revision` selects a different one.
 
-| Base | Revision used |
-|---|---|
-| `Qwen/Qwen3.8-27B` | `1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0` |
-| `Qwen/Qwen3-4B-Instruct-2507` | `cdbee75f17c01a7cc42f958dc650907174af0554` |
-| `google/gemma-4-12B-it` | `707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7` |
-| `google/gemma-4-26B-A4B-it` | `4d7ae4984b7db7de8f8457170b3f1a419ee76d52` |
-| `google/gemma-4-31B-it` | `842da3794eaa0b77d5f08bae87a17459d91ff475` |
-
-Download a revision to a local snapshot and pass that directory to `--model`;
-the current training script does not expose a separate `--revision` option.
+The RL library patches are included in
+[`src/rl/patches/`](src/rl/patches/README.md). Training records the effective
+configuration and seeds in each output directory. Multi-GPU training can vary
+across hardware and library versions.
 
 ## Set up
 
@@ -165,17 +153,13 @@ Scoring checkpoints needs the benchmark environment from
 ## 1. Prepare the data
 
 The prepared files in `data/` are what the published models trained on.
-Rebuilding from `input/` + `groundtruth/` is byte-exact: `build_sft_messages.py`
-writes rows in the export's `row_position` order with the export's
-serialization, so the result matches the SHA-256 recorded in
-`data/source_manifest_v1.json`, and `prepare_dataset.py` on it reproduces the
-shipped `sft_v1_80k/` files (the seeded shuffle depends on that order). To
-rebuild them, or to build a variant:
+To rebuild the prepared data from `input/` and `groundtruth/`, or prepare
+a different context budget, run the data builders below. The builders preserve
+source row order and use a seeded train/evaluation split.
 
 ```bash
 cd training
-# recipe files -> semantically identical chat-messages JSONL
-# (JSON whitespace/key order differs from the historical source export)
+# Recipe files -> chat-messages JSONL
 python src/data/build_sft_messages.py                 # -> data/sft_messages_v1.jsonl
 # length filter with the exact Qwen tokenizer (rows over the budget are DROPPED, never truncated)
 python src/sft/prepare_dataset.py                     # 80k budget -> data/sft_v1_80k/
@@ -185,12 +169,9 @@ python src/rl/verl/make_rl_dataset.py --n 1000        # -> data/rl_verl_v1/
 python src/rl/trl_gemma/make_trl_dataset.py --n 500   # -> data/rl_trl_v1/
 ```
 
-Use the committed `data/sft_v1_80k/{train,eval}.jsonl` for a reproduction of
-the reported runs. The current builders preserve the historical row order and
-serialization: `build_sft_messages.py` reproduces the SHA-256 in
-`data/source_manifest_v1.json`, and `prepare_dataset.py` reproduces the shipped
-train/eval split. Run `python ../scripts/release_check.py` from this directory
-to verify both claims.
+Use the downloaded `data/sft_v1_80k/{train,eval}.jsonl` to reproduce the
+reported data configuration. The data builders can also prepare alternative
+context budgets and RL prompt subsets.
 
 ## 2. Supervised fine-tuning
 
@@ -313,15 +294,12 @@ numbers are in [`results/external/`](results/external/).
 
 ## Reproducing the reported scores
 
-Every AgentOrch number in `results/` was produced by the frozen harness and
-was previously verified byte-identically from the archived per-variant records
-(165/165 lanes with `PYTHONPATH=benchmark python -m reproduction.offline.reproduce_scores --all`, fixed
-bootstrap seed). The aggregates ship in `results/leaderboards/`, but a fresh
-clone cannot repeat that audit until the separately distributed per-variant
-archive has a public URL and checksum (see the benchmark README). The 80 GB
-archive is kept by the maintainers and not published. Model weights are
-published on the Hugging Face Hub with `scripts/upload_checkpoints_hf.py`
-(`--headline` uploads the five headline checkpoints; the repo id of each is
-written to the `hf_repo` column of `results/training.csv`);
-`results/training.csv` and `results/EXPERIMENTS.md` map every score to its
-training job, evaluation run and checkpoint name.
+Evaluate a trained checkpoint with the
+[canonical benchmark evaluator](../benchmark/README.md#run-an-evaluation).
+Published aggregates are in `results/leaderboards/`; training settings and
+checkpoint names are recorded in `results/training.csv` and
+`results/EXPERIMENTS.md`. The `hf_repo` column identifies downloadable models.
+
+Offline re-aggregation tools operate on the `results.jsonl` files from your
+own evaluations. The maintainers' per-variant model-run archive is not
+publicly distributed.

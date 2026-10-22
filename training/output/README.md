@@ -11,7 +11,7 @@ output/rl_checkpoints/verl/<run>/  verl GRPO checkpoints (global_step_N/actor)
 output/rl_checkpoints/trl/<run>/   TRL GRPO checkpoints (checkpoint-N)
 ```
 
-Model weights are not part of this release. Every published checkpoint is
-identified in `results/training.csv` (`checkpoint` column) and
-`results/EXPERIMENTS.md`, together with the training job, evaluation run and
-the archived `leaderboard.json` in `results/leaderboards/`.
+Run outputs are kept locally. Downloadable checkpoints are linked in the
+[project README](../../README.md#models) and the `hf_repo` column of
+`results/training.csv`. The experiment summary and archived aggregates are in
+`results/EXPERIMENTS.md` and `results/leaderboards/`.

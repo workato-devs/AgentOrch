@@ -1,9 +1,9 @@
 # External generalization: what the numbers say
 
 28 models (5 untrained bases + 13 SFT + 10 RL) x 6 splits = 168 cells, all
-complete, zero failed jobs. Greedy decoding, each model's own chat template,
-the benchmarks' own scorers. Raw generations in `runs/`, tables in
-`summary.{csv,md}`, protocol and caveats in `../harness/README.md`.
+complete. Greedy decoding, each model's own chat template,
+the benchmarks' own scorers. Result tables are in `summary.{csv,md}`; the protocol is in
+[`the external-evaluation guide`](../../src/external_eval/harness/README.md).
 
 ## The one-line version
 
@@ -11,7 +11,7 @@ Training on AgentOrch does not destroy general tool-calling ability. It does
 cost a small, consistent amount of reference-similarity on foreign code
 generation, and it progressively locks the model into our output schema. Most
 of the alarming raw numbers are the schema lock-in, not lost capability, and
-must not be reported as capability loss.
+should be interpreted separately from API-selection accuracy.
 
 ## 1. Seal-Tools: the drop is mostly format, not capability
 
@@ -39,8 +39,8 @@ Retriever-64 out-domain, upstream parser vs a parser that does not require
 gemma-31B is the headline: taken at face value it "loses" 0.9785 -> 0.0915,
 a 91% rejection rate. Its actual selection ability is 0.9785 -> 0.9800.
 
-**Reporting rule: never quote the upstream Seal-Tools delta without the
-relaxed one beside it.**
+The upstream and relaxed scores measure different output-format constraints
+and are reported separately.
 
 ### Format lock-in grows with SFT epochs
 

@@ -126,6 +126,8 @@ def community_repo(tmp_path_factory):
             dest = repo / rel
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / rel, dest)
+        elif (repo / rel).is_file():
+            (repo / rel).unlink()
     return repo
 
 

@@ -1,64 +1,58 @@
 # AgentOrch data card
 
-## Summary
+## Dataset
 
-AgentOrch contains a 650-recipe test split with 3,220 runtime variants and a
-disjoint 3,000-recipe training split. The release includes model-visible
-prompts, evaluator-only symbolic plans and state, a deterministic connector
-simulator, prepared training data, and aggregate model results.
+AgentOrch contains 650 benchmark SOPs with 3,220 runtime variants and a
+separate 3,000-recipe training set. The datasets provide model-visible task
+specifications, reference workflows and executions, simulator state, and
+prepared SFT / GRPO examples.
 
-The corpus was derived from workflow recipe JSON. Task descriptions and input
-variants were produced through automated generation and validation pipelines;
-critic acceptance is not equivalent to human review.
+The corpus is derived from sanitized enterprise workflow recipes. Task
+descriptions and runtime variants were produced through generation and
+validation pipelines. Automated critic acceptance does not itself establish
+human review.
 
 ## Intended use
 
-The data supports research on tool-using agents, workflow planning,
-orchestration protocols, deterministic replay, and fine-tuning for symbolic
-plans. The simulated backend is the intended reproducible evaluation surface.
+The data supports research on workflow planning, tool use, orchestration,
+execution-based evaluation, and training on complete symbolic workflows.
+Reported model results use the deterministic simulated backend.
 
-This dataset is not evidence that a model can safely execute arbitrary
-workflows in production. It must not be used to authorize unsupervised access
-to real business systems or consequential decisions.
+## Splits and information boundaries
 
-## Splits and leakage
+Training and benchmark recipe IDs do not overlap. The tool ecosystem is
+shared across splits; recipe separation does not imply unseen tools or
+absence of structurally similar workflows.
 
-The release checker verifies 650 test recipes, 3,000 training recipes, and zero
-recipe-ID overlap. Ground truth is shipped locally so results are auditable;
-this makes the repository unsuitable as a secret or hosted blind test set.
-Evaluated models must not receive files under `groundtruth/` or
-`benchmark/verification/` in their context.
+Ground truth is available to the local evaluator. Model prompts use public
+task specifications and permitted runtime observations, while reference plans,
+expected outcomes, and private simulator state remain evaluator inputs. This
+is an open local benchmark rather than a hosted blind test.
 
-## Sensitive operations and privacy
+## Runtime data
 
-Recipes can represent reads, writes, notifications, and deletions. The
-simulator performs those operations only against deterministic local state.
-The real backend is optional and requires an independently reviewed,
-least-privilege sandbox.
+Examples use synthetic identifiers consistently across task inputs, simulator
+seeds, and expected outputs. The simulator executes reads, writes,
+notifications, and deletions against local state. The optional live connector
+backend requires separate service configuration and credentials.
 
-A known personal identity found during release review was replaced with a
-synthetic `corp.example` persona across public prompts, seeds, reference
-outputs, verifier fixtures, and runtime constants. This mechanical
-anonymization preserves equality relationships used by the tasks. Automated
-checks reduce risk but do not replace the maintainers' final privacy and
-source-rights review.
+## Reproduction
 
-## Reproducibility and limitations
+[Benchmark data](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark),
+[training data](https://huggingface.co/datasets/JesseLiu/agentorch-training),
+and the model checkpoints linked in [README.md](README.md#models) are available
+on Hugging Face. Dataset manifests describe membership and prepared-data
+lineage. The repository includes the evaluator and published aggregate scores;
+the maintainers' per-variant model-run archive is not distributed.
 
-Manifests and `SHA256SUMS` bind the released files. Aggregate result JSON is
-included, while the roughly 80 GB row-level output archive and model
-checkpoints are distributed separately or remain pending upload. API models,
-gated checkpoints, GPU kernels, and provider changes can prevent exact reruns.
-Multi-GPU bf16 training is not expected to be bit-for-bit identical across
-hardware.
+Exact model reruns can vary with provider versions, GPU kernels, and
+hardware. The benchmark characterizes the included workflows and connector
+interfaces; it does not establish general production readiness.
 
-The benchmark emphasizes workflows expressible by the included connector and
-recipe distributions. Results should not be generalized to arbitrary tools,
-organizations, languages, or production safety.
+## Interpretation
 
-## Licensing
-
-No project or dataset license has been selected for this snapshot. Confirm
-rights to the underlying recipe material and add a top-level `LICENSE` before
-public distribution. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-for material with a separately identified license.
+See [evaluation notes](benchmark/doc/evaluation_notes.md) for exact-order
+scoring, protocol differences, checkpoint selection, and reference-control
+limitations. Dataset and model cards provide artifact-specific license
+metadata; included third-party notices are in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

@@ -11,8 +11,6 @@ fixtures.
 | `critic/` | per-recipe semantic constraints used by the evaluator |
 | `scoring_contract_registry.json` | registry that selects the scoring contract for each recipe |
 
-There is one support bundle per benchmark recipe. These files are hidden from
-the model prompt but intentionally available to the local evaluator. Removing
-them does not make the benchmark “cleaner”; it makes canonical evaluation
-incomplete or changes the metric contract.
-
+There is one support bundle per benchmark recipe. The local evaluator uses
+these files for reference execution and scoring; they are not included in
+the model prompt.

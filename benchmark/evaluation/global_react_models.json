@@ -18,7 +18,7 @@
     "react_turn_cap_api_models": 4096,
     "react_turn_hard_cap_local_models": 8192,
     "react_turn_soft_cap_local_models": 1024,
-    "note": "The one-shot Global plan is capped at 4,096 visible tokens for every model. ReAct emits one JSON action per turn with early stopping, so the per-turn caps act as truncation guards rather than a compute budget; the local-model hard ceiling (8,192) differs from the API per-request cap (4,096). Report the executed settings, not a single uniform budget."
+    "note": "Global plans use a 4,096-token cap. ReAct uses complete-JSON stopping, with 8,192 hard / 1,024 soft limits for local checkpoints and a 4,096-token request cap for API models."
   },
   "tiers": {
     "small": "parameters <= 4B",
@@ -70,8 +70,7 @@
       "tier": "small",
       "revision": "bbc2aed595bd38bd770263dc3ab831db9794441d",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25851, react job 25852 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "meta-llama/Llama-3.2-3B-Instruct",
@@ -87,8 +86,7 @@
       "tier": "small",
       "revision": "aa8e72537993ba99e69dfaafa59ed015b17504d1",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25853, react job 25854 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "microsoft/Phi-3.5-mini-instruct",
@@ -96,8 +94,7 @@
       "tier": "small",
       "revision": "2fe192450127e6a83f7441aef6e3ca586c338b77",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25855, react job 25856 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "Qwen/Qwen3-4B-Instruct-2507",
@@ -105,8 +102,7 @@
       "tier": "small",
       "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25857, react job 25858 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "google/gemma-3-4b-it",
@@ -115,8 +111,7 @@
       "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
       "status": "running",
       "run": "local-scale-ext-20260816",
-      "gated": true,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25859, react job 25860 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "gated": true
     },
     {
       "model": "Qwen/Qwen2.5-7B-Instruct",
@@ -134,7 +129,7 @@
       "status": "blocked",
       "run": "local-scale-ext-20260816",
       "trust_remote_code": true,
-      "status_note": "blocked: vLLM removed the Phi3SmallForCausalLM architecture after v0.9.2; job 25834 failed at model load (2026-08-15)"
+      "status_note": "blocked: vLLM removed the Phi3SmallForCausalLM architecture after v0.9.2"
     },
     {
       "model": "meta-llama/Llama-3.1-8B-Instruct",
@@ -150,8 +145,7 @@
       "tier": "medium",
       "revision": "4009206d5fc95d2e65a7b7633e159d6e97e25d35",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25861, react job 25862 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "zai-org/glm-4-9b-chat",
@@ -160,8 +154,7 @@
       "revision": "bd8234fe5e0c09c48637a92abb0c797cb5fa0e73",
       "status": "running",
       "run": "local-scale-ext-20260816",
-      "trust_remote_code": true,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25863, react job 25864 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "trust_remote_code": true
     },
     {
       "model": "google/gemma-3-12b-it",
@@ -170,8 +163,7 @@
       "revision": "96b6f1eccf38110c56df3a15bffe176da04bfd80",
       "status": "running",
       "run": "local-scale-ext-20260816",
-      "gated": true,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25865, react job 25866 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "gated": true
     },
     {
       "model": "mistralai/Mistral-Nemo-Instruct-2407",
@@ -179,8 +171,7 @@
       "tier": "medium",
       "revision": "04d8a90549d23fc6bd7f642064003592df51e9b3",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25867, react job 25868 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "Qwen/Qwen2.5-14B-Instruct",
@@ -197,7 +188,7 @@
       "revision": "a088b37c71d441ab6d862bb3fcfe6165b3014702",
       "status": "blocked",
       "run": "local-scale-ext-20260816",
-      "status_note": "blocked: checkpoint's longrope rope_parameters lack original_max_position_embeddings under the current vLLM/transformers parser; job 25838 failed at model load (2026-08-15)"
+      "status_note": "blocked: checkpoint's longrope rope_parameters lack original_max_position_embeddings under the current vLLM/transformers parser"
     },
     {
       "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
@@ -205,8 +196,7 @@
       "tier": "large",
       "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25869, react job 25870 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "google/gemma-3-27b-it",
@@ -215,8 +205,7 @@
       "revision": "005ad3404e59d6023443cb575daa05336842228a",
       "status": "running",
       "run": "local-scale-ext-20260816",
-      "gated": true,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25871, react job 25872 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "gated": true
     },
     {
       "model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
@@ -224,8 +213,7 @@
       "tier": "large",
       "revision": "0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe",
       "status": "running",
-      "run": "local-scale-ext-20260816",
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25873, react job 25874 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "run": "local-scale-ext-20260816"
     },
     {
       "model": "Qwen/Qwen2.5-32B-Instruct",
@@ -242,8 +230,7 @@
       "revision": "dc835b893cd3fb8f14b24970dbc2a0a6d3c22ee3",
       "status": "running",
       "run": "local-scale-ext-20260816",
-      "gated": true,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25875, react job 25876 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "gated": true
     },
     {
       "model": "meta-llama/Llama-3.1-70B-Instruct",
@@ -253,8 +240,7 @@
       "status": "running",
       "run": "local-scale-ext-20260816",
       "gated": true,
-      "tensor_parallel": 2,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25877, react job 25878 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "tensor_parallel": 2
     },
     {
       "model": "meta-llama/Llama-3.3-70B-Instruct",
@@ -264,8 +250,7 @@
       "status": "queued",
       "run": "local-scale-ext-20260816",
       "gated": true,
-      "tensor_parallel": 2,
-      "status_note": "weights complete (30 shards); eval job 25940 (2xH200) queued on the cluster"
+      "tensor_parallel": 2
     },
     {
       "model": "Qwen/Qwen2.5-72B-Instruct",
@@ -274,8 +259,7 @@
       "revision": "495f39366efef23836d0cfae4fbe635880d2be31",
       "status": "running",
       "run": "local-scale-ext-20260816",
-      "tensor_parallel": 2,
-      "status_note": "mode-split launch 2026-08-15 into local-scale-ext-20260816: plan_execute job 25879, react job 25880 (independent state namespaces); long react lanes hold the 8-GPU stable quota, everything else rides the preemptible borrow QOS"
+      "tensor_parallel": 2
     },
     {
       "model": "zai-org/GLM-4.5-Air-FP8",
@@ -285,8 +269,7 @@
       "revision": "f9a9c5acf5e543cd24d659a056c5dbcda78ffcfc",
       "quantization": "fp8 (vendor release)",
       "status": "running",
-      "run": "frontier-ext-20260816",
-      "status_note": "frontier lane 0; eval job 25911 (2xH200)"
+      "run": "frontier-ext-20260816"
     },
     {
       "model": "zai-org/GLM-4.5-FP8",
@@ -296,8 +279,7 @@
       "revision": "8cc290ee4c7cbfa38d3a2db9bd0b7371773ece81",
       "quantization": "fp8 (vendor release)",
       "status": "running",
-      "run": "frontier-ext-20260816",
-      "status_note": "frontier lane 1; eval job submitted after 337GB download (4xH200 TP=4)"
+      "run": "frontier-ext-20260816"
     },
     {
       "model": "zai-org/GLM-5.2-FP8",
@@ -306,7 +288,6 @@
       "revision": "ba978f7d347eaf65d22f1a86833408afdb953541",
       "status": "queued",
       "run": "frontier-ext-20260816",
-      "status_note": "frontier wave 2 (2026-08-16): eval job 25920 (8xH200 TP=8) weights downloaded; queued for GPUs",
       "active_parameters_billions": 32.0,
       "quantization": "fp8 (vendor release)"
     },
@@ -316,8 +297,7 @@
       "tier": "large",
       "revision": "7872f01b1d1fe23eabc4c98b48bffcef5a386062",
       "status": "queued",
-      "run": "frontier-ext-20260816",
-      "status_note": "frontier wave 2 (2026-08-16): eval job 25921 (2xH200 TP=2) weights downloaded; queued for GPUs"
+      "run": "frontier-ext-20260816"
     },
     {
       "model": "Qwen/Qwen3.8-27B-FP8",
@@ -326,7 +306,6 @@
       "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
       "status": "running",
       "run": "frontier-ext-20260816",
-      "status_note": "frontier wave 2 (2026-08-16): eval job 25922 (1xH200) weights downloaded; queued for GPUs",
       "quantization": "fp8 (vendor release)"
     },
     {
@@ -335,8 +314,7 @@
       "tier": "large",
       "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475",
       "status": "queued",
-      "run": "frontier-ext-20260816",
-      "status_note": "frontier wave 2 (2026-08-16): eval job 25923 (2xH200 TP=2) weights downloaded; queued for GPUs"
+      "run": "frontier-ext-20260816"
     },
     {
       "model": "google/gemma-4-12B-it",
@@ -344,8 +322,7 @@
       "tier": "medium",
       "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
       "status": "queued",
-      "run": "frontier-ext-20260816",
-      "status_note": "frontier wave 2 (2026-08-16): eval job 25924 (1xH200) weights downloaded; queued for GPUs"
+      "run": "frontier-ext-20260816"
     },
     {
       "model": "google/gemma-4-26B-A4B-it",
@@ -354,7 +331,6 @@
       "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
       "status": "queued",
       "run": "frontier-ext-20260816",
-      "status_note": "frontier wave 2 (2026-08-16): eval job 25925 (2xH200 TP=2) weights downloaded; queued for GPUs",
       "active_parameters_billions": 4.0
     }
   ],
@@ -364,8 +340,7 @@
       "provider": "azure_openai",
       "role": "strong_gpt",
       "tier": "large",
-      "status": "react_running",
-      "status_note": "plan_execute complete in the canonical run; react resumed under Slurm job 25820 and is folded into the canonical run by the finalize job (25830) when it completes"
+      "status": "react_running"
     },
     {
       "model": "gpt-35-turbo",
@@ -373,8 +348,7 @@
       "role": "weaker_gpt",
       "service_reported_backend": "gpt-4.1-mini",
       "tier": "large",
-      "status": "react_running",
-      "status_note": "plan_execute complete in the canonical run; react resumed under Slurm job 25820 and is folded into the canonical run by the finalize job (25830) when it completes"
+      "status": "react_running"
     },
     {
       "model": "claude-opus-5",
@@ -470,7 +444,7 @@
           "thinking": "system-prompt 'Reasoning strength: high'",
           "status": "completed",
           "runtime": "isolated muse env, native transformers 5.15 engine (AutoModelForImageTextToText; architecture absent from all vLLM registries through 0.27.1 and vLLM's transformers wrapper emits garbage) \u2014 declared newer-stack deviation",
-          "status_note": "revived 2026-08-19 after five harness fixes (engine-override clobber, composite-config context window, balanced-JSON early stop vs harmony channels, raw_decode last-JSON extractor, unclosed-wrapper preservation; see doc/change.md). Preflight muse-preflight7: 4/5 plans valid, react ok. Full run mode-split: jobs 26034 (Global) / 26035 (ReAct).",
+          "status_note": "Composite-model configuration and inline reasoning require the recorded tokenizer and generation settings.",
           "config": "",
           "headline": {
             "global": {
@@ -503,14 +477,14 @@
               "side_effect_accuracy": 0.7208
             }
           },
-          "status_note": "global from lane 3 of run_thinking_local; react merged from three user-submitted shards (26057-26059), 3220 unique rows, zero overlap"
+          "status_note": "ReAct results consolidate 3,220 unique variants across non-overlapping shards."
         },
         {
           "model": "zai-org/GLM-4.5-Air-FP8",
           "thinking": "enable_thinking template switch",
           "status": "completed",
           "runtime": "muse env (vLLM 0.27.1) \u2014 GLM-4.5-Air + enable_thinking returns empty completions on the benchmark-standard vLLM 0.24.0; declared newer-stack deviation, plans regenerated fresh on 0.27.1",
-          "status_note": "cancelled 2026-08-21 lane superseded: revived on vLLM 0.27.1. Global consolidated from four completed shard runs (26163-26166, 2669 rows) plus offline frozen-plan rescore of the 109 canonical-cached recipes (551 rows) via reproduction/offline/rescore_frozen_plans.py; shard-vs-offline overlap parity 2669/2669 identical verdicts. React healed over two passes; 120 residual empty-text rows are genuine model behavior, kept as llm_error.",
+          "status_note": "The consolidated evaluation uses vLLM 0.27.1 and offline rescoring of cached plans.",
           "headline": {
             "global": {
               "orchestration_accuracy": 0.1072,
@@ -664,7 +638,7 @@
           "replan_final": 0.0345
         }
       },
-      "finding": "no ladder point exceeds noise (+0.004 max); Qwen3.8-27B (+0.0083) remains the only positive outlier. GLM-4.5-Air headline (0.0839) is an engine artifact (274 review-turn empty completions on vLLM 0.24); conditional same-subset delta +0.0018 \u2014 see change.md 2026-08-24."
+      "finding": "no ladder point exceeds noise (+0.004 max); Qwen3.8-27B (+0.0083) remains the only positive outlier. GLM-4.5-Air headline (0.0839) is an engine artifact (274 review-turn empty completions on vLLM 0.24); conditional same-subset delta +0.0018 \u2014 see doc/evaluation_notes.md."
     },
     "local-view-20260824": {
       "purpose": "Local View (incremental workflow construction) ablation: the model builds one WorkflowPlan through the append-only plan editor \u2014 one editor-operation JSON per turn, immutable accepted prefix, planning only \u2014 and the frozen plan is executed on every hidden variant exactly like Global View. Roster = every model configuration that ran replan, so the four settings (global/local/react/replan) share one model set. Measures incremental plan construction as an orthogonal capability axis; results.csv mode 'local' and tier layout <tier>/<model>/local.",
@@ -776,7 +750,7 @@
         "GLM-4.5-Air-110B-MoE": {
           "replan": 0.0839,
           "global": 0.1228,
-          "caveat": "EXCLUDED from the ladder: 270 review-turn rows die as llm_error via the untagged-inline-reasoning x balanced-JSON-early-stop interaction (see change.md 2026-08-24); not a repair-ability signal"
+          "caveat": "EXCLUDED from the ladder: 270 review-turn rows die as llm_error via the untagged-inline-reasoning x balanced-JSON-early-stop interaction (see doc/evaluation_notes.md); not a repair-ability signal"
         }
       },
       "conclusion": "mid-course repair does not emerge with scale in the open-weight lineup: deltas are within +/-0.004 from 24B to 72B; Qwen3.8-27B (+0.008) remains the only positive case, attributable to its newer training recipe rather than parameter count"

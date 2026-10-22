@@ -6,12 +6,8 @@ vendored module the canonical ``evaluation.full_eval`` pipeline scores with
 — applied to the ground-truth files' exported canonical gold
 (``outcome_gold_calls``, the projected ``final_snapshot``, and
 ``structural_return``). Row-level parity with the stored canonical verdicts
-is verified by ``reproduction/offline/verify_calacc_parity.py`` against a frozen
-artifact manifest: zero disagreements on side-effect, normalized-terminal,
-and final across every archived canonical row (see the dated parity-audit
-entry in ``doc/change.md`` for the frozen row count; two ReAct lanes were
-still appending artifacts at audit time, so the archive itself is not a
-stable number).
+can be checked with ``reproduction/offline/verify_calacc_parity.py`` on
+canonical result files from an existing run.
 
 Execution-trace components are computed from the published per-variant
 ``tool_expectations`` and remain a documented simplification of the

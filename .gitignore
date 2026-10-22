@@ -45,7 +45,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .ipynb_checkpoints/
-.venv/
+.venv*/
 coverage.xml
 htmlcov/
 .coverage

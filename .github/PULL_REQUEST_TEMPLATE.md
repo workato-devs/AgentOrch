@@ -5,8 +5,7 @@ Describe the user-visible problem and the proposed change.
 ## Validation
 
 - [ ] I ran the relevant tests.
-- [ ] I ran `python scripts/release_check.py --smoke --allow-incomplete-metadata` when the release bundle changed.
-- [ ] I regenerated `SHA256SUMS` when files changed.
+- [ ] I ran `python scripts/check_repository.py --smoke` when evaluation or training behavior changed.
 
 ## Benchmark and data impact
 

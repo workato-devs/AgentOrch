@@ -621,8 +621,7 @@ test server.
   public variant, and `PUBLIC_PACKAGE.json` (schema
   `agentorch-public-planning-package`). `input/manifest.json` (schema
   `agentorch-public-input`) lists the 650 recipes and 3,220 variant ids;
-  `MANIFEST.sha256` pins the manifest file itself. It is not a checksum list
-  for every prompt file, so a full-tree release checksum is still needed.
+  The manifest records the recipe and variant membership used for evaluation.
 - **Ground truth** (`groundtruth/`): per variant, the frozen reference
   `WorkflowPlan`, the concrete active trace, exact final state, hidden variant
   state, compatibility reference calls and terminal-output contract (schema
@@ -659,7 +658,7 @@ use `simulated`.
 | [`doc/exp.md`](doc/exp.md) | experimental protocol in paper-ready form |
 | [`doc/case.md`](doc/case.md) | one complete instance, Global View versus ReAct |
 | [`doc/global_input.md`](doc/global_input.md) | the Global+Input ablation protocol |
-| [`doc/change.md`](doc/change.md) | dated change log and provenance of every canonical run |
-| [`doc/coauthor_qa_20260906.md`](doc/coauthor_qa_20260906.md) | answers to reviewer-style questions about the scorer |
+| [`doc/change.md`](doc/change.md) | plan normalization, caching, and evaluation contract |
+| [`doc/evaluation_notes.md`](doc/evaluation_notes.md) | scoring interpretation and evaluation limitations |
 | [`results/uncertainty.md`](results/uncertainty.md) | decoding-temperature sweep |
 | [`evaluation/global_react_models.json`](evaluation/global_react_models.json) | model roster, revisions, caps, run names |

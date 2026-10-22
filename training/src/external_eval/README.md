@@ -49,7 +49,7 @@ workflowllm/
 ```
 
 **Adaptation needed.** Targets are **Python-like code**, not our JSON
-`WorkflowPlan`. Two honest options:
+`WorkflowPlan`. Two integration options:
 
 1. Evaluate zero-shot in their native format — measures whether orchestration
    ability survives a format shift. Cheap, do this first.

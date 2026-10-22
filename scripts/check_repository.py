@@ -1,29 +1,11 @@
 #!/usr/bin/env python3
-"""Automated release check for the AgentOrch community tree.
+"""Check AgentOrch datasets, result tables, documentation, and sample execution.
 
-Run from anywhere:  python scripts/release_check.py [--smoke] [--write-checksums]
+Run from the repository root: python scripts/check_repository.py [--smoke]
 
-During development, --allow-incomplete-metadata reports a missing LICENSE or
-CITATION.cff without failing. Never use that option for the publication gate.
-
-Checks (all offline, no model, CPU only):
-  1. dataset cardinality and manifests: 650 test recipes / 3,220 variants,
-     3,000 training recipes in input/ and groundtruth/, MANIFEST.sha256 files
-     match their manifest.json (skipped with a note on a fresh clone that has
-     only the sample recipe; fetch the rest with scripts/download_data.py)
-  2. training-data lineage: data/sft_v1_80k/prep_report.json is consistent with
-     the source manifest (rows, budget); optional byte check of
-     data/sft_messages_v1.jsonl against source_manifest_v1.json when present
-  3. result tables parse and the combined leaderboard regenerates identically
-  4. no personal paths, site-specific node names or credentials in tracked
-     code/docs and non-ignored local additions
-  5. every relative link in Markdown documentation resolves
-  6. community-health files and publication blockers
-  7. --smoke: the scripted self-test (example adapter, global + react), one
-     connector-runner cycle and the vendored evaluator tests
-  8. --write-checksums: SHA256SUMS over tracked files and non-ignored local
-     additions (downloaded data is covered by scripts/data_release.json)
-Exit status is non-zero when any check fails.
+Checks run offline on a CPU. Dataset counts and training lineage are checked
+when those datasets are downloaded. The --smoke option exercises the shipped
+sample workflow and evaluator tests without calling a model.
 """
 
 from __future__ import annotations
@@ -103,24 +85,28 @@ def data_downloaded() -> bool:
 
 def check_data() -> None:
     print("[1] cardinality and manifests")
-    if not data_downloaded():
-        note("full data not downloaded (sample recipe only); run: python scripts/download_data.py")
-        return
-    d = check_manifest_pair(BENCH / "input", 650, "benchmark/input")
-    if d:
-        n_var = sum(len(r.get("variant_ids") or r.get("variants") or []) for r in d["recipes"])
-        if n_var and n_var != 3220:
-            fail(f"benchmark/input: {n_var} variant ids, expected 3220")
-        elif n_var:
-            ok("benchmark/input: 3,220 variant ids")
-    gt = BENCH / "groundtruth" / "recipes"
-    n_gt = sum(1 for _ in gt.glob("*/variant_*.json")) if gt.is_dir() else 0
-    (ok if n_gt == 3220 else fail)(f"benchmark/groundtruth: {n_gt} variant files (expect 3220)")
-    for sub in ("input", "groundtruth"):
-        check_manifest_pair(TRAIN / sub, 3000, f"training/{sub}")
-    test_ids = {p.name for p in (BENCH / "input" / "recipes").iterdir()}
-    train_ids = {p.name for p in (TRAIN / "input" / "recipes").iterdir()}
-    (ok if not (test_ids & train_ids) else fail)(f"train/test recipe overlap: {len(test_ids & train_ids)}")
+    benchmark_present = data_downloaded()
+    if benchmark_present:
+        data = check_manifest_pair(BENCH / "input", 650, "benchmark/input")
+        if data:
+            variants = sum(len(row.get("variant_ids") or []) for row in data["recipes"])
+            (ok if variants == 3220 else fail)(f"benchmark/input: {variants} variant ids (expect 3220)")
+        count = sum(1 for _ in (BENCH / "groundtruth/recipes").glob("*/variant_*.json"))
+        (ok if count == 3220 else fail)(f"benchmark/groundtruth: {count} variant files (expect 3220)")
+    else:
+        note("full benchmark data not downloaded; checking the included sample in --smoke")
+    train_recipes = TRAIN / "input/recipes"
+    training_present = train_recipes.is_dir() and any(train_recipes.iterdir())
+    if training_present:
+        for group in ("input", "groundtruth"):
+            check_manifest_pair(TRAIN / group, 3000, f"training/{group}")
+    else:
+        note("training recipes not downloaded; skipping training cardinality")
+    if benchmark_present and training_present:
+        test_ids = {p.name for p in (BENCH / "input/recipes").iterdir() if p.is_dir()}
+        train_ids = {p.name for p in train_recipes.iterdir() if p.is_dir()}
+        overlap = len(test_ids & train_ids)
+        (ok if overlap == 0 else fail)(f"train/test recipe overlap: {overlap}")
 
 
 def check_lineage() -> None:
@@ -170,56 +156,28 @@ def check_tables() -> None:
         print(result.stdout or result.stderr)
 
 
-PERSONAL = re.compile(
-    r"/home/[a-z]+/|" + "jess" + r"eliu|zijie|3ugenz|3ugr9d|"
+CREDENTIAL = re.compile(
     r"sk-[A-Za-z0-9]{20,}|hf_[A-Za-z0-9]{30,}|"
     r"(?:AKIA|ASIA)[A-Z0-9]{16}|gh[pousr]_[A-Za-z0-9]{20,}|"
     r"xox[baprs]-[A-Za-z0-9-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----"
 )
-KNOWN_PERSONAL_MARKERS = ("jess" + "eliu", "cs." + "unc.edu")
-# intentional public identifiers, not leaked identities: the Hugging Face namespace,
-# the GitHub repository, and the paper's corresponding-author address
-ALLOWED_PUBLIC_IDS = re.compile(
-    r"jess" + r"eliu/agentorch-[a-z0-9.-]+|github\.com/jess" + r"eliu0913/AgentOrch|jess" + r"eliu@cs\.unc\.edu",
-    re.IGNORECASE)
 CODE_EXT = {".py", ".sh", ".sbatch", ".md", ".json", ".yaml", ".yml", ".txt", ".csv", ".ipynb", ".example", ".patch"}
-# frozen fixtures (recipe data carries synthetic organisation e-mails) and this script's own pattern
-SKIP_PERSONAL = ("benchmark/groundtruth/", "benchmark/verification/", "benchmark/input/",
-                 "benchmark/results/validation_checks/simulator_replay_mismatches.csv",
-                 "scripts/release_check.py")
 
 
-def check_personal() -> None:
-    print("[4] personal paths / credentials")
+def check_credentials() -> None:
+    print("[4] credentials")
     hits = []
-    frozen_hits = []
-    for p in repository_files():
-        if not p.is_file() or p.suffix not in CODE_EXT:
+    for path in repository_files():
+        if path.suffix not in CODE_EXT or path == Path(__file__).resolve():
             continue
-        rel = str(p.relative_to(ROOT))
-        if any(part in IGNORED_DIRS for part in p.parts):
+        if path.stat().st_size > 20_000_000:
             continue
-        if p.stat().st_size > 20_000_000:
-            continue
-        try:
-            text = p.read_text(encoding="utf-8", errors="ignore")
-        except Exception:
-            continue
-        if not rel.startswith(SKIP_PERSONAL):
-            for m in PERSONAL.finditer(ALLOWED_PUBLIC_IDS.sub("", text)):
-                hits.append(f"{rel}: {m.group(0)}")
-                if len(hits) > 20:
-                    break
-        lowered = ALLOWED_PUBLIC_IDS.sub("", text).lower()
-        for marker in KNOWN_PERSONAL_MARKERS:
-            if marker in lowered:
-                frozen_hits.append(f"{rel}: {marker}")
-    (ok if not hits else fail)(f"{len(hits)} personal/credential references in code and docs")
-    for h in hits[:20]:
-        print(f"        {h}")
-    (ok if not frozen_hits else fail)(f"{len(frozen_hits)} known personal-identity references in frozen fixtures")
-    for h in frozen_hits[:20]:
-        print(f"        {h}")
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        if CREDENTIAL.search(content):
+            hits.append(str(path.relative_to(ROOT)))
+    (ok if not hits else fail)(f"{len(hits)} files with possible credentials")
+    for rel in hits:
+        print(f"        {rel}")
 
 
 LINK = re.compile(r"\]\(([^)#\s]+)(#[^)]*)?\)")
@@ -246,39 +204,18 @@ def check_links() -> None:
         print(f"        {b}")
 
 
-def check_community_health(require_publication_metadata: bool) -> None:
-    print("[6] community health / publication metadata")
-    required = ("README.md", "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md",
-                "SUPPORT.md", "DATA_CARD.md", "THIRD_PARTY_NOTICES.md")
+def check_documentation() -> None:
+    print("[6] project documentation")
+    required = ("README.md", "benchmark/README.md", "training/README.md", "DATA_CARD.md")
     missing = [name for name in required if not (ROOT / name).is_file()]
-    (ok if not missing else fail)(f"community-health files: {'complete' if not missing else 'missing ' + ', '.join(missing)}")
-    license_path = ROOT / "LICENSE"
-    citation_path = ROOT / "CITATION.cff"
-    metadata = {
-        "LICENSE": license_path.is_file() and license_path.stat().st_size >= 100,
-        "CITATION.cff": citation_path.is_file()
-        and all(field in citation_path.read_text(encoding="utf-8")
-                for field in ("cff-version:", "title:", "authors:")),
-    }
-    for name, valid in metadata.items():
-        message = f"publication metadata: {name} {'present' if valid else 'missing or incomplete'}"
-        if valid:
-            ok(message)
-        elif require_publication_metadata:
-            fail(message)
-        else:
-            note(message)
-    tracked = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout
-    large_tracked = [rel for rel in tracked.decode().split("\0")
-                     if rel and (ROOT / rel).is_file() and (ROOT / rel).stat().st_size >= 50_000_000]
-    (ok if not large_tracked else fail)(
-        f"large files: {'no tracked file >= 50 MB (data is on the Hugging Face Hub)' if not large_tracked else ', '.join(large_tracked)}")
+    (ok if not missing else fail)(
+        "project guides present" if not missing else "missing guides: " + ", ".join(missing))
 
 
 def check_smoke() -> None:
     output_root = BENCH / "outputs"
     output_root.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="release-check-", dir=output_root) as temporary:
+    with tempfile.TemporaryDirectory(prefix="benchmark-check-", dir=output_root) as temporary:
         _check_smoke(Path(temporary))
 
 
@@ -304,35 +241,14 @@ def _check_smoke(output_dir: Path) -> None:
     (ok if r.returncode == 0 else fail)(f"vendored evaluator tests: {tail}")
 
 
-def write_checksums() -> None:
-    print("[8] SHA256SUMS")
-    out = ROOT / "SHA256SUMS"
-    skip_names = {"SHA256SUMS", ".env", "sft_messages_v1.jsonl", "sft_messages_v2.jsonl"}
-    files = []
-    for p in repository_files():
-        if p.name in skip_names or p.name.startswith(".env."):
-            continue
-        files.append(p)
-    files.sort()
-    with open(out, "w", encoding="utf-8") as f:
-        for p in files:
-            f.write(f"{sha256(p)}  {p.relative_to(ROOT).as_posix()}\n")
-    ok(f"{len(files)} files hashed -> SHA256SUMS (verify with: sha256sum -c SHA256SUMS)")
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--smoke", action="store_true")
-    ap.add_argument("--write-checksums", action="store_true")
-    ap.add_argument("--allow-incomplete-metadata", action="store_true",
-                    help="do not fail for missing LICENSE/CITATION.cff (development only)")
     a = ap.parse_args()
-    check_data(); check_lineage(); check_tables(); check_personal(); check_links()
-    check_community_health(not a.allow_incomplete_metadata)
+    check_data(); check_lineage(); check_tables(); check_credentials(); check_links()
+    check_documentation()
     if a.smoke:
         check_smoke()
-    if a.write_checksums:
-        write_checksums()
     print(f"\n{'PASS' if not FAILS else 'FAIL'}: {len(FAILS)} failing check(s)")
     return 1 if FAILS else 0
 

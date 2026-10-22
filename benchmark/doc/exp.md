@@ -571,50 +571,23 @@ Any claim of statistical significance should use the stored bootstrap
 confidence intervals rather than infer significance from point estimates
 alone.
 
-## Reproducibility and current audit notes
+## Reproduction and scoring details
 
-The authoritative artifacts for this section are:
+The public task specifications are in `input/recipes/`, and evaluator-only
+reference data are in `groundtruth/recipes/` and `verification/`. Model
+configurations are recorded in `evaluation/global_react_models.json`.
+Evaluate a model with `evaluation.full_eval` to create its plans,
+trajectories, per-variant scores, and aggregate leaderboard.
 
-- model-visible prompts: `input/recipes/<recipe_id>/`;
-- private targets: `groundtruth/recipes/<recipe_id>/variant_<id>.json`;
-- exact model plans: `outputs/full_eval/global-react-final-20260814/plans/`;
-- trajectories and per-instance rows:
-  `outputs/full_eval/global-react-final-20260814/<model>/<mode>/`;
-- aggregate table: `outputs/full_eval/global-react-final-20260814/comparison_wide.json`;
-- model revisions and protocol cardinalities:
-  `evaluation/global_react_models.json`;
-- launcher: `reproduction/cluster/run_instruct_scale_comparison.sbatch`.
+The compact adapter scorer delegates side-effect, terminal-output, and final
+verdicts to the same outcome module. Its execution-trace checks are simplified
+and can differ from canonical runtime adjudication. Use the canonical
+evaluator for comparable model scores. The offline parity utility can compare
+outcome verdicts in an existing run.
 
-The scores described above are those produced by the vendored full-corpus
-evaluator under `verification/backends/shared/src/`. The compact standalone
-`examples/smoke_adapter/cal_acc.py` scorer delegates its side-effect, terminal, and
-final verdicts to the same `metrics.outcome.evaluate_outcome`
-implementation, and the ground-truth files carry the canonical gold it
-needs. The released `final_snapshot`, `outcome_gold_calls`, and
-`structural_return` fields were derived for every variant through the
-evaluator's own gold pipeline (reference execution bundle → runtime reference
-rebinding → public gold projection). Parity is
-verified, not assumed: `reproduction/offline/verify_calacc_parity.py` replays archived
-canonical rows through `cal_acc.score` against the stored `run_eval`
-verdicts, pinned to a frozen artifact manifest with an asserted row count
-(the tool fails on zero rows, a missing directory, or a count mismatch —
-an unpinned scan of a still-running archive is not an auditable claim).
-The 2026-08-15 audit froze 16,703 rows across API and local models in both
-modes and found zero disagreements on side-effect, normalized-terminal,
-and final accuracy; the two GPT ReAct lanes still executing at freeze time
-are re-verified the same way once complete. The execution-trace components (and therefore the trace half of
-orchestration accuracy) are computed from the published `tool_expectations`
-and remain a documented simplification of the canonical runtime trace
-adjudication; cite `evaluation/full_eval.py` for all released numbers.
-
-Likewise, the two modes do not share one uniform output budget: the
-executed settings are 4,096 visible tokens for the one-shot Global View
-plan (every model), while ReAct turns stop at the first complete top-level
-JSON object under a per-turn truncation guard of 8,192 hard / 1,024 soft
-tokens for local checkpoints and 4,096 tokens per request for API models.
-The manifest's `output_budget` block now records exactly these executed
-caps. The paper must report them as such — per-mode truncation guards, not
-a single identical cap — or the experiment must be rerun after enforcing a
-genuinely identical ceiling. These audit notes are included to prevent the
-manuscript from making a stronger reproducibility claim than the current
-artifacts support.
+Global plans have a 4,096-token output cap. Local-model ReAct turns have an
+8,192-token hard cap and a 1,024-token soft cap, with complete-JSON stopping;
+API ReAct requests use a 4,096-token cap. These are per-mode generation limits,
+not an identical compute budget. The model roster records the executed
+settings, and [evaluation notes](evaluation_notes.md) describe interpretation
+limits.
