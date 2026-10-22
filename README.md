@@ -205,7 +205,7 @@ All ten checkpoints below are public, merged weights with model configuration
 and tokenizer files. Bold links identify the better of SFT and SFT + RL for
 each family in the training table above.
 
-| Base model | SFT | SFT + RL |
+| Base model | SFT | RL |
 |---|---|---|
 | Qwen3.8-27B | [**agentorch-sft-27b-80k-3ep**](https://huggingface.co/JesseLiu/agentorch-sft-27b-80k-3ep) | [agentorch-rl-27b-3ep-step124](https://huggingface.co/JesseLiu/agentorch-rl-27b-3ep-step124) |
 | Qwen3-4B | [agentorch-sft-4b-v1-2ep](https://huggingface.co/JesseLiu/agentorch-sft-4b-v1-2ep) | [**agentorch-rl-4b-v1-step60**](https://huggingface.co/JesseLiu/agentorch-rl-4b-v1-step60) |
