@@ -10,7 +10,7 @@
 # reward (src/rl/reward.py). Starts from a merged SFT checkpoint.
 # Usage (from training/):
 #   sbatch [--gres=gpu:h200:N] src/rl/verl/run_grpo.sbatch <model_path> [run_name] [hydra overrides...]
-# The published Qwen runs used (see results/training.csv):
+# Qwen GRPO settings (Appendix A.7, Table 9):
 #   27B LoRA:  actor_rollout_ref.model.lora_rank=16 actor_rollout_ref.model.lora_alpha=32 \
 #              actor_rollout_ref.actor.optim.lr=3e-6 actor_rollout_ref.actor.use_kl_loss=True \
 #              actor_rollout_ref.actor.kl_loss_coef=0.001
@@ -18,7 +18,7 @@
 #              actor_rollout_ref.actor.kl_loss_coef=0.001
 LAUNCHER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LAUNCHER_DIR/../../../scripts/_preamble.sh"
-cd "$TRAIN_ROOT/src/rl/verl"
+cd "$TRAIN_ROOT"
 model=${1:?model path required}
 run_name=${2:-grpo-$(date +%m%d-%H%M)}
 shift $(( $# >= 2 ? 2 : 1 ))
@@ -47,10 +47,11 @@ exec "$AGENTORCH_RL_PYTHON" -m verl.trainer.main_ppo \
   actor_rollout_ref.model.path="$model" \
   actor_rollout_ref.model.use_remove_padding=True \
   actor_rollout_ref.model.enable_gradient_checkpointing=True \
-  actor_rollout_ref.actor.optim.lr=1e-6 \
+  actor_rollout_ref.actor.optim.lr=3e-6 \
   actor_rollout_ref.actor.ppo_mini_batch_size=16 \
   actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=1 \
-  actor_rollout_ref.actor.use_kl_loss=False \
+  actor_rollout_ref.actor.use_kl_loss=True \
+  actor_rollout_ref.actor.kl_loss_coef=0.001 \
   actor_rollout_ref.actor.fsdp_config.param_offload=True \
   actor_rollout_ref.actor.fsdp_config.optimizer_offload=True \
   actor_rollout_ref.rollout.name=vllm \

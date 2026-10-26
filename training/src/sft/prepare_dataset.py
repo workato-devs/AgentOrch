@@ -4,8 +4,8 @@ Reads data/sft_messages_v1.jsonl (built by src/data/build_sft_messages.py,
 OpenAI chat-messages format) and writes:
 
   <out>/train.jsonl   rows whose total tokens fit --max-context
-  <out>/eval.jsonl    held-out slice for Fireworks' evaluation loss curve
-  <out>/prep_report.json  counts, token totals, and cost estimate
+  <out>/eval.jsonl    held-out validation slice
+  <out>/prep_report.json  counts and token totals
 
 Rows longer than --max-context are DROPPED, not truncated: the assistant
 target sits at the end of the sequence, so a truncated row would train on
@@ -24,7 +24,7 @@ import json
 import random
 from pathlib import Path
 
-from common import DATA_ROOT, SFT_MESSAGES_V1, SFT_PRICE_PER_M, make_token_counter, row_tokens
+from common import DATA_ROOT, SFT_MESSAGES_V1, make_token_counter, row_tokens
 
 
 def main() -> None:
@@ -42,8 +42,6 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=0,
                         help="cap total rows for a smoke test (0 = all)")
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--epochs", type=float, default=1.0,
-                        help="epochs used for the cost estimate only")
     args = parser.parse_args()
 
     count, counter_name = make_token_counter()
@@ -90,11 +88,7 @@ def main() -> None:
         "dropped_recipe_ids": sorted(rid for rid, _ in dropped),
         "train_tokens": train_tokens,
         "eval_tokens": sum(t for _, t in eval_rows),
-        "epochs_for_estimate": args.epochs,
-        "estimated_cost_usd": {
-            tier: round(train_tokens * args.epochs * price / 1e6, 2)
-            for tier, price in SFT_PRICE_PER_M.items()
-        },
+
     }
     (args.out / "prep_report.json").write_text(
         json.dumps(report, indent=2) + "\n", encoding="utf-8")
@@ -103,9 +97,6 @@ def main() -> None:
           f"({counter_name})")
     print(f"eval:  {len(eval_rows)} rows | dropped over {budget:,} tokens: "
           f"{len(dropped)}")
-    est = report["estimated_cost_usd"]["16.1B-80B"]
-    print(f"estimated SFT cost @ $3/M (16.1B-80B tier, e.g. qwen3p5-27b), "
-          f"{args.epochs} epoch(s): ${est:,.2f}")
     print(f"report: {args.out / 'prep_report.json'}")
 
 

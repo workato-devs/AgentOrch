@@ -14,37 +14,33 @@ OUTPUT_ROOT = TRAIN_ROOT / "output"
 # training/input + training/groundtruth (v1 data, used by every headline run).
 SFT_MESSAGES_V1 = DATA_ROOT / "sft_messages_v1.jsonl"
 
-# Hosted fine-tuning price per 1M trained tokens by base-model size tier
-# (used only for the cost estimate in prepare_dataset.py's report).
-SFT_PRICE_PER_M = {"<=16B": 0.50, "16.1B-80B": 3.00, "80B-300B": 6.00, ">300B": 10.00}
-
 TOKENIZER_MODEL = os.environ.get("AGENTORCH_TOKENIZER", "Qwen/Qwen3.8-27B")
 
 
 def make_token_counter():
-    """Prefer the real Qwen tokenizer (exact filtering); fall back to cl100k."""
-    try:
-        from transformers import AutoTokenizer
+    """Count tokens with the selected base model's tokenizer."""
+    from transformers import AutoTokenizer
 
-        tok = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
+    revision = model_revision(TOKENIZER_MODEL)
+    tok = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, revision=revision)
 
-        def count(text: str) -> int:
-            return len(tok(text, add_special_tokens=False).input_ids)
+    def count(text: str) -> int:
+        return len(tok(text, add_special_tokens=False).input_ids)
 
-        return count, f"{TOKENIZER_MODEL} tokenizer (exact)"
-    except Exception:
-        try:
-            import tiktoken
-
-            enc = tiktoken.get_encoding("cl100k_base")
-
-            def count(text: str) -> int:
-                return len(enc.encode(text, disallowed_special=()))
-
-            return count, "tiktoken cl100k_base (~±10% vs Qwen)"
-        except ImportError:
-            return (lambda text: int(len(text) / 3.6) + 1), "chars/3.6 heuristic"
+    return count, f"{TOKENIZER_MODEL} tokenizer"
 
 
 def row_tokens(messages: list[dict], count) -> int:
     return sum(count(m["content"]) for m in messages)
+
+
+def model_revision(model: str, requested: str | None = None) -> str | None:
+    """Resolve a base model version for training, tokenization, and merging."""
+    import json
+
+    if Path(model).is_dir():
+        return None
+    if requested or os.environ.get("HF_MODEL_REVISION"):
+        return requested or os.environ["HF_MODEL_REVISION"]
+    pins = json.loads((Path(__file__).parent / "base_models.json").read_text())
+    return pins.get(model, {}).get("revision")

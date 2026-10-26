@@ -3,14 +3,17 @@ import argparse, time, torch
 from pathlib import Path
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from common import model_revision
 
 p = argparse.ArgumentParser()
 p.add_argument("--base", required=True)
 p.add_argument("--adapter", type=Path, required=True)
 p.add_argument("--out", type=Path, required=True)
+p.add_argument("--revision", help="base model version")
 a = p.parse_args()
+revision = model_revision(a.base, a.revision)
 t0 = time.time()
-model = AutoModelForCausalLM.from_pretrained(a.base, dtype=torch.bfloat16)
+model = AutoModelForCausalLM.from_pretrained(a.base, revision=revision, dtype=torch.bfloat16)
 peft = PeftModel.from_pretrained(model, a.adapter)
 lora_b = [(n, q) for n, q in peft.named_parameters() if "lora_B" in n]
 nz_names = [n for n, q in lora_b if q.abs().sum() > 0]
@@ -37,5 +40,5 @@ changed = sum(1 for k in ref if k in sd and not torch.equal(ref[k], sd[k]))
 print(f"targeted tensors changed by merge: {changed}/{checked}", flush=True)
 assert checked > 0 and changed > 0, "merge was a no-op on adapter-targeted tensors"
 merged.save_pretrained(a.out, safe_serialization=True)
-AutoTokenizer.from_pretrained(a.base).save_pretrained(a.out)
+AutoTokenizer.from_pretrained(a.base, revision=revision).save_pretrained(a.out)
 print(f"done in {time.time()-t0:.0f}s -> {a.out}", flush=True)

@@ -1,4 +1,4 @@
-"""GRPO reward for AgentOrch plan generation (Tier 1: symbolic matching).
+"""GRPO reward for AgentOrch plan generation.
 
 Dense deterministic reward in [0, 1] comparing a sampled plan against the
 recipe's golden plan (deterministic canonical compilation). Components:
@@ -9,9 +9,8 @@ recipe's golden plan (deterministic canonical compilation). Components:
   struct   (0.15)  control-node kind-sequence similarity
   exact    (0.10)  canonical JSON equality bonus
 
-Signature follows VERL's custom reward interface (compute_score). Pure CPU,
-~ms per call. Tier 2 (fixture-replay execution against the recipe's 5
-recorded variants) will replace `args`/`exact` with execution equivalence.
+The compute_score entry point follows the verl reward interface.
+Reward computation runs on CPU without executing connectors.
 """
 
 from __future__ import annotations

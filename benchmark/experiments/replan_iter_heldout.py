@@ -40,7 +40,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from evaluation.full_eval import _configure, _recipe_ids
+from evaluation.full_eval import _configure, _recipe_ids, _load_env_file, _validate_data
 from experiments import replan_iter as base
 
 MODE = "replan_iter_heldout"
@@ -90,7 +90,7 @@ def subset_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--run-name", required=True)
-    parser.add_argument("--state-namespace", required=True)
+    parser.add_argument("--state-namespace", default=f"replan-heldout-{os.getpid()}")
     parser.add_argument("--backend", default="simulated")
     parser.add_argument("--model", required=True)
     parser.add_argument("--ids", nargs="*")
@@ -117,12 +117,17 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(line_buffering=True)
     except (AttributeError, ValueError):
         pass
+    _load_env_file()
+    ids = list(args.ids) if args.ids else _recipe_ids()
+    if args.limit:
+        ids = ids[:args.limit]
+    try:
+        _validate_data(["--ids", *ids, "--variants", "all"])
+    except (ValueError, OSError) as exc:
+        parser.error(str(exc))
     eval_root = _configure(args.run_name, args.backend, args.state_namespace)
     import task.run_eval as re_
 
-    ids = list(args.ids) if args.ids else _recipe_ids()
-    if args.limit:
-        ids = ids[: args.limit]
     run_dir = eval_root / args.model.replace("/", "__") / MODE
     run_dir.mkdir(parents=True, exist_ok=True)
 

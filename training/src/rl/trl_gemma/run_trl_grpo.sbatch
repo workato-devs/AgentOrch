@@ -14,16 +14,19 @@
 # accelerate_fsdp2_12b.yaml wraps Gemma4UnifiedTextDecoderLayer (12B).
 LAUNCHER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LAUNCHER_DIR/../../../scripts/_preamble.sh"
-cd "$TRAIN_ROOT/src/rl/trl_gemma"
+cd "$TRAIN_ROOT"
 export WANDB_PROJECT=agentorch-grpo
 NGPU=${SLURM_GPUS_ON_NODE:-1}
-ACCEL_CFG=${ACCEL_CFG:-accelerate_fsdp2.yaml}
+ACCEL_CFG=${ACCEL_CFG:-$LAUNCHER_DIR/accelerate_fsdp2.yaml}
 if [ "${1:-}" = "--accel-config" ]; then ACCEL_CFG="$2"; shift 2; fi
 
+if [[ ! -f "$ACCEL_CFG" && -f "$LAUNCHER_DIR/$ACCEL_CFG" ]]; then
+  ACCEL_CFG="$LAUNCHER_DIR/$ACCEL_CFG"
+fi
 if [ "$NGPU" -gt 1 ]; then
   exec "$AGENTORCH_RL_PYTHON" -m accelerate.commands.launch \
     --config_file "$ACCEL_CFG" --num_processes "$NGPU" \
-    train_grpo_gemma.py "$@"
+    "$LAUNCHER_DIR/train_grpo_gemma.py" "$@"
 else
-  exec "$AGENTORCH_RL_PYTHON" train_grpo_gemma.py "$@"
+  exec "$AGENTORCH_RL_PYTHON" "$LAUNCHER_DIR/train_grpo_gemma.py" "$@"
 fi

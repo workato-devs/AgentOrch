@@ -19,9 +19,7 @@ Usage:
 """
 
 import argparse
-import glob
 import json
-import os
 from pathlib import Path
 import shutil
 import time
@@ -32,16 +30,17 @@ from safetensors import safe_open
 from safetensors.torch import save_file
 from transformers import AutoModelForCausalLM
 
+from common import model_revision
+
 BASE = "Qwen/Qwen3.8-27B"
 
 
-def base_snapshot(base: str) -> Path:
-    """Shard dir of the base: a local model dir, or the HF cache snapshot."""
+def base_snapshot(base: str, revision: str | None = None) -> Path:
+    """Resolve the same base model version used for the adapter merge."""
     if Path(base).is_dir():
         return Path(base)
-    hf_home = Path(os.environ.get("HF_HOME", Path.home() / ".cache" / "huggingface"))
-    pattern = str(hf_home / "hub" / f"models--{base.replace('/', '--')}" / "snapshots" / "*")
-    return Path(sorted(glob.glob(pattern))[0])
+    from huggingface_hub import snapshot_download
+    return Path(snapshot_download(base, revision=revision))
 
 
 def main() -> None:
@@ -50,11 +49,13 @@ def main() -> None:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--base", default=BASE,
                         help="HF id or local dir; for RL adapters use the merged SFT dir")
+    parser.add_argument("--revision", help="base model version")
     args = parser.parse_args()
+    revision = model_revision(args.base, args.revision)
 
     t0 = time.time()
     print(f"[1/3] merging adapter on the training class (text-only)", flush=True)
-    model = AutoModelForCausalLM.from_pretrained(args.base, dtype=torch.bfloat16)
+    model = AutoModelForCausalLM.from_pretrained(args.base, revision=revision, dtype=torch.bfloat16)
     peft = PeftModel.from_pretrained(model, args.adapter)
     nonzero = sum(1 for n, p in peft.named_parameters()
                   if "lora_B" in n and p.abs().sum().item() > 0)
@@ -75,7 +76,7 @@ def main() -> None:
     print(f"  merged {len(remapped)} tensors at {time.time()-t0:.0f}s", flush=True)
 
     print("[2/3] transplanting into the full wrapper checkpoint", flush=True)
-    snap = base_snapshot(args.base)
+    snap = base_snapshot(args.base, revision)
     index = json.loads((snap / "model.safetensors.index.json").read_text())
     weight_map = index["weight_map"]
     args.out.mkdir(parents=True, exist_ok=True)

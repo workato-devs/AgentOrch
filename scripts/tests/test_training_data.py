@@ -55,3 +55,31 @@ def test_grpo_rejects_insufficient_prompts_before_writing(tmp_path, monkeypatch)
     with pytest.raises(ValueError, match="requested 1000 prompts, but only 999"):
         module.main()
     assert not output.exists()
+
+
+def common_module():
+    path = ROOT / "training/src/sft/common.py"
+    spec = importlib.util.spec_from_file_location("training_common", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_tokenizer_failure_is_reported_without_approximate_filtering(monkeypatch):
+    from types import SimpleNamespace
+
+    def unavailable(*args, **kwargs):
+        raise RuntimeError("tokenizer unavailable")
+
+    monkeypatch.setitem(__import__("sys").modules, "transformers",
+                        SimpleNamespace(AutoTokenizer=SimpleNamespace(from_pretrained=unavailable)))
+    with pytest.raises(RuntimeError, match="tokenizer unavailable"):
+        common_module().make_token_counter()
+
+
+def test_base_version_selection_respects_explicit_and_local_models(tmp_path, monkeypatch):
+    module = common_module()
+    monkeypatch.setenv("HF_MODEL_REVISION", "environment-version")
+    assert module.model_revision("org/model", "selected-version") == "selected-version"
+    assert module.model_revision("org/model") == "environment-version"
+    assert module.model_revision(str(tmp_path)) is None

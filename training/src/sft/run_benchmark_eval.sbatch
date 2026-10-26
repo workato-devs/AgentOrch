@@ -13,11 +13,19 @@
 #
 # Usage (from training/):
 #   sbatch src/sft/run_benchmark_eval.sbatch <merged_model_dir> <run_name> [modes]
-#   modes: plan_execute (default) | react | replan | incremental_workflow | comma list
+#   modes: plan_execute (default) | react | incremental_workflow | global_input | comma list
 # Output: <release>/benchmark/outputs/full_eval/<run_name>/hf:<...>/<mode>/
 LAUNCHER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LAUNCHER_DIR/../../scripts/_preamble.sh"
 model_dir=${1:?merged model dir required}
+if [[ -d "$model_dir" ]]; then
+  model_dir="$(cd "$model_dir" && pwd)"
+elif [[ -d "$TRAIN_ROOT/$model_dir" ]]; then
+  model_dir="$(cd "$TRAIN_ROOT/$model_dir" && pwd)"
+else
+  echo "checkpoint directory does not exist: $model_dir" >&2
+  exit 1
+fi
 run_name=${2:?run name required}
 modes=${3:-plan_execute}
 
@@ -38,7 +46,7 @@ export VLLM_KV_CACHE_DTYPE=auto
 export HF_CHAT_TEMPLATE_KWARGS='{"enable_thinking": false}'
 export HF_MODEL_CONTEXT_TOKENS=131072
 export HF_MAX_INPUT_TOKENS=122880
-export TRANSFORMERS_OFFLINE=1
+export TRANSFORMERS_OFFLINE="${TRANSFORMERS_OFFLINE:-0}"
 export PYTHONPATH=benchmark
 
 exec "$AGENTORCH_PYTHON" -m evaluation.full_eval \

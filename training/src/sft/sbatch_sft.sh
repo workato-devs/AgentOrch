@@ -6,19 +6,19 @@
 #SBATCH --time=3-00:00:00
 #SBATCH --output=output/logs/sft-%j.out
 
-# LoRA SFT on the benchmark-aligned training split (torchrun, 8 GPUs, DDP).
+# LoRA SFT on the benchmark-aligned training split (torchrun, 8 GPUs, FSDP2).
 # Submit from training/ so the relative --output path resolves:
 #   cd training
 #   sbatch src/sft/sbatch_sft.sh --max-rows 24                 # smoke test
-#   sbatch src/sft/sbatch_sft.sh --epochs 3 --max-len 81920 \
-#          --run-name sft-27b-80k-3ep --output output/checkpoints/sft-27b-80k-3ep-lora
+#   sbatch src/sft/sbatch_sft.sh --epochs 5 --max-len 81920 \
+#          --run-name sft-27b-80k-5ep --output output/checkpoints/sft-27b-80k-5ep-lora
 # Any argument is forwarded to train_sft_local.py (see its --help).
 LAUNCHER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$LAUNCHER_DIR/../../scripts/_preamble.sh"
-cd "$TRAIN_ROOT/src/sft"
+cd "$TRAIN_ROOT"
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export OMP_NUM_THREADS=4
 
 exec "$AGENTORCH_TRAIN_PYTHON" -m torch.distributed.run \
   --nproc-per-node "${SLURM_GPUS_ON_NODE:-8}" \
-  train_sft_local.py "$@"
+  "$TRAIN_ROOT/src/sft/train_sft_local.py" "$@"

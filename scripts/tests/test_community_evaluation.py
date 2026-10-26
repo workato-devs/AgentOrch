@@ -235,3 +235,64 @@ print(json.dumps(_scripted_initial_plan_artifact('64112882')['plan']))
         server.shutdown()
         server.server_close()
         worker.join(timeout=5)
+
+
+@pytest.mark.parametrize("module,mode", [
+    ("experiments.replan_iter", "replan_iter"),
+    ("experiments.replan_iter_heldout", "replan_iter_heldout"),
+])
+def test_replan_runs_from_dotenv_and_scores_three_revision_rounds(community_repo, module, mode):
+    helper = """
+import json
+from evaluation.full_eval import _configure
+_configure('revision-fixture', 'simulated', 'fixture')
+from task.run_eval import _scripted_initial_plan_artifact
+print(json.dumps(_scripted_initial_plan_artifact('64112882')['plan']))
+"""
+    env = {k: os.environ[k] for k in ("PATH", "HOME") if k in os.environ}
+    env.update(PYTHONPATH="benchmark", PYTHONDONTWRITEBYTECODE="1", API_MAX_ATTEMPTS="1")
+    plan = json.loads(subprocess.check_output([sys.executable, "-c", helper],
+                                             cwd=community_repo, env=env, text=True))
+    requests = []
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+
+        def do_POST(self):
+            requests.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
+            body = json.dumps({"choices": [{"message": {"content": json.dumps({"plan": plan})}}]}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    dotenv = community_repo / ".env"
+    dotenv.write_text(f"LOCAL_LLM_BASE_URL=http://127.0.0.1:{server.server_port}/v1\n"
+                      "LOCAL_LLM_API_KEY=test-key\n")
+    run = f"revision-{mode}"
+    command = [sys.executable, "-m", module, "--run-name", run,
+               "--model", "compat:gpt-custom", "--ids", "64112882"]
+    try:
+        result = subprocess.run(command, cwd=community_repo, env=env,
+                                capture_output=True, text=True, timeout=120)
+        assert result.returncode == 0, result.stderr
+        curve = json.loads((community_repo / "benchmark/outputs/full_eval" / run /
+                            "compat:gpt-custom" / mode / "curve.json").read_text())
+        assert curve["rounds"] == 3
+        assert len(curve["curve"]) == 4
+        for row in curve["curve"]:
+            board = row if mode == "replan_iter" else row["all"]
+            assert board["n"] == 5
+            assert board["orchestration_accuracy"] == 1.0
+        assert len(requests) == 4
+        assert all(request["model"] == "gpt-custom" for request in requests)
+    finally:
+        dotenv.unlink(missing_ok=True)
+        server.shutdown()
+        server.server_close()
+        worker.join(timeout=5)

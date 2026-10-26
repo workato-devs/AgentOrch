@@ -99,6 +99,65 @@ ReAct; Claude thinking shares a 16,384-token reasoning/output budget.
 Model configurations are in
 [global_react_models.json](evaluation/global_react_models.json).
 
+### Reproduce model configurations
+
+For a released training checkpoint, evaluate the full benchmark:
+
+```bash
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name released-sft --backend simulated \
+  --model hf:JesseLiu/agentorch-sft-4b-v1-2ep \
+  --modes plan_execute --variants all --resume
+```
+
+The reasoning labels in the result tables describe configurations of the
+underlying model. For the non-thinking Claude Opus 5 configuration:
+
+```bash
+ANTHROPIC_THINKING=disabled ANTHROPIC_EFFORT=high \
+ANTHROPIC_TEMPERATURE=none ANTHROPIC_MAX_TOKENS=4096 \
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name opus --backend simulated --model claude-opus-5 \
+  --modes plan_execute,react --variants all --resume
+```
+
+For Claude Opus 5 Thinking:
+
+```bash
+ANTHROPIC_THINKING=adaptive ANTHROPIC_EFFORT=high \
+ANTHROPIC_TEMPERATURE=none ANTHROPIC_MAX_TOKENS=16384 \
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name opus-thinking --backend simulated --model claude-opus-5 \
+  --modes plan_execute,react --variants all --resume
+```
+
+For GPT-5.6 Sol Thinking:
+
+```bash
+OPENAI_API_MODE=direct OPENAI_REASONING_EFFORT=high OPENAI_MAX_TOKENS=16384 \
+PYTHONPATH=benchmark python -m evaluation.full_eval \
+  --run-name gpt-thinking --backend simulated --model gpt-5.6-sol \
+  --modes plan_execute,react --variants all --resume
+```
+
+For dedicated Qwen3 thinking checkpoints:
+
+```bash
+HF_LOCAL_ENGINE=vllm HF_THINKING_PREFIX=1 \
+HF_MAX_INPUT_TOKENS=98304 HF_MAX_NEW_TOKENS=32768 \
+HF_REACT_MAX_NEW_TOKENS=16384 PYTHONPATH=benchmark \
+python -m evaluation.full_eval \
+  --run-name qwen-thinking --backend simulated \
+  --model hf:Qwen/Qwen3-4B-Thinking-2507 \
+  --modes plan_execute,react --variants all --resume
+```
+
+`HF_MODEL_CONTEXT_TOKENS` and `HF_MAX_INPUT_TOKENS` select a local model's
+context budget. `HF_MAX_NEW_TOKENS` and `HF_REACT_MAX_NEW_TOKENS` select its
+Global and Step-by-Step output limits. `HF_CHAT_TEMPLATE_KWARGS` passes
+model-specific template settings such as `enable_thinking`. Keep each
+configuration in a separate run directory.
+
 ## Replan
 
 Replan starts from a Global workflow. Each round executes the current

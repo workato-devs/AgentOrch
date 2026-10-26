@@ -227,20 +227,16 @@
     {
       "model": "gpt-4o",
       "provider": "azure_openai",
-      "role": "strong_gpt",
       "tier": "large"
     },
     {
       "model": "gpt-35-turbo",
       "provider": "azure_openai",
-      "role": "weaker_gpt",
-      "service_reported_backend": "gpt-4.1-mini",
       "tier": "large"
     },
     {
       "model": "claude-opus-5",
       "provider": "anthropic",
-      "role": "claude_opus",
       "thinking": "disabled",
       "effort": "high",
       "temperature": null,
@@ -251,7 +247,7 @@
   "reasoning_configurations": {
     "claude_opus_5": {
       "model": "claude-opus-5",
-      "purpose": "Test-time reasoning ablation: identical protocol to the canonical claude-opus-5 rows except thinking=adaptive, effort=high, max_tokens=16384 (thinking shares the Anthropic max_tokens budget; only text blocks are scored). Reported separately from the main scale comparison, whose protocol equalizes test-time compute across all models.",
+      "purpose": "Claude Opus 5 reasoning configuration: adaptive thinking, high effort, and a 16,384-token reasoning/output budget.",
       "modes": [
         "plan_execute",
         "react"

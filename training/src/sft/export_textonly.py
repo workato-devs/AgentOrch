@@ -1,8 +1,8 @@
-"""Export the text-only causal-LM view of a Qwen3_5 wrapper checkpoint.
+"""Export the text-only causal-LM view of a Qwen wrapper checkpoint.
 
 Drops the vision tower (model.visual.*) and MTP head (mtp.*), which text-only
 RL never executes; under FSDP2 those never-forwarded params also trip a torch
-2.13 post-backward bug (see training/results/training.csv). AutoModelForCausalLM builds the
+2.13 post-backward issue. AutoModelForCausalLM builds the
 model.layers.* text tree directly from the wrapper checkpoint (same load path
 the SFT used), so weights are byte-identical to the wrapper's language model.
 """

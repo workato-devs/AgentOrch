@@ -5003,7 +5003,6 @@ def _checks_ok(checks: list[dict[str, Any]]) -> bool:
     )
 
 
-# --- Verifiers migrated from per-recipe modules (README step 3: verifiers live here) ---
 
 def _lookup_rows(snapshot: Any, table_id: str) -> list[dict[str, Any]]:
     if not isinstance(snapshot, dict):
@@ -5335,38 +5334,6 @@ def verify_88488561(result: dict[str, Any]) -> dict[str, Any]:
 def verify_88624242(result: dict[str, Any]) -> dict[str, Any]:
     return _verify_replay_recipe(result)
 
-# Verifier fragment for recipe 88624257 (workato_service.receive_request
-# 'Flexi Idler' {Secs integer} -> log Secs%10 -> create_list (Secs/10).to_i ->
-# FOREACH chunk call_service flow 45151658 'Base Timer Unit' -> IF remainder>0 one more
-# call_service -> send_reply secs_waited = now-job_created_at). Byte-identical
-# twin of 88676116 (flow_id differs only); same logic family as
-# 89583909/89454478. UNPARKED: the batch-02 parking gaps ((Secs/10).to_i
-# data-call arithmetic, plain-form foreach seq_no) are fixed and re-probed;
-# this fragment REPLACES the legacy _verify_replay_recipe stub for this id.
-#
-# NEW verify_88624257 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session (the module carries an identical local copy until the
-# merge; switch its import afterwards). Uses only helpers already defined
-# there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.call_service_step_as pins the per-call step ids from the trace
-#   ('664a521c' chunk vs '5ed86f4a' remainder) IN ORDER. This is the ONLY
-#   branch proof for 0-remainder variants: the phantom remainder call would
-#   ask for exactly size*10-delta secs -- the same value as the last chunk
-#   call -- so tool args cannot distinguish the IF-6 branch.
-# - expect.create_list_size pins (Secs/10).to_i (Ruby floor division; empty
-#   list at size 0 drives the foreach-0 branch and the list_meta ____Size=0
-#   fallback in the remainder formula).
-# - expect.reply pins the send_reply return_value exactly; the whole-second
-#   now-delta renders as int (Ruby Float; ruled engine-defined at triage).
-# - expect.log_messages is OPTIONAL and only pinned when Ruby-faithful
-#   (remainder != 0). ENGINE GAP (batch-05, open): resolve_text
-#   str(resolved or "") renders integer 0 as '' where Ruby renders '0'
-#   (raw_executor.py resolve_text); never pin the deviant '' rendering.
-# - negative chunk secs (e.g. -2 at seq_no 1, delta 12s) are faithful engine
-#   arithmetic under the pinned clock -- pinned via args_contains, never
-#   'fixed'.
 
 def verify_88624257(result: dict[str, Any]) -> dict[str, Any]:
     replay = _verify_replay_recipe(result)
@@ -5446,38 +5413,6 @@ def verify_88624257(result: dict[str, Any]) -> dict[str, Any]:
 def verify_88676000(result: dict[str, Any]) -> dict[str, Any]:
     return _verify_replay_recipe(result)
 
-# Verifier fragment for recipe 88676116 (workato_service.receive_request
-# 'Flexi Idler' {Secs integer} -> log Secs%10 -> create_list (Secs/10).to_i ->
-# FOREACH chunk call_service flow 45178306 'Base Timer Unit' -> IF remainder>0 one more
-# call_service -> send_reply secs_waited = now-job_created_at). Byte-identical
-# twin of 88624257 (flow_id differs only); same logic family as
-# 89583909/89454478. UNPARKED: the batch-02 parking gaps ((Secs/10).to_i
-# data-call arithmetic, plain-form foreach seq_no) are fixed and re-probed;
-# this fragment REPLACES the legacy _verify_replay_recipe stub for this id.
-#
-# NEW verify_88676116 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session (the module carries an identical local copy until the
-# merge; switch its import afterwards). Uses only helpers already defined
-# there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.call_service_step_as pins the per-call step ids from the trace
-#   ('664a521c' chunk vs '5ed86f4a' remainder) IN ORDER. This is the ONLY
-#   branch proof for 0-remainder variants: the phantom remainder call would
-#   ask for exactly size*10-delta secs -- the same value as the last chunk
-#   call -- so tool args cannot distinguish the IF-6 branch.
-# - expect.create_list_size pins (Secs/10).to_i (Ruby floor division; empty
-#   list at size 0 drives the foreach-0 branch and the list_meta ____Size=0
-#   fallback in the remainder formula).
-# - expect.reply pins the send_reply return_value exactly; the whole-second
-#   now-delta renders as int (Ruby Float; ruled engine-defined at triage).
-# - expect.log_messages is OPTIONAL and only pinned when Ruby-faithful
-#   (remainder != 0). ENGINE GAP (batch-05, open): resolve_text
-#   str(resolved or "") renders integer 0 as '' where Ruby renders '0'
-#   (raw_executor.py resolve_text); never pin the deviant '' rendering.
-# - negative chunk secs (e.g. -2 at seq_no 1, delta 12s) are faithful engine
-#   arithmetic under the pinned clock -- pinned via args_contains, never
-#   'fixed'.
 
 def verify_88676116(result: dict[str, Any]) -> dict[str, Any]:
     replay = _verify_replay_recipe(result)
@@ -19080,33 +19015,6 @@ def verify_115036714(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 124862303 (CICD 'Project Configurations'
-# slack_bot.dynamic_menu -> lookup_table 4079230 'CICD | LT | Project
-# Configuration' col3/col5 search -> per-entry json_parser of the col6
-# 'Project Context' document -> compound-OR typeahead matching (project name
-# OR release name, both .downcase contains) -> project_list accumulation ->
-# slack_bot.generate_menu_options).
-# TWIN of 124859961 (only the lookup_table_id differs, 4075676 there).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the label ternary keys on release_name PRESENCE, not on which OR arm
-#   matched: an entry matched via its project name still gets the
-#   '#{release} (project: #{col2})' label when its col6 carries a release
-#   (variant 04), and the release arm label is sliced with the Ruby
-#   EXCLUSIVE range [0...70] (variant 01 pins the exactly-70-char
-#   truncation next to an untruncated sibling).
-# - parse_json runs for EVERY narrowed entry (matching or not):
-#   expect.parsed_documents pins the ordered raw col6 strings handed to the
-#   parser, so a scan skipped by a blank typeahead (variant 03), a
-#   col3/col5-filtered decoy (variant 04) or an empty search (variant 05)
-#   is distinguishable from an entry that was scanned and rejected
-#   (variants 00/02).
-# - generate_menu_options ALWAYS runs; an empty project_list is a pinned []
-#   options payload, and every rendered label must obey the 70-char cap.
-# - the lookup table is read-only for this recipe: the mock snapshot must be
-#   byte-identical before and after every variant.
 
 
 def verify_124862303(result: dict[str, Any]) -> dict[str, Any]:
@@ -19255,33 +19163,6 @@ def verify_124862303(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 124859961 (CICD 'Project Configurations'
-# slack_bot.dynamic_menu -> lookup_table 4075676 'CICD | LT | Project
-# Configuration' col3/col5 search -> per-entry json_parser of the col6
-# 'Project Context' document -> compound-OR typeahead matching (project name
-# OR release name, both .downcase contains) -> project_list accumulation ->
-# slack_bot.generate_menu_options).
-# TWIN of 124862303 (only the lookup_table_id differs, 4079230 there).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the label ternary keys on release_name PRESENCE, not on which OR arm
-#   matched: an entry matched via its project name still gets the
-#   '#{release} (project: #{col2})' label when its col6 carries a release
-#   (variant 04), and the release arm label is sliced with the Ruby
-#   EXCLUSIVE range [0...70] (variant 01 pins the exactly-70-char
-#   truncation next to an untruncated sibling).
-# - parse_json runs for EVERY narrowed entry (matching or not):
-#   expect.parsed_documents pins the ordered raw col6 strings handed to the
-#   parser, so a scan skipped by a blank typeahead (variant 03), a
-#   col3/col5-filtered decoy (variant 04) or an empty search (variant 05)
-#   is distinguishable from an entry that was scanned and rejected
-#   (variants 00/02).
-# - generate_menu_options ALWAYS runs; an empty project_list is a pinned []
-#   options payload, and every rendered label must obey the 70-char cap.
-# - the lookup table is read-only for this recipe: the mock snapshot must be
-#   byte-identical before and after every variant.
 
 
 def verify_124859961(result: dict[str, Any]) -> dict[str, Any]:
@@ -19430,32 +19311,6 @@ def verify_124859961(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 106603524 (recipe function: AccountList ->
-# account_ids_string pluck/join -> two aggregate SOQL COUNT queries over live
-# Support_Ticket__c (open tickets / open >20 days, SELECT aliases) -> two
-# smart lists -> LEFT JOIN query -> return result.SupportTickets; whole body
-# in TRY, CATCH(max_retry 3) -> STOP stop_with_error).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.tool_expectations pins the two RESOLVED aggregate SOQL texts
-#   verbatim (IsDeleted = FALSE evaluated on live read-back via read_fields,
-#   NOT IN ('Closed', 'Resolved'), Account__c IN ('<live ids>') built from
-#   the pluck/join string -- IN ('') on the empty-input branch -- and the
-#   Days_Open__c > 20 leaf that differentiates the second query).
-# - expect.query_rows pins the exact LEFT-JOIN output: a JOIN hit carries an
-#   integer OpenTicketsMore20days, a LEFT-JOIN miss carries null, and the
-#   empty-input branch carries [] (create_lists row_counts 0/0 prove the
-#   lists were built and empty, not skipped).
-# - expect.final_result pins the exact return_result payload (the
-#   ____source-mapped SupportTickets rows, null for the JOIN-miss column).
-# - the catch variant (sanctioned fault injection on 596c386d) pins the
-#   engine-canonical catch payload {type: RawRecipeExecutionError, message}
-#   via step_outputs and requires the stop row (11 / db452987) to be the
-#   FINAL trace row; trace stop rows carry no stop_reason.
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 
 def verify_106603524(result: dict[str, Any]) -> dict[str, Any]:
@@ -19596,36 +19451,6 @@ def verify_106603524(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 110075264 (recipe function: primary
-# Workato_User_Opportunity__c lookup by id -> operation-log upsert (table
-# 15307, keyed workato_user_id) -> primary WUO marked 'Partially
-# Deprovisioned' -> sibling-workspace SOQL (sibling Workspace_ID compared to
-# the PRIMARY's User_ID, same Opportunity/DC, Id != primary) -> IF matches:
-# composite update + per-success loop upsert -> return the primary log
-# record id).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.tool_expectations pins the resolved 4-term sibling WHERE verbatim
-#   (the recipe quirk: Workato_User__r.Workspace_ID__c = the primary's
-#   USER id, never workspace==workspace; variant_02's primary matches all
-#   three field terms and is excluded ONLY by Id !=).
-# - expect.final_table_15307 pins the exact final mock rows: the seeded
-#   primary log row UPDATED in place (record-id column preserved -- the
-#   return value), one INSERTED row per composite-success sibling (keyed on
-#   the sibling's live Workato_User__c id), execution_date =
-#   job_created_at.to_date.
-# - expect.final_provisioning_status pins the LIVE post-run
-#   Provisioning_Status__c of EVERY seeded WUO (siblings updated, wrong-DC /
-#   wrong-Opportunity decoys untouched), read before cleanup.
-# - the step-10/11 failedRecords stop is exercised only by an explicit
-#   post-argument child-update fault.  The allOrNone=false composite must
-#   expose that connector failure through failedRecords and the recipe must
-#   stop with the resolved child error; ordinary variants require no stop.
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers. The mock table needs no cleanup: the seed fully
-#   overwrites it every run.
 
 
 def verify_110075264(result: dict[str, Any]) -> dict[str, Any]:
@@ -19777,33 +19602,6 @@ def verify_110075264(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 122911418 (salesforce.updated_custom_object on
-# CPQ-managed SBQQ__Quote__c [seed-payload-only trigger, 4-condition filter]
-# -> lookup_table 4308327 '[GTM] Quote Effective Date' search by Quote Id ->
-# conditional LIVE Account Kickoff_Date__c update (StartDate+14 DAYS) ->
-# update_entry / add_entry effective-date bookkeeping).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - Ruby Date arithmetic: the update value is =StartDate+14 (DAYS, join-branch
-#   fix 7aad3c0c) and IF-3's lhs is (col4.to_date+14) compared byte-wise
-#   against the '#{Kickoff_Date__c}' STRING -- both pinned via the exact
-#   ISO dates in args/final state.
-# - not_contains nil/substring semantics: 'Completed | Canceled' CONTAINS
-#   'Completed' and 'Canceled' (substring, not list membership), and a blank
-#   stage would also be contained -- update-path variants must seed an
-#   active stage; skip variants pin the absence of ANY salesforce call.
-# - filter cond 4 reads the mock table through the formula lookup() by
-#   column LABEL ('Quote Id'/'Effective Date') at TRIGGER time, before any
-#   write; the dual-keyed seed rows keep the label keys frozen at their
-#   seeded values, so expect.final_lookup_rows shows label keys UNCHANGED
-#   next to recipe-maintained colN values after an update (never "fixed").
-# - filter-false variants distinguish cond-1 short-circuit (lookup() never
-#   consulted) from cond-4 rejection (lookup() consulted, then stop) -- both
-#   pin trigger_filter_matched false + zero actions + untouched table.
-# - the empty-search branch (IF 6 else) pins add_entry writing ONLY colN
-#   keys: an added row carries no label keys.
 
 
 def verify_122911418(result: dict[str, Any]) -> dict[str, Any]:
@@ -19954,32 +19752,6 @@ def verify_122911418(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 127065639 (workato_webhooks 'Send_snowflake_
-# cost_alerts' -> LIVE snowflake SELECT * FROM ...SNOWFLAKE_COST_ALERTS ->
-# accumulated Slack digest (LIVE post, channel C099RC7FRT4 redirected to the
-# benchmark override) -> LIVE INSERT..SELECT WHERE TYPE='DAILY' into
-# ...SNOWFLAKE_COST_ALERT_MONITORING with CURRENT_TIMESTAMP()).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _case_field.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - Ruby double-quoted escape semantics: the header's '*:\n' and the item
-#   lines' '\n> '/trailing '\n' are REAL newline bytes (join-branch escape
-#   fix 7aad3c0c) -- expect.slack_message pins the exact rendered bytes and
-#   the Slack_Message variable end-state is asserted independently of the
-#   post, so a literal backslash-n regression fails both ways.
-# - Message_Time is rows[0]['message_timestamp'] (dual-case live row keys:
-#   lowercase derefs against UPPERCASE columns) and Alert_Type is written
-#   then read within the SAME loop iteration (sequential variable
-#   semantics); both only observable through the exact message bytes.
-# - the monitoring INSERT is pinned as the RAW resolved SQL (still carrying
-#   CURRENT_TIMESTAMP(); the live client rewrites it to the seeded
-#   current_time), its WHERE TYPE='DAILY' filter is proven by a mixed
-#   DAILY/WEEKLY seed, and the final monitoring rows pin the deterministic
-#   INSERTED_AT timestamp + DATE(MESSAGE_TIMESTAMP) cast of the VARCHAR.
-# - the alert table is read-only: its snapshot must be identical before and
-#   after every variant (the INSERT writes only the monitoring table).
 
 
 def verify_127065639(result: dict[str, Any]) -> dict[str, Any]:
@@ -20126,36 +19898,6 @@ def verify_127065639(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 89583909 (workato_service.receive_request
-# 'Flexi Idler' {Secs integer} -> log Secs%10 -> create_list (Secs/10).to_i ->
-# FOREACH chunk call_service flow 45626522 'Timer' -> IF remainder>0 one more
-# call_service -> send_reply secs_waited = now-job_created_at). Byte-identical
-# twin of 89454478 (flow_id differs only); same logic family as
-# 88676116/88624257.
-#
-# NEW verify_89583909 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session (the module carries an identical local copy until the
-# merge; switch its import afterwards). Uses only helpers already defined
-# there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.call_service_step_as pins the per-call step ids from the trace
-#   ('664a521c' chunk vs '5ed86f4a' remainder) IN ORDER. This is the ONLY
-#   branch proof for 0-remainder variants: the phantom remainder call would
-#   ask for exactly size*10-delta secs -- the same value as the last chunk
-#   call -- so tool args cannot distinguish the IF-6 branch.
-# - expect.create_list_size pins (Secs/10).to_i (Ruby floor division; empty
-#   list at size 0 drives the foreach-0 branch and the list_meta ____Size=0
-#   fallback in the remainder formula).
-# - expect.reply pins the send_reply return_value exactly; the whole-second
-#   now-delta renders as int (Ruby Float; ruled engine-defined at triage).
-# - expect.log_messages is OPTIONAL and only pinned when Ruby-faithful
-#   (remainder != 0). ENGINE GAP (batch-05, open): resolve_text
-#   str(resolved or "") renders integer 0 as '' where Ruby renders '0'
-#   (raw_executor.py resolve_text); never pin the deviant '' rendering.
-# - negative chunk secs (e.g. -2 at seq_no 1, delta 12s) are faithful engine
-#   arithmetic under the pinned clock -- pinned via args_contains, never
-#   'fixed'.
 
 def verify_89583909(result: dict[str, Any]) -> dict[str, Any]:
     replay = _verify_replay_recipe(result)
@@ -20232,36 +19974,6 @@ def verify_89583909(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 89454478 (workato_service.receive_request
-# 'Flexi Idler' {Secs integer} -> log Secs%10 -> create_list (Secs/10).to_i ->
-# FOREACH chunk call_service flow 45561579 'Timer' -> IF remainder>0 one more
-# call_service -> send_reply secs_waited = now-job_created_at). Byte-identical
-# twin of 89583909 (flow_id differs only); same logic family as
-# 88676116/88624257.
-#
-# NEW verify_89454478 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session (the module carries an identical local copy until the
-# merge; switch its import afterwards). Uses only helpers already defined
-# there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.call_service_step_as pins the per-call step ids from the trace
-#   ('664a521c' chunk vs '5ed86f4a' remainder) IN ORDER. This is the ONLY
-#   branch proof for 0-remainder variants: the phantom remainder call would
-#   ask for exactly size*10-delta secs -- the same value as the last chunk
-#   call -- so tool args cannot distinguish the IF-6 branch.
-# - expect.create_list_size pins (Secs/10).to_i (Ruby floor division; empty
-#   list at size 0 drives the foreach-0 branch and the list_meta ____Size=0
-#   fallback in the remainder formula).
-# - expect.reply pins the send_reply return_value exactly; the whole-second
-#   now-delta renders as int (Ruby Float; ruled engine-defined at triage).
-# - expect.log_messages is OPTIONAL and only pinned when Ruby-faithful
-#   (remainder != 0). ENGINE GAP (batch-05, open): resolve_text
-#   str(resolved or "") renders integer 0 as '' where Ruby renders '0'
-#   (raw_executor.py resolve_text); never pin the deviant '' rendering.
-# - negative chunk secs (e.g. -2 at seq_no 1, delta 12s) are faithful engine
-#   arithmetic under the pinned clock -- pinned via args_contains, never
-#   'fixed'.
 
 def verify_89454478(result: dict[str, Any]) -> dict[str, Any]:
     replay = _verify_replay_recipe(result)
@@ -20338,34 +20050,6 @@ def verify_89454478(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 94382842 (slack_bot.dynamic_menu 'List of
-# Freshdesk Company Names' -> declare job_report='OK' -> TRY: LIVE Snowflake
-# SELECT DISTINCT COMPANY_NAME FROM WORKATO_BUSINESS_SYSTEMS.FRESHDESK.
-# product_support_ticket_export WHERE LOWER(COMPANY_NAME) LIKE
-# LOWER('%<typeahead>%') limit 2000 -> generate_menu_options (flat options,
-# label=value=company_name); CATCH: update_variables job_report='Failed' on
-# the DECLARED step 36bf1d17).
-# NOT a buildable twin of 94382824: that recipe's anon-token update target
-# (<anon>bbbbbbbb</anon>) still resolves to a phantom step — blocked, see
-# record/scale_batch05 batch_D notes.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.resolved_sql pins the interpolated SQL text verbatim (LOWER on
-#   BOTH sides; blank typeahead renders LIKE LOWER('%%')); args.limit must
-#   stay the raw '2000' the connector appends live.
-# - No ORDER BY in the SQL: multi-row menus set menu_options_ordered false
-#   and are compared as a MULTISET; single/empty results pin exact order.
-# - DISTINCT and NULL semantics are proven live by seeds (duplicate rows
-#   collapse; LOWER(NULL) LIKE ... is NULL so null names never surface) —
-#   result_count on the search expectation carries that weight.
-# - label == value == company_name for every rendered option.
-# - The CATCH branch (forced error on 85f2b107) must flip job_report on the
-#   DECLARED step 36bf1d17 and must NOT create any phantom variable step
-#   (the twin's failure mode); zero registry tools run on that branch.
-# - The live table is READ-ONLY for this recipe: snapshots must match
-#   before/after, and cleanup must report dropping the registered table.
 
 
 def verify_94382842(result: dict[str, Any]) -> dict[str, Any]:
@@ -20587,33 +20271,6 @@ def verify_94382842(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 89648194 (slack_bot.dynamic_menu 'Persona
-# List X-Ray' -> workato_db_table 6258 get_records with Persona-isnotnull
-# filter -> declare_list 'Persona' -> FOREACH record: IF persona.downcase
-# CONTAINS typeahead.downcase -> insert_to_list {persona_type} ->
-# generate_menu_options over the accumulated list, label=value=persona_type,
-# flat options path despite the vestigial option_groups [{}]).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.filtered_personas pins the ORDERED persona values the isnotnull
-#   filter lets through (null-valued AND missing-key rows are dropped by the
-#   mock BEFORE the foreach — a row rejected by the IF is distinguishable
-#   from one the filter never surfaced, via result_count + this list).
-# - contains() is Ruby .downcase on BOTH sides and contains('') is TRUE: a
-#   blank typeahead admits every filtered row (a distinct pinned branch, not
-#   an error), mixed-case mid-string needles match, and 'zzz' yields zero
-#   inserts but STILL renders an options [] payload (the menu step sits
-#   outside the loop).
-# - expect.inserted_items pins the ordered insert_to_list payloads; the
-#   accumulated a75ef396 list state must equal it exactly (declare_list
-#   starts empty on every run).
-# - label == value == persona_type for every rendered option; menu order is
-#   DETERMINISTIC (seed order -> filter order -> insert order), so
-#   menu_options pins exact order.
-# - Table 6258 is READ-ONLY for this recipe: the mock snapshot must be
-#   byte-identical before and after every variant.
 
 
 def verify_89648194(result: dict[str, Any]) -> dict[str, Any]:
@@ -20759,36 +20416,6 @@ def verify_89648194(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 122043574 (workato_api_platform.receive_request
-# {job_id!, application_id!, role!, resume_url} -> TRY> IF job_id.to_s.match?
-# (/7984378002|7983026002|7951510002|7953119002|7829658002|6171798002/) ->
-# workato_db_table.upsert_record table 30554 (primary Application ID, literal
-# Status 'New') + return_response 200 (engine-terminal) / IF-false -> STOP
-# (stop_with_error false) / CATCH -> logger 'Type/Message/Step/App/Action'
-# where line_number/adapter/action are MISSING and render ''). All backends
-# Workato-internal mocks. TWIN of 121973430 (table 29375 there).
-#
-# NEW verify_122043574 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.tool_expectations pin the upsert args verbatim (all 5 record
-#   fields incl. the literal Status 'New', dash-form primary_field_id, table
-#   30554) + the created flag (create vs update-in-place) + the 200 response.
-# - expect.branch + expect.stopped pin the control path: match branches must
-#   show NO stop trace row (return_response is engine-terminal, the trailing
-#   STOP 6 is never reached); the no-match branch must stop EXACTLY at step 6
-#   (as c5aec6a6) with 0 actions and a null return_value.
-# - expect.catch_log_messages pins the catch rendering byte-exact:
-#   'Type: RawRecipeExecutionError\nMessage: <err>\nStep: \nApp: \nAction: '
-#   — the engine catch payload carries only {type, message}; the other three
-#   pills are MISSING and interpolate as ''.
-# - expect.initial_table_rows / final_table_rows pin the FULL mock-table
-#   state transition byte-exact (incl. _row_id/_created_by/_modified_by
-#   bookkeeping): a ghost write, a decoy-row mutation, or a wrong upsert
-#   target each fail.
-# - twin guard: every upsert call in the trace must target table 30554.
 
 
 def verify_122043574(result: dict[str, Any]) -> dict[str, Any]:
@@ -20909,36 +20536,6 @@ def verify_122043574(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 121973430 (workato_api_platform.receive_request
-# {job_id!, application_id!, role!, resume_url} -> TRY> IF job_id.to_s.match?
-# (/7984378002|7983026002|7951510002|7953119002|7829658002|6171798002/) ->
-# workato_db_table.upsert_record table 29375 (primary Application ID, literal
-# Status 'New') + return_response 200 (engine-terminal) / IF-false -> STOP
-# (stop_with_error false) / CATCH -> logger 'Type/Message/Step/App/Action'
-# where line_number/adapter/action are MISSING and render ''). All backends
-# Workato-internal mocks. TWIN of 122043574 (table 30554 there).
-#
-# NEW verify_121973430 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.tool_expectations pin the upsert args verbatim (all 5 record
-#   fields incl. the literal Status 'New', dash-form primary_field_id, table
-#   29375) + the created flag (create vs update-in-place) + the 200 response.
-# - expect.branch + expect.stopped pin the control path: match branches must
-#   show NO stop trace row (return_response is engine-terminal, the trailing
-#   STOP 6 is never reached); the no-match branch must stop EXACTLY at step 6
-#   (as c5aec6a6) with 0 actions and a null return_value.
-# - expect.catch_log_messages pins the catch rendering byte-exact:
-#   'Type: RawRecipeExecutionError\nMessage: <err>\nStep: \nApp: \nAction: '
-#   — the engine catch payload carries only {type, message}; the other three
-#   pills are MISSING and interpolate as ''.
-# - expect.initial_table_rows / final_table_rows pin the FULL mock-table
-#   state transition byte-exact (incl. _row_id/_created_by/_modified_by
-#   bookkeeping): a ghost write, a decoy-row mutation, or a wrong upsert
-#   target each fail.
-# - twin guard: every upsert call in the trace must target table 29375.
 
 
 def verify_121973430(result: dict[str, Any]) -> dict[str, Any]:
@@ -21059,29 +20656,6 @@ def verify_121973430(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 124656411 (clock.scheduled_event monthly ->
-# unconditional two-table lookup purge: get_entries 3959191 'RevOps Closed
-# Lost - Opportunities' -> foreach delete_entry (ignore_not_found false) ->
-# get_entries 4350535 'RevOps Add - Opportunities' -> foreach delete_entry).
-# No conditionals, no formulas; foreach sources are materialized from the
-# get_entries OUTPUT before iteration so mid-loop deletes are stable and an
-# empty table runs zero iterations. All backends Workato-internal mocks.
-#
-# NEW verify_124656411 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.tool_expectations pin every call in order: per-get result_count
-#   (foreach cardinality per table) and per-delete args verbatim
-#   ({lookup_table_id, id, ignore_not_found 'false'} — ids are the INTEGER
-#   _row_id-derived entry ids 0..N-1 in seed order).
-# - expect.delete_sequence pins the (table, id) purge order end-to-end:
-#   table 3959191 fully purged BEFORE table 4350535 is even read; a ghost
-#   delete, a skipped entry, or cross-table bleed each fail.
-# - expect.initial_table_counts / final_tables pin the state transition:
-#   both tables must end EXACTLY [] (byte-exact snapshot equality), and the
-#   deletes-per-table must equal the seeded counts.
 
 
 def verify_124656411(result: dict[str, Any]) -> dict[str, Any]:
@@ -21194,41 +20768,6 @@ def verify_124656411(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 131036228 (clock.scheduled_event daily 06:19
-# America/Los_Angeles -> declare num_deleted=0 (INTEGER schema) ->
-# lookup_table.get_entries 4506281 '[GTM] Google Drive Logs' -> FOREACH ->
-# IF entry.col3.to_date < 6.months.ago -> delete_entry (ignore_not_found
-# false) + update_variables num_deleted = _dp(num_deleted) + 1). All
-# backends Workato-internal mocks; 'now' is pinned per variant.
-#
-# NEW verify_131036228 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# This recipe's core observable is the INTEGER-COUNTER ACCUMULATION that was
-# batch-05 gap 'integer-variable accumulation string-joins' (fixed at
-# f9d83a51, re-probed on HEAD): declared-integer variables coerce on
-# update_variables writes, so '=_dp(num_deleted) + 1' accumulates 1 -> 2 -> 3
-# arithmetically instead of '1' -> '11'.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.update_args_sequence pins EVERY update_variables write in order,
-#   byte-exact as engine-canonical STRINGS ('1','2','3'); the pre-fix
-#   string-join regression ('1','11') or a skipped increment fails.
-# - expect.num_deleted_final pins the STORED variable strictly: it must be an
-#   int (not bool, not the string '2') AND equal the deletion count — the
-#   type check is what distinguishes the arithmetic accumulator from a
-#   lexical one that happens to render the same digits.
-# - expect.deleted_entry_ids pins exactly WHICH entries the retention window
-#   caught (ids in seed order, deletes interleaved 1:1 with counter
-#   updates); a decoy recent row being deleted, or an old row surviving,
-#   fails both here and in expect.final_rows.
-# - expect.initial_row_count / final_rows pin the mock-table state
-#   transition byte-exact (incl. _row_id/_created_by bookkeeping).
-# - boundary variants pin the cutoff-DATE edge: col3 == date(6.months.ago)
-#   is DELETED for any non-midnight 'now' (Rails Date-vs-Time midnight
-#   coercion — the triage note claiming strict-< keeps it was wrong); the
-#   seeder refuses midnight 'now', the only spot engine and Ruby diverge.
 
 
 def verify_131036228(result: dict[str, Any]) -> dict[str, Any]:
@@ -21359,30 +20898,6 @@ def verify_131036228(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 92330852 ("Flexi Idler" callable service,
-# _dp-pill twin family: log Secs%10 -> create list (Secs/10).to_i -> foreach
-# call_service "Base Timer Unit" flow 46919727 per chunk -> IF remainder>0
-# one more call_service -> send_reply secs_waited = now-job_created_at).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - pinned-now faithful replay: this is a wall-clock sleeper, so with the
-#   pinned seed 'now' every chunk call arg is the CONSTANT string
-#   str(seq_no*10 - delta) (delta = now - job_created_at seconds) — often
-#   negative. A model that "fixes" the arithmetic or advances now per
-#   iteration fails the exact per-iteration pins.
-# - call_service request.secs values are STRINGS (text-interpolated render);
-#   reply.secs_waited is an INT. Types are pinned as the engine produces
-#   them.
-# - zero remainder logs "" (NOT "0"): logger renders via str(value or ""),
-#   so the IF-6 lhs is "" and the remainder branch must NOT fire; the
-#   verifier cross-pins remainder presence against expect.log_message.
-# - foreach skip proof: Secs < 10 seeds list size 0 — the foreach body must
-#   contribute ZERO chunk rows while the remainder call still fires.
-# - every call_service must carry flow_id 46919727 (the ONLY byte that
-#   distinguishes this recipe from its family twin) and the seeded
-#   deterministic reply object.
 
 
 def verify_92330852(result: dict[str, Any]) -> dict[str, Any]:
@@ -21544,30 +21059,6 @@ def verify_92330852(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 92330759 ("Flexi Idler" callable service,
-# _dp-pill twin family: log Secs%10 -> create list (Secs/10).to_i -> foreach
-# call_service "Base Timer Unit" flow 46919722 per chunk -> IF remainder>0
-# one more call_service -> send_reply secs_waited = now-job_created_at).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - pinned-now faithful replay: this is a wall-clock sleeper, so with the
-#   pinned seed 'now' every chunk call arg is the CONSTANT string
-#   str(seq_no*10 - delta) (delta = now - job_created_at seconds) — often
-#   negative. A model that "fixes" the arithmetic or advances now per
-#   iteration fails the exact per-iteration pins.
-# - call_service request.secs values are STRINGS (text-interpolated render);
-#   reply.secs_waited is an INT. Types are pinned as the engine produces
-#   them.
-# - zero remainder logs "" (NOT "0"): logger renders via str(value or ""),
-#   so the IF-6 lhs is "" and the remainder branch must NOT fire; the
-#   verifier cross-pins remainder presence against expect.log_message.
-# - foreach skip proof: Secs < 10 seeds list size 0 — the foreach body must
-#   contribute ZERO chunk rows while the remainder call still fires.
-# - every call_service must carry flow_id 46919722 (the ONLY byte that
-#   distinguishes this recipe from its family twin) and the seeded
-#   deterministic reply object.
 
 
 def verify_92330759(result: dict[str, Any]) -> dict[str, Any]:
@@ -21729,34 +21220,6 @@ def verify_92330759(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 115274906 (Freshdesk webhook -> live Slack
-# users.lookupByEmail on the ticket agent -> strip_tags variable -> four
-# mutually-exclusive severity IFs, each posting one section_with_text block
-# to the override channel).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.post_text pins the FULL rendered section text verbatim, including
-#   the per-branch emoji + spacing quirks that differ between the four posts
-#   (Severity 3 renders '...portal_url | *subject*' with a space before the
-#   pipe and ':large_yellow_circle:  ' with two spaces; Severity 2 has ONE
-#   space after ':red_circle:'). A model that reuses one template for all
-#   severities fails the exact pin.
-# - strip_tags parity: tags are stripped, HTML ENTITIES ARE KEPT ('&amp;'
-#   stays '&amp;'), and no whitespace is inserted where tags were removed
-#   ('<b>fail</b> after' -> 'fail after' but '<br>' joins lines with no
-#   separator). expect.stripped_description pins the exact result and the
-#   posted text must embed it as '_<stripped>_'.
-# - the <@Uxxx> mention comes from the LIVE lookup result (the only
-#   live-proven member email jamie.lee@corp.example -> U0B91BSRGF8); the
-#   verifier pins the lookup result id and rejects not_found.
-# - the four sibling IFs are equals_to-mutually-exclusive: at most ONE post
-#   row may exist, from exactly the expected step; the unmatched-severity
-#   variant proves all four dead branches (2 actions, zero post rows).
-# - channel isolation: the raw channel 'CCXAQPNPJ' must never be posted to;
-#   the executor routes non-'U' channels to SLACK_CHANNEL_OVERRIDE and the
-#   verifier rejects any post to the raw channel or to a raw user DM.
 
 
 def verify_115274906(result: dict[str, Any]) -> dict[str, Any]:
@@ -21877,31 +21340,6 @@ def verify_115274906(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 120761092 (workato_api_platform list endpoint
-# -> TRY { live snowflake.run_custom_sql over walnutiq.companies with ORDER BY
-# updated_at DESC -> IF rows > 0: 200 source-mapped results / ELSE: STOP
-# 'No results found' } CATCH: 500 {message: catch.c7cc2a1d.message}).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - variant_00 seeds the rows OUT of updated_at order: the 200 response must
-#   list them in live ORDER BY updated_at DESC order — an engine/model that
-#   returns insertion order fails the exact response pin.
-# - updated_at pins the isoformat rendering of the live TIMESTAMP_NTZ
-#   read-back ('2026-06-28T11:05:33', naive); id / zoominfo_id pin the
-#   Decimal->int rendering of NUMBER columns.
-# - the empty-table branch STOPS the job (engine semantics pinned): the stop
-#   is NOT routed through the CATCH, no return_response fires and
-#   return_value stays null; the trace must end in the fc3279e9 stopped:true
-#   row after exactly one snowflake call.
-# - the catch variant uses seed.force_action_error on 24986ee3 (static SQL =
-#   no trigger-controllable live failure): the snowflake call never happens
-#   (trace has NO snowflake row), the c7cc2a1d catch payload message must
-#   equal the forced error text and the 618a4cc1 response echoes it as
-#   {message: ...} with http 500.
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality before/after,
-#   and harness cleanup must drop the seeded walnutiq.companies table.
 
 
 def verify_120761092(result: dict[str, Any]) -> dict[str, Any]:
@@ -22051,35 +21489,6 @@ def verify_120761092(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 130073081 (workato_recipe_function.execute ->
-# declare snap_date -> TRY: LIVE Snowflake recursive CTAS
-# plg.chi_2024_recipe_hierarchy_operational (anchor = is_valid_workflow
-# roots, parent_id recursion with array_append path + array_contains cycle
-# guard, workflow_type CASE 'RF workflow'/'Root workflow'/'Not workflow',
-# group by all, trailing ';') + skip:true async twin -> return
-# {status:'success'}; CATCH: return {status:'failed'} TERMINAL, stop node
-# unreachable).
-#
-# NEW verify_130073081 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check) plus a locally-imported json.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the raw CTAS bytes verbatim (with recursive,
-#   array_construct/append/contains, group by all, trailing ';'); result_count
-#   1 pins the live "successfully created" single-row read-back.
-# - expect.final_snowflake_tables pins the CTAS result live: exact row count
-#   + per-row equality keyed on (FLOW_ID, LEVEL, ROOT_FLOW). HIERARCHY_PATH
-#   is a live ARRAY returned as JSON text -> expected values are JSON lists
-#   and the comparison is json.loads-based (formatting-independent, content
-#   exact). The source table is pinned unchanged (read-only recipe).
-# - expect.async_step_skipped pins the skip:true async twin: traced exactly
-#   once as {skipped: true} with NO tool on success paths, absent on the
-#   catch path (never reached).
-# - stop_node_never_traced pins the engine-canonical terminal return: the
-#   catch's return_result halts the run before the stop node.
-# - cleanup must drop exactly the two registered tables (seeded source +
-#   CTAS-created target) even on the catch path.
 
 def _snowflake_ctas_value_matches_130073081(actual: Any, expected: Any) -> bool:
     import json as _json
@@ -22222,32 +21631,6 @@ def verify_130073081(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 130549575 (workato_recipe_function.execute ->
-# declare snap_date -> TRY: LIVE Snowflake CTAS
-# plg.chi_<anon>2023</anon>_process_complexity_scores_operational (rank/
-# qualify num_steps pick, app-tier min-score pivots with /30 spread term,
-# step-logic async+sync CASE, data-proc >10 caps, lateral-alias section
-# complexities and round(overall,2)) + skip:true async twin -> return
-# {status:'success'}; CATCH: return {status:'failed'} TERMINAL, stop node
-# unreachable). Seeds register CLEAN de-tagged table names; the raw SQL keeps
-# its inline <anon>2023</anon> tags and args_contains pins those tagged bytes
-# verbatim (the de-tag rewrite happens at the snowflake_live boundary only).
-#
-# NEW verify_130549575 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the full tagged CTAS bytes; result_count 1 pins the
-#   live single-row "successfully created" read-back.
-# - expect.final_snowflake_tables pins the scores table EXACTLY (row count +
-#   every output column per root_flow, including NULL propagation rows where
-#   a matrix join missed and the binary-exact 16.5/12.5/0.5/96.5 arithmetic)
-#   and pins both source tables unchanged (read-only inputs).
-# - expect.async_step_skipped pins the skip:true async twin (traced once as
-#   {skipped: true}, no tool) on success paths; absent on the catch path.
-# - stop_node_never_traced pins the engine-canonical terminal catch return.
-# - cleanup must drop exactly the three registered tables.
 
 def _snowflake_ctas_table_checks_130549575(
     expected_tables: Any,
@@ -22358,34 +21741,6 @@ def verify_130549575(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 130549037 (workato_recipe_function.execute ->
-# declare snap_date -> TRY: LIVE Snowflake CTAS
-# plg.chi_<anon>2023</anon>_process_complexity_recipe_features_operational
-# (interim x hierarchy rollup: per-root flow counts, nvl step sums, ACTIVE
-# lateral flatten over split(listagg tier apps), coalesced app counts, root's
-# own hierarchy/interim joins, derived is_single_action / is_pass_through,
-# HAVING account_id is not null) + skip:true async twin -> return
-# {status:'success'}; CATCH: return {status:'failed'} TERMINAL, stop node
-# unreachable). Seeds register CLEAN de-tagged names; args_contains pins the
-# tagged raw SQL bytes verbatim (de-tag happens at the snowflake_live
-# boundary only).
-#
-# NEW verify_130549037 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - listagg(distinct ...) has NO within-group order, so multi-app TIER_N_APPS
-#   groundtruth is encoded as {"csv_set": [...]} and compared as comma-split
-#   SETS (content-exact, order-free); single-app tiers stay byte-pinned.
-# - expect.final_snowflake_tables pins the rollup EXACTLY otherwise: per-root
-#   row equality (flow counts incl. multi-membership fan-out, nvl(num_steps,0)
-#   sums, split/flatten-distinct app counts, every derived boolean including
-#   the all-false root where IS_SINGLE_ACTION and IS_PASS_THROUGH flip true)
-#   plus row COUNT (the NULL-account root must be HAVING-filtered away), and
-#   pins both source tables unchanged.
-# - expect.async_step_skipped / stop_node_never_traced / cleanup as in the
-#   sibling 130549575.
 
 def _rollup_value_matches_130549037(actual: Any, expected: Any) -> bool:
     if isinstance(expected, dict) and set(expected.keys()) == {"csv_set"}:
@@ -22524,36 +21879,6 @@ def verify_130549037(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 130423584 (clock.scheduled_event -> declare
-# Token/list -> REPEAT[ get_records 56478 with beginning_of_day gte/lt
-# window on job_created_at -> insert_to_list_batch (12 uuid-keyed pills) ->
-# Token = continuation_token.presence or nil -> WHILE Token present ] ->
-# LIVE snowflake.upsert_rows_batch PUBLIC.WORKATO_AI_USAGE key JOB_ID).
-#
-# NEW verify_130423584 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - get_records args_contains pins BOTH rendered window bounds verbatim
-#   ('(job_created_at - 1.day).beginning_of_day' gte AND
-#   'job_created_at.beginning_of_day' lt, +00:00); result_count pins the
-#   filter outcome (seeds sit below, ON the inclusive gte bound, and ON the
-#   exclusive lt bound).
-# - upsert args_contains pins the EXACT rows list (12 fields each, uuid
-#   pills mapped by column, integer tokens, offset-free ISO completed_at
-#   whose bytes equal the TIMESTAMP_NTZ read-back).
-# - single_loop_iteration + token_never_present pin the pagination shape:
-#   the recipe never wires Token back, the mock never emits a token, so the
-#   do-while runs exactly once and every Token update writes nil. A seeded
-#   continuation token would loop forever -- the seeder forbids it.
-# - upsert_created/upsert_updated pin the live created/updated split (fresh
-#   insert vs stale-row in-place update vs zero-row no-op).
-# - final_snowflake_tables pins the live table exactly (count + per-JOB_ID
-#   row equality incl. RECIPE_ID's implicit string->NUMBER cast to int).
-# - the datatable is read-only: final count matches the seed and no row was
-#   agent/recipe-written.
-# - cleanup drops exactly PUBLIC.WORKATO_AI_USAGE.
 
 def verify_130423584(result: dict[str, Any]) -> dict[str, Any]:
     replay = _verify_replay_recipe(result)
@@ -22688,30 +22013,6 @@ def verify_130423584(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 96969599 (slack_bot.dynamic_menu 'Select
-# Account': IF typeahead contains 'https' -> logger parses the lightning URL
-# to a bare Account id -> Id-equality SOQL -> menu options; ELSE -> anchored
-# prefix LIKE '<typeahead>%' SOQL -> menu options; label '#{Name}
-# (#{Owner.Name})' over the live relationship-expanded Owner).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.resolved_query pins the RESOLVED SOQL verbatim: the url branch
-#   interpolates the logger-parsed id (split('Account/').last, /view gsubbed,
-#   stripped); the prefix branch interpolates the raw typeahead into
-#   LIKE '<value>%'.
-# - LIKE anchoring (engine f9d83a51): variant_02 seeds a contains-not-prefix
-#   decoy ('Big Acme ...') that must NOT appear in menu_options, and pins
-#   ORDER BY Name ASC by seeding matches in reverse alphabetical order.
-# - expect.menu_options pins the exact rendered options: label
-#   'Name ($USER_NAME)' where $USER_NAME resolved at seed time to the live
-#   integration user (owner of all benchmark-created Accounts) and value is
-#   the live record id; [] on both no-match branches.
-# - expect.logger_message pins the parsed id on url variants; prefix variants
-#   must not run the logger at all (branch exclusivity).
-# - live seeded Accounts are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 
 def verify_96969599(result: dict[str, Any]) -> dict[str, Any]:
@@ -22795,39 +22096,6 @@ def verify_96969599(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 113397192 (recipe function: AccountList ->
-# account_ids_string pluck/join -> TRY[ SUM(Active_Recipes__c) aggregate SOQL
-# over live Workato_User__c -> 'ActiveRecipes' smart list -> MAX(
-# Last_Login_Date__c) aggregate SOQL -> 'LastLogin' smart list -> skipped
-# FULL-OUTER-JOIN query_list ]CATCH -> STOP stop_with_error -> return
-# result.WorkatoUsers mapped from the SUM records only).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.tool_expectations pins both RESOLVED aggregate SOQL texts verbatim
-#   (incl. the raw text's trailing spaces): IsDeleted = FALSE and
-#   In_trial__c = FALSE evaluate live read-back booleans via read_fields,
-#   != 'free', anchored-engine LIKE '%Production%', and the pluck/join
-#   Account__c IN ('<live ids>') -- IN ('') on the empty branch.
-# - SUM/MAX WHERE DIVERGENCE: the MAX query carries NO User_Account_Type__c
-#   leaf, so variant_00's Sandbox-type user is excluded from the SUM yet its
-#   later Last_Login_Date__c wins account A's MAX (lexicographic ISO-date
-#   ordering, engine f9d83a51). expect.create_lists pins both lists' exact
-#   rows to hold that divergence.
-# - the FULL OUTER JOIN step (e0c752d5, number 8) is skip:true -- it must
-#   trace as exactly one {skipped: true} row on happy paths and NO
-#   workato_smart_list.query_list tool row may ever exist.
-# - expect.final_result pins the return payload: rows carry ONLY
-#   AccountID/ProductionActiveRecipes (LastLoginDate is declared in the
-#   result schema but never mapped).
-# - the catch variant (sanctioned fault injection on 568d7149) pins the
-#   engine-canonical catch payload {type: RawRecipeExecutionError, message}
-#   via step_outputs and requires the stop row (10 / 3b83e78e) to be the
-#   FINAL trace row; the declared max_retry_count 3 has no executor retry
-#   semantics (single attempt -- the trace is not tripled).
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 
 def verify_113397192(result: dict[str, Any]) -> dict[str, Any]:
@@ -22964,34 +22232,6 @@ def verify_113397192(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 125223317 (salesforce.updated_custom_object on
-# Campaign_Activity__c with trigger filter [Campaign__c contains
-# '7011N000000xp4nQAA' AND Notes__c present] -> equality-filter search on
-# Campaign__c+Email__c -> IF list_size > 1 -> foreach -> IF Notes blank ->
-# IF same-day CreatedDate -> update Notes__c = trigger.Notes__c).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _snapshot_records.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.trigger_filter_matched pins the trigger filter outcome; the
-#   filter-skip variant (blank Notes__c) must run ZERO actions.
-# - expect.tool_expectations pins the search filters as an EXACT list
-#   (Campaign__c then Email__c equality over live read-back) + result_count,
-#   and the update args {id: <live dup id>, fields.Notes__c} whose
-#   final-state parity _strict_salesforce_update_checks already enforces.
-# - LIVE-AUDIT-FIELD DERIVATION: the same-day variant's trigger.CreatedDate
-#   was seeder-derived from the dup's immutable live CreatedDate (same UTC
-#   day, different clock time), so IF-6 proves .to_date DAY truncation --
-#   never full-timestamp equality; the different-day variant pins a fixed
-#   past timestamp and must not update.
-# - expect.final_notes pins the FINAL live Notes__c of every seeded record
-#   by id: exactly the one same-day blank-notes duplicate flips to
-#   trigger.Notes__c; the trigger record, noted dup, off-campaign and
-#   off-email decoys must keep their seeded value (null for blank seeds).
-# - live seeded records are deleted in a finally block on live variants;
-#   cleanup must report zero leftovers (the filter-skip variant seeds
-#   nothing and has no cleanup_response).
 
 
 def verify_125223317(result: dict[str, Any]) -> dict[str, Any]:
@@ -23083,35 +22323,6 @@ def verify_125223317(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118858162 (/supportschedule bot command:
-# week = now.in_time_zone("Asia/Singapore").yweek -> live sheet search on
-# col_WEEK NO -> accumulate time_now (SGT minutes int) + six 'HH:MM - HH:MM'
-# window bounds via .split("-").first/.last.strip.to_time.strftime chains ->
-# us_support / us_shift_period / us_support_online if/else variables ->
-# three independent window IFs each posting a bot reply; the EMEA IF is a
-# FAITHFUL OR quirk).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.accumulated_item pins the ENGINE-CANONICAL renderings byte-exact:
-#   time_now is an INT while every window bound is a minute STRING ('540');
-#   the IF lhs formulas apply .to_i on both sides so the comparison is
-#   numeric (probed on f9d83a51, incl. the raw recipe's embedded newline
-#   inside the apj_start chain).
-# - the sheets search args pin data {'col_WEEK NO': <raw yweek int>}: the
-#   whole-pill "#{week}" data value resolves to the raw int and the live
-#   matcher string-coerces both sides; the tab is seeded with LITERAL
-#   col_-prefixed headers and exactly ONE matching row (first-row semantics
-#   -- every sheet pill reads outside any foreach) plus a different-week
-#   decoy proving the filter.
-# - expect.slack_posts pins each reply's step id AND full rendered text
-#   byte-exact (US pair vs dash single-name arms, one- vs two-line shift
-#   period, the OR-quirk EMEA post firing hours past emea_end); posts go to
-#   the override channel with an EMPTY thread_ts (the seed-authored trigger
-#   carries no message_ts; the raw ephemeral_message flag is dropped).
-# - no cleanup: the sheet seed fully overwrites the redirected tab every
-#   seed and the replies are terminal observables (cleanup principle).
 
 
 def verify_118858162(result: dict[str, Any]) -> dict[str, Any]:
@@ -23200,38 +22411,6 @@ def verify_118858162(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 94382824 (slack_bot.dynamic_menu 'List of
-# Salesforce Company Names' -> declare job_report='OK' -> TRY: LIVE Snowflake
-# SELECT DISTINCT NAME FROM WORKATO_BUSINESS_SYSTEMS.SALESFORCE.ACCOUNT
-# WHERE LOWER(NAME) LIKE LOWER('%<typeahead>%') limit 2000 ->
-# generate_menu_options (flat options, label=value=name); CATCH:
-# update_variables job_report='Failed' through the ANONYMIZED placeholder
-# target '<anon>aaaaaaaa-…</anon>:<anon>bbbbbbbb</anon>:job_report').
-# TWIN of 94382842 (only the column/table NAME/…SALESFORCE.ACCOUNT vs
-# COMPANY_NAME/…FRESHDESK.product_support_ticket_export, the menu name and
-# the anon catch target differ).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.resolved_sql pins the interpolated SQL text verbatim (LOWER on
-#   BOTH sides; blank typeahead renders LIKE LOWER('%%')); args.limit must
-#   stay the raw '2000' the connector appends live.
-# - No ORDER BY in the SQL: multi-row menus set menu_options_ordered false
-#   and are compared as a MULTISET; single/empty results pin exact order.
-# - DISTINCT and NULL semantics are proven live by seeds (duplicate rows
-#   collapse; LOWER(NULL) LIKE ... is NULL so null names never surface) —
-#   result_count on the search expectation carries that weight.
-# - label == value == name for every rendered option.
-# - The CATCH branch (forced error on 85f2b107) is THE anon-resolution
-#   lane: the placeholder token '<anon>bbbbbbbb</anon>' is NOT the declared
-#   step id even after stripping, so the engine must resolve it by the
-#   unique job_report owner (raw_executor.py:1901-1925, fix 80d400ce) and
-#   flip job_report on the DECLARED step 36bf1d17. no_phantom_variable_steps
-#   is the regression tripwire: any write to another key (the pre-fix
-#   phantom '<anon>bbbbbbbb</anon>' failure mode) turns groundtruth red.
-# - The live table is READ-ONLY for this recipe: snapshots must match
-#   before/after, and cleanup must report dropping the registered table.
 
 
 def verify_94382824(result: dict[str, Any]) -> dict[str, Any]:
@@ -23455,38 +22634,6 @@ def verify_94382824(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 120183307 (clock.scheduled_event daily 17:00,
-# payload-less -> lookup_table.truncate 3300555 -> LIVE snowflake
-# run_custom_sql over edw_db.workato_usage_intermediate.accounts_snapshot
-# (latest entry_date via max() subselect + bare is_direct/is_paying boolean
-# predicates, trailing ';') -> IF rows_affected == 0: add_batch 66dcea69
-# (always []) / ELSE: add_batch fadff562 (mapped rows) -> add_entry c7e5734b
-# demo row col1 = rows current_item entry_date OUTSIDE foreach, col2 =
-# '<anon>Acme Corp (Demo customer)</anon>' stored VERBATIM).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - branch discriminator is the batch step AS-ID: the IF and ELSE bodies are
-#   observably identical lookup mappings, so expect.batch_step_as pins which
-#   one traced (66dcea69 vs fadff562) and expect.steps_absent_from_trace pins
-#   that the other never appears.
-# - dead-step proof: skip:true steps trace as {skipped: true} rows with NO
-#   tool and never execute (raw_executor execute_node skip guard). On the
-#   else path only 8038a067 traces skipped (the whole IF body is unentered);
-#   on the if path all three (8038a067, d5877211, 74bc10f8) trace skipped.
-# - Snowflake row ORDER is not guaranteed (no ORDER BY): batch entries and
-#   final lookup rows are compared as exact MULTISETS keyed on col10
-#   (account_id, seed-enforced distinct) + col2. add_entry col1 stays
-#   order-independent because every returned row equals the max() subselect
-#   value; on empty results the pill is MISSING -> args col1 None and the
-#   mock's _clean DROPS the key, so the stored demo row carries only col2.
-# - the anon literal col2 is pinned WITH the <anon>...</anon> wrapper:
-#   resolved_parameters never strips it (only snowflake_live de-tags SQL).
-# - truncate is proved by pinning deleted_rows == the pre-seeded stale row
-#   count AND by final-table bijection (row_count + every row matched).
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after, and cleanup must drop exactly the seeded 3-part table.
 
 _SNAPSHOT_TABLE_120183307 = "edw_db.workato_usage_intermediate.accounts_snapshot"
 
@@ -23689,27 +22836,6 @@ def verify_120183307(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 123859779 (API-platform Gong meetings endpoint:
-# request.sfdcAccountId -> strict SOQL search over the Gong_Call__c stand-in
-# "Gong__Primary_Account__c = '<id>' AND CreatedDate = LAST_N_DAYS:90 ORDER BY
-# CreatedDate DESC" -> IF size>0 return_response 200 {data/rawSources/success}
-# ELSE STOP; CATCH -> return_response 200 {error, success:false}).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - response.success is the engine-canonical STRING 'true'/'false' (the raw
-#   input strings resolve verbatim; no boolean_conversion in replay).
-# - response.data/rawSources are ____source-mapped over the DESC-ordered
-#   records: expect.response pins BOTH arrays byte-exact in reverse seed-phase
-#   order; the CreatedDate strictly-descending check fails the run on a 1s
-#   timestamp tie (phase-spaced seeding must never tie -- 89731033 precedent).
-# - the forced-error CATCH raises BEFORE the search resolves its args: no
-#   salesforce trace row may exist, and response.error must equal the pinned
-#   catch message verbatim.
-# - the ELSE path is proven by an owned decoy call for a DIFFERENT account:
-#   every returned record must carry the trigger account id, so a dropped
-#   account-equality leaf (non-strict silent-drop hazard) fails result_count.
 
 
 def verify_123859779(result: dict[str, Any]) -> dict[str, Any]:
@@ -23868,29 +22994,6 @@ def verify_123859779(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 124203347 (/salesforce add bot command: OTM
-# stand-in search {OpportunityId, TeamMemberRole 'RevOps BDE', UserId} +
-# Opportunity search -> IF list_size==0 create OpportunityTeamMember +
-# chat.update 'Added to <OppName>'; IF list_size==1 chat.update 'Current
-# Opportunity Team Member on <OppName>'; list_size>=2 does NOTHING -- both
-# IFs read the PRE-create search so at most one fires).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - both slack posts carry advanced.ts = parameters.message_id, so the live
-#   call is chat.update of the SEEDED message ts in the override channel
-#   (channel C06USNHSQ6M is non-U -> override); the final text of that ONE
-#   message is the observable and args.ts must equal the seeded ts byte-exact.
-# - IF7 reads the PRE-create step-2 result: after the add branch created a
-#   matching row, list_size is still 0 in step_outputs -- the create variant
-#   must post 'Added to', never both texts.
-# - the create writes through the stand-in field map (OpportunityId ->
-#   OpportunityId__c etc.); the final snapshot must contain exactly
-#   initial+1 owned OTM rows and the new row must read back the three
-#   trigger values through the logical aliases.
-# - list_size>=2 fires NEITHER IF: zero slack calls, zero creates (proves the
-#   equals_to '1' pin is not '>=1').
 
 
 def verify_124203347(result: dict[str, Any]) -> dict[str, Any]:
@@ -24049,31 +23152,6 @@ def verify_124203347(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 120099421 (clock.scheduled_event every 7 days
-# -> LIVE snowflake.run_custom_sql: applications_snapshot LEFT JOIN
-# recipe_sophistication_app_tier ON title + entry_date=(current_date-1),
-# WHERE category='app' AND app_tier IN 1..4 AND title NOT ILIKE '%secondary%'
-# GROUP BY ALL -> lookup_table 3300543 search col2='app' -> IF rows.size !=
-# entries.size -> FOREACH rows { search col1=title; IF 0 entries -> add_entry
-# title/category/app_tier } -> unconditional top-level STOP).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The IF-4 comparison is SIZE-ONLY: variant_02 seeds equal counts with
-#   DIFFERENT titles and nothing may sync (author blind spot pinned).
-# - No ORDER BY: expect.sql_rows is capped at ONE row (seeder-enforced) so
-#   the foreach trace stays deterministic; SQL-filter coverage rides on
-#   decoys (category / tier-5 / %secondary% / wrong entry_date join-miss)
-#   and GROUP BY ALL dedup — all carried by run_custom_sql result_count +
-#   the exact sql_rows projection.
-# - current_date is pinned via seed.snowflake_live.current_time; the args
-#   SQL stays the VERBATIM raw text (rewrite happens inside the live client).
-# - The top-level STOP always executes: every trace must end in the
-#   aa772329 stopped:true row (exactly one stop row).
-# - Snowflake is READ-ONLY here (snapshot equality + cleanup of BOTH seeded
-#   tables); the lookup mock carries the only writes, pinned via
-#   expect.final_lookup_rows (underscore bookkeeping keys stripped).
 
 
 def verify_120099421(result: dict[str, Any]) -> dict[str, Any]:
@@ -24284,34 +23362,6 @@ def verify_120099421(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 113487781 (clock.scheduled_event daily 23:58
-# Asia/Singapore -> TRY { declare date = scheduled_time.strftime('%Y-%m-%d')
-# -> LIVE snowflake.search_rows_sql 'select * ... where status = 'In
-# Progress' and workflow = 'Snowflake Data Load' and date = :date' -> IF
-# rows.current_item.id_b497e547 present -> LIVE slack post '@here Daily Run
-# has not started...' } CATCH { LIVE slack post '#{job_context.recipe_name}
-# ded' to literal DM 'U07GCQL582H' via seed.slack_channel_map }).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.declared_date pins the strftime of the LITERAL seeded
-#   scheduled_time (no timezone conversion) AND must be the exact :date bind
-#   parameter of the live SQL (parameters {date: declared_date}); the args
-#   SQL stays the verbatim raw text (3-part rewrite + pyformat bind happen
-#   inside the live client).
-# - The hashed pill id_b497e547 resolves via lookup_path hash-suffix strip
-#   against the live 'id' column: 1 matching row -> post, 0 rows ->
-#   current_item MISSING -> present false -> SILENT (no post). Decoys for
-#   each WHERE predicate ride on result_count.
-# - The alert text is pinned VERBATIM including the '@here ' prefix; the
-#   '#dbt-notifications' channel auto-routes to SLACK_CHANNEL_OVERRIDE.
-# - catch_dm: the forced error on 4700b64e fires BEFORE the adapter — the
-#   trace has NO snowflake row, the 8d0fff6e catch payload message equals
-#   the forced error, and the catch post ('<recipe_name> ded') reaches the
-#   override channel only through the seeded slack_channel_map.
-# - TRY variants are READ-ONLY on Snowflake (snapshot equality + cleanup of
-#   the registered monitoring table); catch variants own NO live state.
 
 
 def verify_113487781(result: dict[str, Any]) -> dict[str, Any]:
@@ -24517,34 +23567,6 @@ def verify_113487781(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 109445492 (slack_bot.new_event
-# app_home_opened -> TRY { workato_db_table.get_records 16911 'temporary
-# credentials' filter user eq trigger user -> IF records.size < 1: LIVE
-# open_bot_app_home 'Admin - New Credentials' + STOP; else LIVE
-# open_bot_app_home 'My Progress'/'Delete Progress' } CATCH { logger
-# '#{catch.type} - #{catch.message}' }).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The get_records args pin the dash->underscore normalized filter field id
-#   (af2f7fd0_ccf4_... eq <trigger user>); the editor's limit '100' /
-#   order_direction 'asc' are metadata the engine never forwards into args.
-#   result_count carries the eq-filter groundtruth against decoy rows.
-# - admin_home: 0 records -> ADMIN blocks published then STOP — the trace
-#   must end in the fdc8e696 stopped:true row and step 4416ee0e must be
-#   ABSENT. progress_home: >=1 record -> PROGRESS blocks, no stop row.
-# - args.view carries the RAW Workato block shape verbatim ({block_type:
-#   'actions', actions: [...buttons]}); the Block Kit translation happens
-#   inside the live client (views.publish) — expect.home_blocks pins the raw
-#   shape and the live response must be ok.
-# - Both open_bot_app_home user_id args must equal the trigger user (the
-#   only trigger field the recipe dereferences).
-# - catch_log: forced error on 137a7374 -> ZERO registry tools; the logger
-#   message pins the ENGINE catch rendering 'RawRecipeExecutionError -
-#   <error>' (engine exception class name, NOT Workato's error class).
-# - The db table mock is READ-ONLY here: snapshot equality pinned. App Home
-#   publishes are idempotent (no cleanup exists).
 
 
 def verify_109445492(result: dict[str, Any]) -> dict[str, Any]:
@@ -24742,39 +23764,6 @@ def verify_109445492(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 106651510 (slack_bot.dynamic_menu 'List of
-# Success Owner' -> declare job_report='OK' -> TRY { IF request_type
-# '.split("_") [0].capitalize' == 'Freshdesk': LIVE Snowflake SELECT DISTINCT
-# SUCCESS_OWNER_AUTO_POPULATED FROM FRESHDESK.PRODUCT_SUPPORT_TICKET_EXPORT
-# WHERE LOWER(...) LIKE LOWER('%<typeahead>%') limit 2000 ->
-# generate_menu_options (flat options, label=value=owner) } CATCH:
-# update_variables job_report='Failed' on the DECLARED step e0710040).
-# Same READY class as registered 94382842, plus the IF gate branch.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The IF gate runs the QUIRKY '.split("_") [0].capitalize' formula (literal
-#   space before [0], probe-verified): 'freshdesk_agents' admits the SQL,
-#   'zendesk_agents' skips the ENTIRE try body (1 action, zero registry
-#   tools, job_report stays 'OK').
-# - expect.resolved_sql pins the interpolated SQL text verbatim (LOWER on
-#   BOTH sides; blank typeahead renders LIKE LOWER('%%')); args.limit must
-#   stay the raw '2000' the connector appends live.
-# - No ORDER BY: multi-row menus set menu_options_ordered false and are
-#   compared as a MULTISET; single/empty results pin exact order.
-# - DISTINCT and NULL semantics are proven live by seeds (duplicate owners
-#   collapse; LOWER(NULL) LIKE ... is NULL so null owners never surface) —
-#   result_count on the search expectation carries that weight.
-# - The vestigial `option_groups [{}]` + use_option_groups 'false' must
-#   route to the FLAT options path: the menu args carry `options` ONLY (a
-#   group-expansion regression would emit an option_groups arg — pinned).
-# - The CATCH branch (forced error on a07a5b6b) must flip job_report on the
-#   DECLARED step e0710040 and must NOT create any phantom variable step;
-#   zero registry tools run on skip/catch branches (no live seed, no
-#   cleanup, empty snapshots).
-# - freshdesk_menu variants are READ-ONLY on Snowflake: snapshot equality +
-#   cleanup of the registered table.
 
 
 def verify_106651510(result: dict[str, Any]) -> dict[str, Any]:
@@ -25007,29 +23996,6 @@ def verify_106651510(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 127782581 (workato_webhooks.new_event
-# 'Crawl-log' -> IF ladder on payload.level.downcase: 'info' -> INFO log
-# b91c6491 + stop 449a142b; 'error' -> ERROR log e1dd5675 + stop 53bbd031;
-# 'warn' -> WARN log 9e7ca601 + stop 7bbe0728; anything else falls through
-# to the unconditional log 8ea3ffbc with NO stop).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - ALL FOUR log steps carry the byte-identical message pill, so branch
-#   identity is pinned by the executed log step's AS-ID
-#   (expect.log_step_as), never by message text.
-# - stop traces as {stopped: true} WITHOUT rendering stop_with_error or a
-#   stop_reason (engine semantics, probed on HEAD): the stop row is pinned
-#   by AS-ID (expect.stop_step_as) and must be the FINAL trace row; the
-#   fallthrough branch pins stop_step_as null and NO stopped row may exist.
-# - exactly ONE log action executes on every branch
-#   (executed_action_count 1) and the run makes ZERO registry tool calls
-#   (logger is a Workato-internal trace-only mock: args carry only the
-#   resolved message — log_level/user_logs_enabled are dropped).
-# - .downcase case-insensitivity is proven by mixed-case variant inputs
-#   ('INFO'/'Warn'); the seeder cross-checks expect routing against the
-#   trigger level so an authored expect can never contradict the ladder.
 
 
 def verify_127782581(result: dict[str, Any]) -> dict[str, Any]:
@@ -25171,38 +24137,6 @@ def verify_127782581(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 88437797 (slack_bot.dynamic_menu 'List of
-# Success Owner' -> declare job_report='OK' -> TRY[ IF request_type.
-# split("_") [0].capitalize == 'Freshdesk': LIVE Snowflake SELECT DISTINCT
-# SUCCESS_OWNER_AUTO_POPULATED FROM FRESHDESK.PRODUCT_SUPPORT_TICKET_EXPORT
-# WHERE LOWER(...) LIKE LOWER('%<typeahead>%') limit 2000 ->
-# generate_menu_options (flat options despite vestigial option_groups [{}],
-# label=value=success_owner_auto_populated) ]CATCH: update_variables
-# job_report='Failed' on the DECLARED step e0710040 via REAL target ids).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - THREE distinct branches share one expect shape: Freshdesk-TRY
-#   (resolved_sql str + menu_options list), IF-false (both null,
-#   final_job_report 'OK', 1 action) and CATCH (both null, 'Failed',
-#   2 actions). The branch is derived from expect, and the trace tool
-#   sequence must match it exactly.
-# - the space-before-index author quirk (`split("_") [0].capitalize`)
-#   gates the whole live path: 'zendesk_success_owner' -> 'Zendesk' -> the
-#   snowflake step NEVER traces (not an error, not an empty search).
-# - expect.resolved_sql pins the interpolated SQL verbatim (LOWER on BOTH
-#   sides) and args.limit stays the raw '2000'.
-# - SELECT DISTINCT has no ORDER BY: the seeder allows AT MOST ONE distinct
-#   matching owner per variant, so menu_options pins EXACT order ([] or one
-#   option); DISTINCT collapse + LOWER(NULL) exclusion are proven live by
-#   the seeds and carried by the search expectation's result_count.
-# - label == value == success_owner_auto_populated for every option.
-# - the CATCH update must land on the DECLARED step e0710040 (real ids in
-#   the raw) and must not create any phantom variable step.
-# - the live table is READ-ONLY: snapshots must match before/after, and
-#   cleanup must report dropping the registered 2-part key; IF-false and
-#   catch variants own no live state (empty snapshots, no cleanup).
 
 
 def verify_88437797(result: dict[str, Any]) -> dict[str, Any]:
@@ -25413,40 +24347,6 @@ def verify_88437797(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 86988548 (clock daily 10:00 -> TRY[ LIVE
-# Snowflake SELECT DISTINCT ... CASE-in-JOIN employee_id -> app_user_id ->
-# username ladder ... EA.DEPROVISION_DATE::DATE ... CASE(...) AS
-# UPDATE_RECORD ... WHERE UPDATE_RECORD = TRUE (alias-in-WHERE) -> FOREACH
-# row: declare where_clause (3-arm if/elsif/else) -> LIVE update_rows
-# PUBLIC.EMPLOYEE_APP_ACCESS_LEVEL {deprovision_date = row date,
-# modified_at = now.in_time_zone("Etc/UTC"), status 'Inactive'} ->
-# accumulate 'Troubleshooting' list ]CATCH -> STOP stop_with_error).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.eligible_rows pins the lowercase-alias projection of the live
-#   search rows (live rows carry BOTH 'NAME' and 'name' keys; the foreach
-#   pills read lowercase); AT MOST ONE eligible row per variant (SELECT
-#   DISTINCT has no ORDER BY) — the seeder enforces it.
-# - expect.where_clause pins which formula ARM fired (EMPLOYEE_ID /
-#   APP_USER_ID / USERNAME) and the update must interpolate the SAME string
-#   verbatim into args.where — snowflake.update_rows is deliberately NOT a
-#   tool_expectations item because verifier.py's _parse_snowflake_where
-#   cannot parse this compound where (it would always mismatch); the update
-#   args/result/final-state checks live HERE instead.
-# - expect.update_args.columns pins the engine renders: deprovision_date is
-#   the ::DATE'd row value ('YYYY-MM-DD'), modified_at is the pinned now in
-#   Etc/UTC WITH offset; the live TIMESTAMP_NTZ read-back drops the offset
-#   (expect.final_eaal_rows pins the wallclock 'YYYY-MM-DDTHH:MM:SS').
-# - expect.final_eaal_rows is compared as a MULTISET of full upper-key row
-#   projections (live SELECT * has no ORDER BY): the eligible row must land
-#   status 'Inactive' + both timestamps, ineligible rows byte-identical.
-# - the catch variant (forced error on 064546a3) pins ZERO actions, the
-#   recorded catch payload, and the STOP row (17a5ef93) as the FINAL trace
-#   row with NO rendered stop_reason (engine semantics, probed).
-# - the three JOIN dimension tables are read-only: their snapshots must
-#   match before/after; cleanup must drop all four registered keys.
 
 
 def verify_86988548(result: dict[str, Any]) -> dict[str, Any]:
@@ -25732,36 +24632,6 @@ def verify_86988548(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 122029375 (workato_recipe_function.execute ->
-# workato_db_table 22941 '[AWP] Error Monitoring' get_records with eq
-# workato_user_opportunity_id AND eq provisioning_type -> IF size == 0:
-# add_record {params..., status 'New', error_count '1', error_created_at =
-# job_context.job_created_at, workspace_details ''} ELSE update_record on
-# the matched record's built-in Record ID with error_count =
-# repeated_job.is_true? ? current : current + 1 -> TERMINAL return_result
-# {found = size-based multiline if, record_id = add-pill OR update-pill}).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - THE FIXED GAP: the seeder opts into seed.workato_db_table.
-#   record_id_column, so the mock stamps Workato's built-in Record ID
-#   column (11fbe9a6_…) on written rows AND in the add/update result — the
-#   add branch's return_result.record_id must be the REAL new id
-#   (str(next row id)), NEVER null; this fragment pins the stamped column
-#   on the write result explicitly.
-# - error_count is INT-seeded (typed integer column): the repeated_job
-#   FALSE arm renders the arithmetic sum as the engine-canonical STRING
-#   ('3' would string-join to '31'); the TRUE arm passes the INT through
-#   in args while the mock stores it back as a string. expect.
-#   final_table_rows pins those exact JSON types.
-# - the two eq filters AND together: a near-miss row matching only one
-#   filter must leave get_records empty (ADD branch) and stay
-#   byte-identical in the final table.
-# - return_result is TERMINAL: it must be the LAST trace row and no
-#   {stopped: true} row may exist.
-# - expect.final_table_rows pins the whole table ordered (mock preserves
-#   seed order and appends adds), compared on underscore-stripped rows.
 
 
 def verify_122029375(result: dict[str, Any]) -> dict[str, Any]:
@@ -25926,44 +24796,6 @@ def verify_122029375(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 86365770 (clock daily 22:00 -> TRY: LIVE
-# snowflake.search_rows_sql 3-way join over PUBLIC.WORKSPACE_FEATURES_ADJ_LOG
-# x WORKSPACE_REQ_LOG x EMPLOYEE (Adjusted membership_id/premium_yearly of
-# Pending-Next-Action/Features-Adjustment requests, ORDER BY
-# RIGHT(W.ID, LEN(W.ID)-1)::INT DESC) -> FOREACH: LIVE update_rows SET
-# modified_at = now UTC, old_value = 'free' WHERE <4-way AND> -> IF
-# rows_updated != '1' STOP(7, error); CATCH eb032286 -> STOP(9, error)).
-#
-# NEW verify_86365770 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded here:
-# - the batch-05 engine fix is load-bearing: update_rows now exposes
-#   `rows_updated` (connector field name), so the step-6 IF compares the REAL
-#   count. expect.update_calls[].rows_updated pins it per iteration (1 =
-#   loop continues, >=2 = duplicate-request stop) from the live result.
-# - snowflake.update_rows gets NO generic tool_expectations item (its WHERE
-#   is a 4-way AND; the generic verifier parses single-clause WHEREs only) --
-#   this fragment pins every update call byte-exactly (interpolated WHERE,
-#   modified_at render, old_value 'free') plus the live rows_updated count,
-#   in ITERATION ORDER: expect.update_calls follows ORDER BY
-#   RIGHT(W.ID, LEN(W.ID)-1)::INT DESC, so the multi-request variant proves
-#   the NUMERIC ordering (string order would invert R12 vs R5).
-# - expect.select_rows is compared as an UNORDERED multiset of the five
-#   SELECT aliases: the duplicate variant's two rows share the ORDER BY key
-#   (same W.ID), so their relative live order is not deterministic; ordering
-#   over DISTINCT request ids is pinned via update_calls instead.
-# - stop semantics: the engine records stop nodes as trace markers without
-#   evaluating stop_reason; stop_step_number pins WHICH stop fired (7 =
-#   duplicate branch, 9 = catch branch) as the trace's final row. The catch
-#   payload is pinned via step_outputs['eb032286'].message == the forced
-#   error (catch_stop variants only; trace carries no action rows there).
-# - final_adj_rows pins the WHOLE live ADJ_LOG table (count + per-row
-#   uniqueness via match_fields): flipped rows carry old_value 'free' +
-#   modified_at = pinned now; decoys must stay byte-identical, and on
-#   noop/catch paths the table must equal the seed.
-# - cleanup must drop all three PUBLIC.* tables on every branch.
 
 def _case_field_86365770(row: dict[str, Any], field: str) -> Any:
     if field in row:
@@ -26151,37 +24983,6 @@ def verify_86365770(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 92623970 (clock monthly 25-31/last_day 10:00
-# Asia/Singapore -> lookup_table.search_entries 1889452 (col5 = now '%B %Y',
-# col6 'Approved') -> FOREACH entries -> IF entry.col8 blank: side search
-# 1889451 (dead output, still executed) -> logger (scheduled_time + 1.months
-# '%B %Y') -> LIVE slack_bot.post_bot_message (channel = entry.col1 user id,
-# routed to the override channel via slack_channel_map) -> update_entry
-# col7 = live Slack ts, col8 'Not Renewed').
-#
-# NEW verify_92623970 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded here:
-# - col7 stores the LIVE Slack `ts` (nondeterministic): the expected final
-#   booking rows carry '__SLACK_TS_<n>__' sentinels which THIS verifier
-#   resolves from the run's OWN slack.post_message trace (result.ts of the
-#   n-th post) -- never a pinned literal (verify_50802627 precedent). The
-#   resolved ts must be non-empty, and the update_entry args col7 must equal
-#   the same trace ts (post -> update wiring, not just final state).
-# - expect.slack_texts pins the FULL rendered text byte-exactly per post
-#   (two section lines joined by \n; the second line keeps its trailing
-#   '. ' verbatim; divider/buttons/repeat_block_group render no text) --
-#   stronger than the generic text_fragments substring checks.
-# - expect.logger_message pins the (scheduled_time + 1.months).strftime
-#   render via the workato_runtime.log_message trace row (logger is not a
-#   registry tool, so only the trace carries it).
-# - the dead side search MUST still be traced once per notified entry
-#   (action-count fidelity), and skipped/zero-match branches must leave the
-#   booking table byte-identical (initial == final lookup snapshot).
-# - update ids are pinned against expect.notified_entry_ids (mock _row_id
-#   indexes), proving the IF processed exactly the blank-col8 entries.
 
 def _booking_rows_92623970(snapshot: Any) -> list[dict[str, Any]]:
     tables = ((snapshot or {}).get("lookup_table") or {}).get("tables") or {}
@@ -26342,40 +25143,6 @@ def verify_92623970(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 126727654 (workato_pub_sub.batch_subscribe_to_topic
-# topic 29770 -> declare_list 'feedback.features_f' (creator/requested_by/
-# groups/uploads .to_json, seven *_at .in_time_zone("UTC"), created_at plain,
-# tags/products/owners bare arrays) -> smart-list create 'feedback_raw' ->
-# dedup query (JOIN subquery MAX(updated_at) per id, DISTINCT f.*) -> IF
-# job_context.user_name == 'Environment Production': LIVE upsert
-# FEEDBACK.FEATURES_F (key ID) -> status query (IFNULL(MIN(updated_by),
-# MIN(resolved_by)), MAX(status_changed_at) GROUP BY id,status) -> LIVE upsert
-# FEEDBACK.FEATURE_UPDATES_F (keys FEATURE_ID+UPDATED_AT) -> terminal dedup
-# join query (output unused). TWIN of 126727318 (only the topic id differs);
-# both twins write the SAME live FEEDBACK.* tables -- live runs serialized.
-#
-# NEW verify_126727654 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via the expects this fragment enforces:
-# - expect.dedup_query_rows / status_query_rows / final_query_rows pin the
-#   three smart-list SQL results EXACTLY (byte/type-exact dict equality):
-#   the MAX(updated_at) dedup, the IFNULL fallback to resolved_by for a NULL
-#   updated_by, and the terminal join where a NULL updated_by group DROPS
-#   (SQL NULL join semantics). created_at stays in its RAW seeded form here
-#   (plain interpolation) while the other *_at are '+00:00' renders; arrays
-#   are the SQLite '["a", "b"]' round-trip vs the compact sorted .to_json.
-# - the production gate: non-production variants must trace EXACTLY
-#   declare_list/create_list/dedup query (3 actions), call NO registry tool
-#   and leave both live tables byte-identical (initial == final snapshot).
-# - upsert_counts pins created/updated per live upsert straight from the
-#   trace results (the dual-key FEATURE_ID+UPDATED_AT update path and the
-#   key-scoped FEATURES_F update are live-verified this way).
-# - final_snowflake_tables pins BOTH whole tables (count + per-row uniqueness
-#   via match_fields, case-insensitive column lookup, str-compare so live
-#   NUMBER read-backs match int pins and NULLs match None pins).
-# - cleanup must drop exactly the two twin-shared FEEDBACK.* tables.
 
 def _case_field_126727654(row: dict[str, Any], field: str) -> Any:
     if field in row:
@@ -26548,40 +25315,6 @@ def verify_126727654(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 126727318 (workato_pub_sub.batch_subscribe_to_topic
-# topic 29184 -> declare_list 'feedback.features_f' (creator/requested_by/
-# groups/uploads .to_json, seven *_at .in_time_zone("UTC"), created_at plain,
-# tags/products/owners bare arrays) -> smart-list create 'feedback_raw' ->
-# dedup query (JOIN subquery MAX(updated_at) per id, DISTINCT f.*) -> IF
-# job_context.user_name == 'Environment Production': LIVE upsert
-# FEEDBACK.FEATURES_F (key ID) -> status query (IFNULL(MIN(updated_by),
-# MIN(resolved_by)), MAX(status_changed_at) GROUP BY id,status) -> LIVE upsert
-# FEEDBACK.FEATURE_UPDATES_F (keys FEATURE_ID+UPDATED_AT) -> terminal dedup
-# join query (output unused). TWIN of 126727654 (only the topic id differs);
-# both twins write the SAME live FEEDBACK.* tables -- live runs serialized.
-#
-# NEW verify_126727318 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via the expects this fragment enforces:
-# - expect.dedup_query_rows / status_query_rows / final_query_rows pin the
-#   three smart-list SQL results EXACTLY (byte/type-exact dict equality):
-#   the MAX(updated_at) dedup, the IFNULL fallback to resolved_by for a NULL
-#   updated_by, and the terminal join where a NULL updated_by group DROPS
-#   (SQL NULL join semantics). created_at stays in its RAW seeded form here
-#   (plain interpolation) while the other *_at are '+00:00' renders; arrays
-#   are the SQLite '["a", "b"]' round-trip vs the compact sorted .to_json.
-# - the production gate: non-production variants must trace EXACTLY
-#   declare_list/create_list/dedup query (3 actions), call NO registry tool
-#   and leave both live tables byte-identical (initial == final snapshot).
-# - upsert_counts pins created/updated per live upsert straight from the
-#   trace results (the dual-key FEATURE_ID+UPDATED_AT update path and the
-#   key-scoped FEATURES_F update are live-verified this way).
-# - final_snowflake_tables pins BOTH whole tables (count + per-row uniqueness
-#   via match_fields, case-insensitive column lookup, str-compare so live
-#   NUMBER read-backs match int pins and NULLs match None pins).
-# - cleanup must drop exactly the two twin-shared FEEDBACK.* tables.
 
 def _case_field_126727318(row: dict[str, Any], field: str) -> Any:
     if field in row:
@@ -26754,31 +25487,6 @@ def verify_126727318(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 114471062 (daily FY_QUOTA reload: sheets
-# retrieve-all via blank formula criterion -> IF rows==50000 stop guard
-# (documented dead) -> smart_list create_list rows[1..-1] (drops the
-# header-echo first result row) -> positional 11-column query -> snowflake
-# 'TRUNCATE TABLE #{Table}' (bare pill name rewritten to the registered
-# SALESFORCE.FY_QUOTA) -> upsert_rows_batch key ROW_NUMBER).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the [1..-1] slice is LOAD-BEARING: expect.smart_list_rows must exclude
-#   the header-echo row while expect.search_row_count counts it; the
-#   fragment additionally proves the echo row came back FIRST from the live
-#   search and that no upsert row leaked the header text.
-# - expect.query_sql/query_rows pin the resolved column-pill SQL byte-exact
-#   and the positional alias projection (col_user -> user etc.; values stay
-#   the sheet-rendered strings, row_number stays the live search integer).
-# - the truncate-before-upsert order is pinned by the FINAL table equality:
-#   expect.final_fy_quota_rows must equal the read-back exactly (count
-#   included), so a surviving stale row or a key-collision UPDATE (created
-#   != row count) fails.
-# - the IF-4 '50000 rows' stop branch is documented dead: every variant pins
-#   stopped=false and the fragment rejects any stop trace row.
-# - google_sheets is search-only: initial and final sheets snapshots must be
-#   byte-identical.
 
 
 def verify_114471062(result: dict[str, Any]) -> dict[str, Any]:
@@ -26970,36 +25678,6 @@ def verify_114471062(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 112147962 (sync-job notifier recipe function:
-# five declare formulas (strftime '%A, %d %B %Y,%k:%M:%S', bare-pill
-# successful ternary, two present? ternaries) -> MessageString concat with a
-# real newline -> MOCK datatable 18871 upsert keyed on jobLink -> IF
-# successful is_true: live Slack success post ELSE live error post with
-# '*Error:* _<error>_' -> empty return_result).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.declared_strings pins all five step-2 renderings byte-exact:
-#   %k is the SPACE-padded hour (' 9:05:07' vs '14:22:33' -- covered by a
-#   single-digit-hour and a two-digit-hour variant), the strftime renders
-#   the seed timestamp's own wall time (no zone conversion), and the
-#   bare-pill SuccessString ternary keys on the JSON-BOOLEAN successful
-#   (string 'false' would be truthy -- the seeder rejects it).
-# - expect.message_string pins the step-3 concat byte-exact, including the
-#   real decoded "\n" and the ''-arm collapses when jobDate/rowsUpserted are
-#   absent.
-# - expect.slack_posts pins [step_as, full text] for the SINGLE post per
-#   run: the step id proves WHICH IF arm fired coherently with the
-#   is_true(successful) gate; the error post's text carries the extra
-#   '*Error:* _..._' section line; posts route to SLACK_CHANNEL_OVERRIDE
-#   with empty thread_ts/ts.
-# - upsert groundtruth via tool_expectations (args_contains pins all six
-#   uuid fields incl. successful as a raw boolean, absent optionals as
-#   null, jobCreatedDateTime verbatim from job_context; created pins insert
-#   vs jobLink-keyed update) + expect.initial/final_table_rows pin the FULL
-#   mock-table transition byte-exact (_row_id/_created_by/_modified_by
-#   bookkeeping included).
 
 
 def verify_112147962(result: dict[str, Any]) -> dict[str, Any]:
@@ -27142,36 +25820,6 @@ def verify_112147962(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118340691 (workspace schema compare recipe
-# function: CREATE input_list/output_list -> INSERT concat'd feature arrays
-# -> size-directed NOT IN diff -> 26 limit-compare ternaries (skip-valued
-# fields DROPPED from the declared items) -> pluck.compact.join('; ')
-# .presence or "Schema matched" -> compound-OR stop gate -> return_result
-# {success:'true'}). Full-mock recipe (all backends Workato-internal).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.query_sql pins all five RESOLVED query_list sql strings byte-exact
-#   (CREATE bytes verbatim incl. embedded newlines; the INSERTs prove
-#   Array#concat order features-then-adapters and the ('%s') format_map
-#   tuples; step 5651eeb1 pins WHICH NOT IN direction the size comparison
-#   picked -- including the equal-size else-arm author quirk).
-# - expect.query_rows pins the INSERT outputs (inserted rows == the concat'd
-#   elements, so rows.size feeds the direction pick) and the diff rows the
-#   stop reason dereferences.
-# - expect.limit_items pins the declared list byte-exact: mismatch items
-#   carry the verbatim '<label> didn't match. Input vs Output: <in> vs <out>'
-#   message (label quirks like 'Max Workflow App Limit' / 'Workbot Limit'
-#   included); SKIPPED items carry ONLY their key (the skip-valued field is
-#   dropped, Workato 'not supplied'), which also covers the absent-input
-#   present?-guard arms in both guard orders (max_project_property flips it).
-# - expect.logger_message pins the '; ' join order / the 'Schema matched'
-#   presence fallback byte-exact.
-# - stop semantics: stop trace rows carry NO stop_reason (engine-canonical);
-#   stopped variants pin the single stop marker at step 10 / as 8657dddc,
-#   zero registry tool calls and a null return_value; success variants pin
-#   the return_result args/result {'success': 'true'} via tool_expectations.
 
 
 def verify_118340691(result: dict[str, Any]) -> dict[str, Any]:
@@ -27319,38 +25967,6 @@ def verify_118340691(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 111834972 (exec-connects dupe rollup recipe
-# function: search rows by URL -> log the match count -> FOREACH: accumulate
-# '\n'-joined Connection names into the anonymizer-tagged connection_cell
-# variable + stamp each row's Recipe Note with the 0-based loop index ->
-# re-search (Recipe Note '0' AND URL) -> write the accumulated multi-line
-# Connection + 'KEEP' onto the index-0 row -> empty return_result).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - ANON SELF-CONSISTENCY: every update_variables call must target the
-#   VERBATIM '<anon>…</anon>:<anon>b1a2c3d4</anon>:connection_cell' name (the
-#   schema-only declare c9233398 registers {} -- owners==0 -- so the store
-#   lives under the tagged id that the read pills share; a write that
-#   re-resolved to c9233398 would silently break the accumulation).
-# - expect.connection_cell_updates pins every accumulation state byte-exact
-#   INCLUDING the faithful LEADING '\n' (iteration-1 reads the never-written
-#   line -> MISSING renders '' exactly like the nil declare).
-# - expect.loop_note_writes pins [row_number, index] per iteration in SEARCH
-#   ORDER with RAW-INT indexes (whole-pill foreach_meta.index; USER_ENTERED
-#   stores the number, the read-back string '0' is what step 8 matches).
-# - the final write must target the SAME row_number as loop index 0 and
-#   carry {'Connection': <last accumulation>, 'Recipe Note': 'KEEP'} with
-#   label-decoded keys (the tab is label-headed; the engine's search-row
-#   col_ aliasing makes the pills resolve while writes land in the real
-#   columns).
-# - expect.initial/final_sheet_rows pin the FULL tab transition byte-exact
-#   (decoys untouched, incl. an AND-filter decoy carrying Recipe Note '0'
-#   under a different URL in the variant that seeds one).
-# - zero-match is the recipe's unguarded live-error edge (step-9 row_number
-#   resolves MISSING -> live update_row errors the job): documented, seeder
-#   requires >= 1 match, never forced here.
 
 
 def verify_111834972(result: dict[str, Any]) -> dict[str, Any]:
@@ -27501,39 +26117,6 @@ def verify_111834972(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 121951507 (slack_bot.new_event app_home_opened
-# -> LIVE slack_bot.get_user_by_email ff6ae1d3 (id -> users.info) ->
-# lookup_table.search_entries 2a70f21a (mock table 3770006 'BT Ops and SecOps
-# Team', col3 = profile.email) -> IF entries size > 0: LIVE open_bot_app_home
-# 2c4d9486 (16-block admin home) ELSE LIVE open_bot_app_home 271782f8
-# (11-block default home; dead skip 98084ab8 after it)).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - LIVE DATA FLOW pinned end-to-end: the users.info result's profile.email
-#   must equal expect.member_email (jamie.lee@corp.example, the proven live
-#   member pair for trigger user U0B91BSRGF8) AND the search args col3 must
-#   equal that SAME live-returned email — a stubbed/wrong lookup or a broken
-#   pill both fail.
-# - The IF pivots on 'entries size greater_than 0': matched_entry_count
-#   carries the eq-filter groundtruth against decoy rows (1 and 2 both take
-#   the admin branch — variant 02 proves >0, not ==1).
-# - args.view carries the RAW Workato block payload VERBATIM ({block_type:
-#   image/divider/section_with_text/section_with_button/section_with_fields});
-#   Block Kit translation happens inside the live client (probe-verified
-#   16/16 and 11/11 blocks translate post-fix — the buttons that distinguish
-#   IF from ELSE used to be silently dropped). expect.home_blocks pins the
-#   raw shape byte-exact and the live views.publish response must be ok.
-# - Exactly ONE home publish per run, from the branch-owning step: 2c4d9486
-#   on admin_home, 271782f8 on default_home — the OTHER step id must be
-#   absent from the trace.
-# - Dead-step proofs: skip:true 49391591 must appear traced skipped (no tool)
-#   on EVERY run; skip:true 98084ab8 appears skipped ONLY when the ELSE
-#   branch executes (admin runs never enter the else block). The twin
-#   119575741 has NO 98084ab8 — its absence here would be twin drift.
-# - The lookup table is READ-ONLY: snapshot equality pinned. App Home
-#   publishes are idempotent per user (no cleanup exists).
 
 
 def verify_121951507(result: dict[str, Any]) -> dict[str, Any]:
@@ -27734,90 +26317,8 @@ def verify_121951507(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 119575741 (TWIN of 121951507:
-# slack_bot.new_event app_home_opened -> LIVE slack_bot.get_user_by_email
-# ff6ae1d3 (id -> users.info) -> lookup_table.search_entries 2a70f21a (mock
-# table 3808792 'BT Ops and SecOps Team', col3 = profile.email) -> IF entries
-# size > 0: LIVE open_bot_app_home 2c4d9486 (16-block admin home) ELSE LIVE
-# open_bot_app_home cb1858ef (11-block default home; NO trailing dead step —
-# the head carries dead 98084ab8)).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - LIVE DATA FLOW pinned end-to-end: the users.info result's profile.email
-#   must equal expect.member_email (jamie.lee@corp.example, the proven live
-#   member pair for trigger user U0B91BSRGF8) AND the search args col3 must
-#   equal that SAME live-returned email — a stubbed/wrong lookup or a broken
-#   pill both fail.
-# - The IF pivots on 'entries size greater_than 0': matched_entry_count
-#   carries the eq-filter groundtruth against decoy rows (1 and 2 both take
-#   the admin branch — variant 02 proves >0, not ==1).
-# - args.view carries the RAW Workato block payload VERBATIM ({block_type:
-#   image/divider/section_with_text/section_with_button/section_with_fields});
-#   Block Kit translation happens inside the live client (probe-verified
-#   16/16 and 11/11 blocks translate post-fix — the buttons that distinguish
-#   IF from ELSE used to be silently dropped). expect.home_blocks pins the
-#   raw shape byte-exact and the live views.publish response must be ok.
-# - Exactly ONE home publish per run, from the branch-owning step: 2c4d9486
-#   on admin_home, cb1858ef on default_home — the OTHER step id must be
-#   absent from the trace.
-# - Dead-step proofs: skip:true 49391591 must appear traced skipped (no
-#   tool) on EVERY run; this twin has NO dead step inside the ELSE branch —
-#   a traced 98084ab8 row would be head/twin drift (the head 121951507
-#   carries it).
-# - TWIN-ONLY LIVE CAUTION: this recipe's block payloads keep the raw
-#   <anon>...</anon>-wrapped image/confluence urls VERBATIM (faithful to the
-#   raw recipe); the live views.publish may reject the <anon> image_url as
-#   invalid — surfaced to the live lane, args pins stay byte-faithful.
-# - The lookup table is READ-ONLY: snapshot equality pinned. App Home
-#   publishes are idempotent per user (no cleanup exists).
 
 
-# Verifier fragment for recipe 119575741 (TWIN of 121951507:
-# slack_bot.new_event app_home_opened -> LIVE slack_bot.get_user_by_email
-# ff6ae1d3 (id -> users.info) -> lookup_table.search_entries 2a70f21a (mock
-# table 3808792 'BT Ops and SecOps Team', col3 = profile.email) -> IF entries
-# size > 0: LIVE open_bot_app_home 2c4d9486 (16-block admin home) ELSE LIVE
-# open_bot_app_home cb1858ef (11-block default home; NO trailing dead step —
-# the head carries dead 98084ab8)).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - LIVE DATA FLOW pinned end-to-end: the users.info result's profile.email
-#   must equal expect.member_email (jamie.lee@corp.example, the proven live
-#   member pair for trigger user U0B91BSRGF8) AND the search args col3 must
-#   equal that SAME live-returned email — a stubbed/wrong lookup or a broken
-#   pill both fail.
-# - The IF pivots on 'entries size greater_than 0': matched_entry_count
-#   carries the eq-filter groundtruth against decoy rows (1 and 2 both take
-#   the admin branch — variant 02 proves >0, not ==1).
-# - args.view carries the RAW Workato block payload VERBATIM ({block_type:
-#   image/divider/section_with_text/section_with_button/section_with_fields});
-#   Block Kit translation happens inside the live client (probe-verified
-#   16/16 and 11/11 blocks translate post-fix — the buttons that distinguish
-#   IF from ELSE used to be silently dropped). expect.home_blocks pins the
-#   raw shape byte-exact and the live views.publish response must be ok.
-# - Exactly ONE home publish per run, from the branch-owning step: 2c4d9486
-#   on admin_home, cb1858ef on default_home — the OTHER step id must be
-#   absent from the trace.
-# - Dead-step proofs: skip:true 49391591 must appear traced skipped (no
-#   tool) on EVERY run; this twin has NO dead step inside the ELSE branch —
-#   a traced 98084ab8 row would be head/twin drift (the head 121951507
-#   carries it).
-# - TWIN-ONLY LIVE SUBSTITUTION PIN: this recipe's block payloads keep the
-#   raw <anon>...</anon>-wrapped image/confluence urls VERBATIM in args/raw
-#   pins (faithful to the raw recipe), but Slack DOWNLOADS image_url at
-#   publish time and the anon host is fiction — live-lane verified
-#   invalid_arguments 'downloading image failed' pre-fix. slack_live now
-#   substitutes the stable Slack-hosted placeholder for anon-wrapped image
-#   urls at the live boundary, so the views.publish RESPONSE view's first
-#   block must carry expect.published_image_url
-#   (https://a.slack-edge.com/80588/img/plugins/app/service_72.png) while
-#   args.view.blocks keep the anon url — BOTH sides are pinned fail-closed.
-# - The lookup table is READ-ONLY: snapshot equality pinned. App Home
-#   publishes are idempotent per user (no cleanup exists).
 
 
 def verify_119575741(result: dict[str, Any]) -> dict[str, Any]:
@@ -28284,42 +26785,6 @@ def verify_102158721(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 102158704 (TWIN of 102158721:
-# workato_api_platform.receive_request {workspace_user_id!} ->
-# workato_db_table.get_records 98b231b1 table 10529
-# 'OpenAI Proxy Workspaces' [client eq .to_i, profile eq .to_i, workspace eq
-# .to_i, enabled ISTRUE] -> IF (workspace_user_id present AND records size ==
-# 0): add_record 824eb544 (ids .to_i, name from access_profile, LITERAL
-# enabled 'true') / ELSIF (records[current_item].enabled is_not_true —
-# first-record pill, MISSING when empty): return_response 401 TERMINAL ->
-# unconditional tail return_response 200). All backends Workato-internal
-# mocks. Byte-twin of head 102158721 — only the table id differs (11026
-# there), on BOTH db steps.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The get_records args pin the ENGINE filter conversion byte-exact: the
-#   three .to_i pills arrive as JSON integers and op_boolean istrue arrives
-#   as {op: eq, value: true} — filters are rebuilt from the TRIGGER here, so
-#   a wrong pill binding (or ''.to_i != 0 on the blank branch) fails.
-# - istrue semantics guard: every record the read returns must carry enabled
-#   is True (a seeded STRING 'true' row is filter-INVISIBLE — probe-pinned
-#   hazard the seeder rejects; result_count pins the eq-filter groundtruth
-#   against the other-workspace / other-client / enabled-false decoys).
-# - The elsif is reachable ONLY via blank workspace_user_id ('' is
-#   schema-present but fails `present`, and the istrue filter guarantees a
-#   NONEMPTY result has an enabled first record): the 401 must come from
-#   792322e2, be the LAST trace row, and the tail cd1d44cf 200 must be
-#   ABSENT (return_response is engine-terminal). 200 branches must show NO
-#   792322e2 row.
-# - add_record args pin the .to_i integers + the LITERAL enabled string
-#   'true' (recipe constant, faithful) + name == context.access_profile.name;
-#   initial/final_table_rows pin the FULL mock-table transition byte-exact
-#   (incl. _row_id/_created_by bookkeeping — a ghost write or decoy mutation
-#   fails).
-# - Twin guard: every db-table call must target table 10529 (the head
-#   102158721 differs only in the table id).
 
 
 def verify_102158704(result: dict[str, Any]) -> dict[str, Any]:
@@ -28572,40 +27037,6 @@ def verify_102158704(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 101045835 (workato_api_platform.receive_request
-# 793a69c9 -> get_records Clients 11694 filter access_profile_id eq
-# #{context.access_profile.id} -> IF size==0 STOP 'Unauthorized' (as 292f8511)
-# -> get_records Mobile App Events 11683 filters client op_relation eq
-# #{first Client RecordID} + delivered op_boolean isfalse -> FOREACH update_record
-# delivered='true' (LITERAL STRING) -> return_response 200 with events built
-# from the STEP-5 PRE-update snapshot). All backends Workato-internal mocks.
-#
-# NEW verify_101045835 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.return_value pins the response body byte-exact: events carry the
-#   STEP-5 SNAPSHOT values (delivered was still false when the pills bound),
-#   and `retrieval` is the raw JSON BOOLEAN (full-match pill, never a
-#   flattened string) — the fragment additionally type-checks every
-#   events[i].retrieval is a bool.
-# - snapshot-vs-final trap: for every update_record call the FINAL table row
-#   carries delivered "true" (the literal STRING from toggleCfg) +
-#   _modified_by 'agent', while the corresponding INITIAL row carried the
-#   JSON boolean false — pinned via byte-exact initial/final_table_rows for
-#   BOTH tables (ghost writes, decoy mutations and wrong-row updates all
-#   fail; Clients 11694 must be untouched on every branch).
-# - stop semantics: the stop trace row is ONLY {keyword:'stop', number:4,
-#   stopped:true} — the engine never evaluates stop_reason/stop_with_error,
-#   so stopped variants pin the marker position (4, as 292f8511), zero
-#   further trace rows after it, and a null return_value; they never assert
-#   the 'Unauthorized' text.
-# - relation-filter trap: the events get_records args pin the RESOLVED
-#   op_relation filter value = the first matching Client's RecordID string
-#   (matches the seeded relation OBJECT via its record_id arm) and the
-#   boolean filter value = JSON false (via expect.tool_expectations
-#   args_contains).
 
 
 def verify_101045835(result: dict[str, Any]) -> dict[str, Any]:
@@ -28780,39 +27211,6 @@ def _101045835_row(snapshot: dict[str, Any], table_id: str, key_col: str, record
     return None
 
 
-# Verifier fragment for recipe 118716983 (slack_bot.bot_command_v2 /change
-# presentation dd6c40b1 -> LIVE sheets search 'current slot' d833fbb1 (data
-# {col_Topics: presentation_list}) -> LIVE search 'target slot' e65217d3
-# (col_Topics: new_date — the param carries the OTHER slot's TOPIC despite
-# its label) -> post_bot_message request block to the TARGET member ->
-# update_row current row's Scheduled Time := target's -> update_row target
-# row := current's PRE-UPDATE snapshot value -> 2 confirmation posts).
-# google_sheets + slack run LIVE; strictly linear; all row pills are
-# first-match (current_item outside foreach).
-#
-# NEW verify_118716983 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.swap pins the FIRST-MATCH row pair (row numbers + pre-swap
-#   Scheduled Time values); the fragment cross-checks both update_row calls
-#   against it (update 8a6f0b71 writes the TARGET's time onto the CURRENT
-#   row and be51b2f4 writes the current's PRE-UPDATE time onto the target
-#   row — proving the snapshot-based swap, not a live re-read) and checks
-#   the INITIAL live snapshot really carried the pre-swap values.
-# - expect.slack_texts pins all 3 rendered texts byte-exact IN ORDER (the
-#   request block renders ONLY section_text — the Approve button /
-#   bot_command are dropped metadata and the run never waits — including
-#   the literal \n\t\t separators, 'Here’s' right single quote and en-dash
-#   '–'); every post must land on the exact SLACK_CHANNEL_OVERRIDE.
-# - expect.final_rows pins the ENTIRE final live tab row-by-row (row_number
-#   + all 12 label-headed columns; TRUE/FALSE compared case-insensitively
-#   for USER_ENTERED boolean cells): decoy rows and the later duplicate-
-#   topic row must be byte-identical, only the swap pair's Scheduled Time
-#   may differ from the seed.
-# - swap-pair guard: exactly the two pinned rows changed between the
-#   initial and final snapshots.
 
 
 def verify_118716983(result: dict[str, Any]) -> dict[str, Any]:
@@ -28971,36 +27369,6 @@ def _118716983_cell(value: Any) -> str:
     return text.upper() if text.upper() in ("TRUE", "FALSE") else text
 
 
-# Verifier fragment for recipe 113194954 (clock.scheduled_event cfd6d1af
-# (payload-less) -> lookup_table.get_entries roster 3684742 -> get_entry
-# 'KT CLOSURES' 3571620 {col1:'start_pos'} -> declare start_pos =
-# entry.col2 -> declare slack_list = entries.pluck("col1")[start_pos.to_i]
-# (DEAD downstream) -> search_entries roster {col3: start_pos} (VALUE
-# match) -> search_entries 'Github Users' 3571621 {col1: first roster
-# match's Username} -> slack.post_message_to_channel
-# 'knowledge-sharing-session' (non-'U' -> SLACK_CHANNEL_OVERRIDE) with the
-# <@slack_id> mention). lookup_table/workato_variable are Workato-internal
-# mocks; slack runs LIVE.
-#
-# NEW verify_113194954 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.declared pins BOTH declare-step results byte-exact: start_pos is
-#   the raw KT-CLOSURES string and slack_list proves the pluck chain runs
-#   over the mock's FLATTENED get_entries items POSITIONALLY (roster seed
-#   order), while expect.tool_expectations pins the roster search as a col3
-#   STRING-VALUE match — the two disagree whenever seed order != index
-#   order, so a positional-search regression cannot pass.
-# - expect.slack_text pins the rendered post byte-exact (literal header
-#   newline + '<@Uxxx> , could you …' incl. the space before the comma);
-#   the fragment also requires the exact SLACK_CHANNEL_OVERRIDE and that
-#   the args carry NO buttons/parse keys — the raw `buttons` block
-#   (button_actions / flow_id 51780405) is dropped metadata the engine must
-#   never render or wait on.
-# - read-only guard: the lookup mock snapshot must be IDENTICAL before and
-#   after the run (any write to any of the three tables fails).
 
 
 def verify_113194954(result: dict[str, Any]) -> dict[str, Any]:
@@ -29126,40 +27494,6 @@ def verify_113194954(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 106651501 (slack_bot.dynamic_menu 'List of
-# Freshdesk Company Names' -> declare job_report='OK' -> TRY { LIVE Snowflake
-# SELECT DISTINCT COMPANY_NAME FROM WORKATO_BUSINESS_SYSTEMS.FRESHDESK.
-# product_support_ticket_export WHERE LOWER(COMPANY_NAME) LIKE
-# LOWER('%<typeahead>%') limit 2000 -> generate_menu_options (flat options,
-# label=value=company_name) } CATCH 31cbad55: update_variables
-# job_report='Failed' via the DOUBLE-ANONYMIZED target
-# '<anon>…</anon>:<anon>bbbbbbbb</anon>:job_report').
-# Cross-batch near-twin of REGISTERED 88437797 (batch 05) MINUS its
-# request_type IF gate, plus a 3-part table name and the anon update target.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - NO IF gate: every non-forced variant reaches the live search (unlike the
-#   near-twin). Branches are exactly TRY-menu (menu_options is a list) vs
-#   CATCH (final_job_report 'Failed', menu_options/resolved_sql null).
-# - expect.resolved_sql pins the typeahead-interpolated SQL text verbatim
-#   (LOWER on BOTH sides, 3-PART table name kept raw in args — the live
-#   client maps it internally); args.limit must stay the raw '2000'.
-# - one-distinct-value-per-typeahead rule (batch05 88437797 rule): SELECT
-#   DISTINCT has no ORDER BY, so seeds carry AT MOST ONE distinct matching
-#   company; menu_options pins exact order ([] or one option) — the
-#   fragment re-asserts len <= 1 so a drifted variant fails loudly.
-# - the vestigial `option_groups [{}]` + use_option_groups 'false' must
-#   route to the FLAT options path: the menu args carry `options` ONLY (a
-#   group-expansion regression would emit an option_groups arg — pinned).
-# - the CATCH branch (forced error on 85f2b107, which raises BEFORE the live
-#   adapter) must flip job_report on the DECLARED step 36bf1d17 via
-#   unique-field-owner anon resolution and must NOT create any phantom
-#   variable step; catch variants own no live state (empty snapshots, no
-#   cleanup call).
-# - TRY variants are READ-ONLY on Snowflake: snapshot equality before/after
-#   + cleanup of the registered 3-part table key.
 
 
 def verify_106651501(result: dict[str, Any]) -> dict[str, Any]:
@@ -29373,41 +27707,6 @@ def verify_106651501(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 103520604 (clock.scheduled_event daily,
-# payload-less -> lookup_table.truncate 3290579 '[Temporary for X-Ray Bot]
-# List of Customers' -> LIVE snowflake run_custom_sql over
-# edw_db.workato_usage_intermediate.accounts_snapshot (latest entry_date via
-# max() scalar subselect + bare is_direct/is_paying boolean predicates,
-# trailing ';') -> IF rows_affected == 0: add_batch 66dcea69 (always []) /
-# ELSE: add_batch fadff562 (mapped rows). The recipe ENDS there — no demo
-# add_entry (that is the delta vs registered near-twin 120183307, which
-# shares every step as-id and the byte-identical SQL).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - branch discriminator is the batch step AS-ID: the IF and ELSE bodies are
-#   BYTE-IDENTICAL lookup mappings, so expect.batch_step_as pins which one
-#   traced (66dcea69 vs fadff562) + added_count, and
-#   expect.steps_absent_from_trace pins that the other never appears.
-# - dead-step proof: skip:true steps trace as {skipped: true} rows with NO
-#   tool and never execute (raw_executor execute_node skip guard). On the
-#   else path only 8038a067 traces skipped (the whole IF body is unentered);
-#   on the if path all three (8038a067, d5877211, 74bc10f8) trace skipped.
-# - Snowflake row ORDER is not guaranteed (no ORDER BY): batch entries and
-#   final lookup rows are compared as exact MULTISETS keyed on
-#   (col10, col2, full-row json); the seeder requires distinct account_id
-#   among QUALIFYING rows only — a non-qualifying twin row of the same
-#   account on an OLDER entry_date is exactly the max-date-filter case.
-# - every live row must carry the max entry_date (col1): an engine/model
-#   that drops the scalar subselect filter returns stale-dated rows and
-#   fails here; the bare `and is_paying` boolean predicates are proven by
-#   result_count over seeds that carry failing flags on the max date.
-# - truncate is proved by pinning deleted_rows == the pre-seeded stale row
-#   count AND by final-table bijection; the 0-rows branch leaves the table
-#   truncated-EMPTY (final_row_count 0) — faithful Workato no-op add.
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after, and cleanup must drop exactly the seeded 3-part table.
 
 _SNAPSHOT_TABLE_103520604 = "edw_db.workato_usage_intermediate.accounts_snapshot"
 
@@ -29609,42 +27908,6 @@ def verify_103520604(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 123154292 (workato_api_platform
-# .receive_request as 7caed8cf, path_params.company_id -> TRY { LIVE
-# snowflake run_custom_sql 'SELECT id, content, created_at, output_file_id
-# FROM walnutiq.outputs WHERE company_id = :id ORDER BY created_at DESC
-# LIMIT 1' with FORMULA-MODE bind parameters.data.id =
-# `=_dp(path_params.company_id).to_i` -> return_response 9fd5b1dd 200
-# {content/created_at/id <- rows current_item <col>, file_link <-
-# output_file_id} } CATCH 1a33231f -> return_response f87b9db6 500
-# {message}). Registered precedent: 122809739 (same walnutiq family) but
-# with NO rows-size IF — the 200 always renders.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the bind is FORMULA-MODE `.to_i`: args.parameters must be exactly
-#   {'id': <int>} — an int, not the path-param string (pinned here because
-#   verifier.py's generic args_contains cannot assert the TYPE).
-# - current_item on rows OUTSIDE any foreach = FIRST-row semantics; ORDER BY
-#   created_at DESC LIMIT 1 makes that the newest row (seeds put the newest
-#   row OUT of seed order and add a newer row for ANOTHER company so the
-#   WHERE must beat recency).
-# - ZERO-ROW ENGINE FACT (re-probed, CORRECTS the triage note): the 200
-#   response resolves through resolve_value, which renders MISSING pills as
-#   JSON null — NOT '' (resolve_text never runs here). The zero-row body is
-#   {content: null, created_at: null, file_link: null, id: null}, pinned
-#   EXACTLY via expect.response (real Workato also renders nulls).
-# - created_at pins the naive TIMESTAMP_NTZ isoformat read-back
-#   ('YYYY-MM-DDTHH:MM:SS') of the seeded 'YYYY-MM-DD HH:MM:SS' literal.
-# - branch discriminator is the return step AS-ID (9fd5b1dd 200 vs f87b9db6
-#   500) + http_status_code; return_response is TERMINAL so exactly one
-#   return traces and return_value == its response body.
-# - the catch branch (forced error on 32de9a12, pre-adapter) must trace NO
-#   snowflake call, record the forced message in the 1a33231f catch payload,
-#   and own NO live state (empty snapshots, no cleanup call).
-# - non-catch variants are READ-ONLY on Snowflake: snapshot equality
-#   before/after + cleanup drops exactly ['walnutiq.outputs'].
 
 
 def verify_123154292(result: dict[str, Any]) -> dict[str, Any]:
@@ -29804,39 +28067,6 @@ def verify_123154292(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 122406899 (workato_api_platform
-# .receive_request as 33b2d099, request schema [] — nothing dereferenced ->
-# TRY { LIVE snowflake search_rows_sql "select id, concat(first_name, ' ',
-# last_name, ' (', email, ')') as label from employee" + connector orderby
-# 'id DESC' + limit '100000' -> return_response 2f77ac2a 200
-# {employees: ____source over rows, id <- id_b497e547, label <-
-# label_10e2e5a9} } CATCH c81b5d08 -> return_response 9c6d051c 400
-# {error_message}). Shape-sibling of the 118162xxx/117566xxx shells but NOT
-# a twin — standalone build.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the raw SQL has NO ORDER BY: the connector's SEPARATE Order-by input
-#   ('id DESC') is appended by the engine — args.sql must end with
-#   ' ORDER BY id DESC' and the raw limit '100000' rides along (the live
-#   client appends LIMIT after the appended ORDER BY; LIMIT-last is valid
-#   Snowflake).
-# - the response pills are HASH-SUFFIXED (id_b497e547 / label_10e2e5a9):
-#   they resolve over the live row keys only via the `_<8-hex>` strip +
-#   case-insensitive retry — the exact employees array pins that whole path.
-# - employee ids are INTS (NUMBER column via _json_value): the employees
-#   array pins int ids in STRICTLY DESCENDING order plus the live-concat
-#   'FIRST LAST (EMAIL)' labels; zero rows pin employees: [].
-# - the BARE 1-part 'employee' table reference maps to
-#   <DB>.<SNOWFLAKE_SCHEMA>.EMPLOYEE via the TABLE-position bare rewrite;
-#   cleanup must drop exactly ['employee'] (the registered raw key).
-# - branch discriminator is the return step AS-ID (2f77ac2a 200 vs 9c6d051c
-#   400) + http_status_code; return_response is TERMINAL so exactly one
-#   return traces and return_value == its response body.
-# - the catch branch (forced error on b0b4151a, pre-adapter) must trace NO
-#   snowflake call, record the forced message in the c81b5d08 catch payload,
-#   and own NO live state (empty snapshots, no cleanup call).
 
 
 def verify_122406899(result: dict[str, Any]) -> dict[str, Any]:
@@ -29998,36 +28228,6 @@ def verify_122406899(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118162472 (HEAD of the AUTOMATION_COMPASS
-# api_platform widget family: receive_request -> TRY snowflake.search_rows_sql
-# -> return_response 200 ____source body; CATCH -> return_response 400
-# {error: catch.message} + DEAD stop step). Snowflake runs LIVE; the
-# api_platform trigger/return_response is the Workato-internal mock.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# The sibling fragments 118162473/118162474/118162476 and the byte-twin
-# fragments 117566176/117566168/117566211 DELEGATE to this function — merge
-# this one first.
-#
-# SEMANTIC GROUND TRUTH encoded on top of the generic replay checks:
-# - expect.return_value pins the terminal response body BYTE-EXACT (dict
-#   equality, no subset semantics): full businessUnits/automationByLevel/
-#   businessProcesses/businessUnitRankings arrays including row ORDER (the
-#   SQL ORDER BY is the observable), zero-count native int 0 rows, presence
-#   ||nil nulls, and the exact {error: <forced message>} 400 body.
-# - CROSS-CUTTING ENGINE FINDING (probe-verified on the 118162472 skeleton,
-#   both paths): workato_api_platform.return_response is in TERMINAL_TOOLS
-#   (raw_executor.py:1634), so after the CATCH's 400 response the recipe's
-#   trailing `stop` step NEVER executes — catch variants carry
-#   executed_action_count 1 and this fragment pins that NO stop trace row
-#   exists on ANY path (success paths stop at the 200 response too).
-# - Success variants seed live Snowflake tables via create-or-replace; the
-#   recipe is READ-ONLY, so the initial and final harness snapshots must
-#   carry identical rows (compared unordered — `select *` has no ORDER BY),
-#   and the runner's finally-cleanup must report ok (family variants share
-#   the physical AUTOMATION_COMPASS table names). Catch variants provision
-#   nothing live (the forced error fires before the snowflake adapter), so
-#   their snapshots are empty and the live checks do not apply.
 
 
 def verify_118162472(result: dict[str, Any]) -> dict[str, Any]:
@@ -30102,130 +28302,42 @@ def verify_118162472(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118162473 (AUTOMATION_COMPASS businessProcesses
-# bind-parameter list: receive_request {businessUnitCode} -> TRY
-# snowflake.search_rows_sql WHERE BU_CODE = :businessUnitCode -> 200
-# businessProcesses ____source body with 8 presence||nil pills; CATCH -> 400
-# + dead stop). Same skeleton and the same ground-truth semantics as family
-# head 118162472 — expect.return_value pins the exact body (bind-filtered
-# rows in ORDER BY level,name order, presence||nil nulls, 0 staying 0, FLOAT
-# 45.5 surviving), tool_expectations pin the resolved bind parameters, and
-# the no-stop-trace-row / read-only-snapshot / cleanup checks apply
-# identically. DELEGATES to verify_118162472 (merge that fragment first).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_118162473(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162472(result)
 
 
-# Verifier fragment for recipe 118162474 (AUTOMATION_COMPASS
-# businessUnitRankings: receive_request -> TRY snowflake.search_rows_sql
-# CEIL(AVG(COMPLETION_PERCENTAGE)) GROUP BY BU_CODE ORDER BY SCORE DESC ->
-# 200 businessUnitRankings ____source body; CATCH -> 400 + dead stop). Same
-# skeleton and the same ground-truth semantics as family head 118162472 —
-# expect.return_value pins the exact ranked body (DESC order, CEIL native
-# ints from the load-bearing NUMERIC seed column), and the no-stop-trace-row
-# / read-only-snapshot / cleanup checks apply identically. DELEGATES to
-# verify_118162472 (merge that fragment first).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_118162474(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162472(result)
 
 
-# Verifier fragment for recipe 118162476 (AUTOMATION_COMPASS businessUnits
-# 3-CTE metrics: receive_request -> TRY snowflake.search_rows_sql
-# (ProcessScores weights / BUMetrics ROUND+COUNT DISTINCT per STATUS literal
-# incl. the HYPHEN 'In-Progress' / final LEFT JOIN COALESCE-0 ORDER BY
-# BU.NAME) -> 200 businessUnits ____source body with 12 pills; CATCH -> 400
-# + dead stop). Same skeleton and the same ground-truth semantics as family
-# head 118162472 — expect.return_value pins the exact metrics body (weighted
-# ROUND scores as native ints, the all-COALESCE-0 LEFT-JOIN-miss row, NULL-
-# levels rows scoring 0 while counting projects), and the no-stop-trace-row
-# / read-only-snapshot / cleanup checks apply identically. DELEGATES to
-# verify_118162472 (merge that fragment first).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_118162476(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162472(result)
 
 
-# Verifier fragment for recipe 117566176 — EXACT byte-twin of family head
-# 118162472 (raw bodies byte-identical; delta is CSV header metadata only:
-# created_at/flow_id/updated_at/version_no; 117566176 is the ORIGINAL v7,
-# 118162472 the re-issue). Identical execution semantics, so it DELEGATES to
-# verify_118162472 (merge that fragment first).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_117566176(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162472(result)
 
 
-# Verifier fragment for recipe 117566168 — EXACT byte-twin of 118162474 (raw
-# bodies byte-identical; delta is CSV header metadata only: created_at/
-# flow_id/updated_at/version_no; 117566168 is the ORIGINAL v3, 118162474 the
-# re-issue). Identical execution semantics, so it DELEGATES to
-# verify_118162474 -> verify_118162472 (merge those fragments first).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_117566168(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162474(result)
 
 
-# Verifier fragment for recipe 117566211 — EXACT byte-twin of 118162476 (raw
-# bodies byte-identical; delta is CSV header metadata only: created_at/
-# flow_id/updated_at/version_no; 117566211 is the ORIGINAL v28, 118162476
-# the re-issue). Identical execution semantics, so it DELEGATES to
-# verify_118162476 -> verify_118162472 (merge those fragments first).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_117566211(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162476(result)
 
 
-# Verifier fragment for recipe 118162477 (workato_api_platform.receive_request
-# 751ec271, request schema [] -> TRY { LIVE snowflake.search_rows_sql d8a6f6bf
-# 8 single-row aggregates over AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD:
-# CEIL(AVG(COMPLETION_PERCENTAGE)), CEIL(AVG(AI_READINESS_SCORE)), 5x
-# SUM(CASE level=4 [+ status bucket]) and SUM(CASE level=4 AND
-# AI_IMPACT_LEVEL >= 3), limit '50000' -> return_response 83954e0e 200 with a
-# FLAT OBJECT of 8 scalars via rows[current_item].<col> } CATCH 2da14745 {
-# return_response 57671952 400 {error}; stop 8ce124ba = DEAD code }).
-# NO byte twin in batch 06.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The response is an OBJECT (rows[current_item] = FIRST-row semantics on
-#   the always-one aggregate row), NOT a ____source array; sql_row_count pins
-#   1 on every try variant.
-# - All 8 values are NATIVE INTS (full-pill fullmatch -> resolve_dp_json;
-#   CEIL/SUM Decimals -> int). Every pinned aggregate must be >= 1: the
-#   batch caution forbids 0/NULL aggregate pins, so seeds populate every
-#   status bucket and the high-value predicate. (Documented zero branch, NOT
-#   shipped: an empty table yields ONE all-NULL row — SUM over 0 rows is
-#   NULL — and the full-pill response renders all keys native null, NOT ''
-#   — the resolve_text int-0 gap is not on this path; probe 2026-07-08.)
-# - The verifier RECOMPUTES all 8 aggregates from the initial live snapshot
-#   with integer math (ceil(sum/count) = -(-sum//count) — exact against
-#   Snowflake's scale-6 AVG for <= 20 rows) and requires equality with the
-#   pinned response: CEIL rounding, the level-4-only bucket counting and the
-#   AI_IMPACT_LEVEL >= 3 boundary are derived live, not just asserted.
-# - Averages run over ALL rows while buckets count ONLY level-4 rows: the
-#   non-level-4 decoys shift the averages without touching the counts (and a
-#   high-impact non-level-4 decoy proves the conjunction on HIGH_VALUE).
-# - catch_400: forced error on d8a6f6bf fires BEFORE the adapter — no
-#   snowflake trace row, no live state, catch payload message pinned, and
-#   the trailing stop NEVER traces (return_response is TERMINAL; exactly ONE
-#   action).
-# - Try variants are READ-ONLY on Snowflake: snapshot equality + cleanup of
-#   the registered shared AUTOMATION_COMPASS table (family lanes serialize).
 
 
 def verify_118162477(result: dict[str, Any]) -> dict[str, Any]:
@@ -30480,42 +28592,6 @@ def verify_118162477(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118162479 (workato_api_platform.receive_request
-# 751ec271, request schema [] -> TRY { LIVE snowflake.search_rows_sql d8a6f6bf
-# 'SELECT STATUS AS NAME, COUNT(*) AS VALUE FROM AUTOMATION_COMPASS.
-# BUSINESS_PROCESS_DASHBOARD WHERE PROCESS_HIERARCHICAL_LEVEL = 4 GROUP BY
-# STATUS ORDER BY CASE Completed->1, In Progress->2, Planned->3, ELSE 4'
-# limit '50000' -> return_response 83954e0e 200 {projectsByStatus:
-# ____source rows {name, value}} } CATCH 2da14745 { return_response 57671952
-# 400 {error: catch.message}; stop 8ce124ba = DEAD code }).
-# Byte-identical BODY twin of 117566182 (verify_117566182 delegates here).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - expect.response pins the WHOLE response object, ORDER-SENSITIVE: the live
-#   ORDER BY CASE must produce Completed, In Progress, Planned first and any
-#   OTHER status LAST (ELSE 4). Seeds shuffle insertion order (seeder-gated)
-#   so the pinned order can only come from the live sort.
-# - The status literal is 'In Progress' (space) — sibling 118162476 uses
-#   'In-Progress' (hyphen); cross-contamination makes the group vanish.
-# - COUNT(*) values are NATIVE INTS in the response: the full-pill ____source
-#   fields resolve via _DP_RE.fullmatch -> resolve_dp_json (no string
-#   interpolation), and Decimal -> int via _json_value. Pinning "2" instead
-#   of 2 is wrong groundtruth (probe 2026-07-08; the batch_C "pin strings"
-#   note confused 118162478's string-TYPED seed columns with a render rule).
-# - The verifier RECOMPUTES the grouped counts from the initial live snapshot
-#   (WHERE level=4 / GROUP BY / CASE order) and requires equality with the
-#   pinned response — live parity is derived, not just asserted.
-# - no_level4_200: WHERE bites on a NON-EMPTY table (decoys) -> 200 with
-#   projectsByStatus [] — still 2 actions, NOT a stop/catch.
-# - catch_400: the forced error on d8a6f6bf fires BEFORE the adapter — NO
-#   snowflake trace row, NO live state (snapshots {} and cleanup None), the
-#   2da14745 catch payload message equals the pinned catch_message, and the
-#   trailing stop NEVER traces (return_response is TERMINAL; the catch trace
-#   is exactly ONE action).
-# - Try variants are READ-ONLY on Snowflake: snapshot equality + cleanup of
-#   the registered shared AUTOMATION_COMPASS table (family lanes serialize).
 
 
 def verify_118162479(result: dict[str, Any]) -> dict[str, Any]:
@@ -30737,63 +28813,12 @@ def verify_118162479(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 117566182 — BYTE-identical BODY twin of
-# 118162479 (original flow 61021192 v10; raw_recipe.md differs only in header
-# lines 1 + 11-14: id/created_at/flow_id/updated_at/version_no). The loaded
-# raw dicts are EQUAL (probe 2026-07-08: load_raw_recipe('117566182') ==
-# load_raw_recipe('118162479')), the recipes read the same shared physical
-# AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD table, and every check in the
-# head verifier is expect-driven — so this verifier delegates, following the
-# verify_118162480 -> verify_117565524 twin precedent.
-# To be merged into src/benchmark/verifier.py by the coordinating session
-# AFTER verify_118162479.
-#
-# Twin-specific data still lives in the 117566182 variant inputs (own
-# bp-117566182-* ids, an 'On Hold' ELSE-bucket variant the head does not
-# exercise, and its own no-level-4 decoy set).
 
 
 def verify_117566182(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162479(result)
 
 
-# Verifier fragment for recipe 118162481 (workato_api_platform.receive_request
-# 751ec271, request schema [] -> TRY { LIVE snowflake.search_rows_sql d8a6f6bf
-# 'SELECT MONTHNAME(MONTH_DATE) AS MONTH, AUTOMATION_SCORE, AI_READINESS_SCORE
-# AS AI_READINESS FROM AUTOMATION_COMPASS.HISTORICAL_METRICS ORDER BY MONTH',
-# connector limit input '6' -> return_response 83954e0e 200 {trendData:
-# ____source rows {month, automationScore, aiReadiness}} } CATCH 2da14745 {
-# return_response 57671952 400 {error}; stop 8ce124ba = DEAD code }).
-# Byte-identical BODY twin of 117566662 (verify_117566662 delegates here).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - FAITHFUL QUIRK, live-probed on the byte twin (batch_D e2e): `ORDER BY
-#   MONTH` sorts the MONTHNAME() 3-LETTER STRING ALPHABETICALLY (Apr < Aug <
-#   Dec < Feb < Jan < Jul < Jun < Mar < May < Nov < Oct < Sep) and the
-#   recipe SQL has NO LIMIT clause, so the ENGINE appends ' limit 6'
-#   (_append_limit_offset) which truncates AFTER the alphabetical sort. The
-#   'last 6 months' intent is NOT what executes: Jan..Aug seed ->
-#   Apr,Aug,Feb,Jan,Jul,Jun. expect.response pins the full ORDER-SENSITIVE
-#   trendData; the seeder additionally requires the pinned order to DIFFER
-#   from chronological order so the quirk stays proven.
-# - Scores are NATIVE INTS in the response (NUMBER columns -> Decimal -> int
-#   through the full-pill fields; probe 2026-07-08); months are 3-letter
-#   abbreviations, never full names.
-# - The verifier RECOMPUTES trendData from the initial live snapshot
-#   (month-number -> 3-letter name, alphabetical sort, [:6] truncation) and
-#   requires equality with the pin; it also re-asserts the rendered month
-#   order is ascending and len(trendData) == min(seeded_row_count, 6) so
-#   the truncation itself is derived from live state.
-# - empty_trend_200: an EMPTY table still returns 200 {trendData: []} (no IF
-#   in the recipe) — 2 actions, NOT a stop/catch.
-# - catch_400: the forced error on d8a6f6bf fires BEFORE the adapter — no
-#   snowflake trace row, no live state, catch payload message pinned, and
-#   the trailing stop NEVER traces (return_response is TERMINAL; exactly ONE
-#   action).
-# - Try variants are READ-ONLY on Snowflake: snapshot equality + cleanup of
-#   the registered shared HISTORICAL_METRICS table (family lanes serialize).
 
 
 def verify_118162481(result: dict[str, Any]) -> dict[str, Any]:
@@ -31035,63 +29060,12 @@ def verify_118162481(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 117566662 — BYTE-identical BODY twin of
-# 118162481 (original flow 61021504 v10; raw_recipe.md differs only in header
-# lines 1 + 11-14: id/created_at/flow_id/updated_at/version_no). The loaded
-# raw dicts are EQUAL (probe 2026-07-08: load_raw_recipe('117566662') ==
-# load_raw_recipe('118162481')), the recipes read the same shared physical
-# AUTOMATION_COMPASS.HISTORICAL_METRICS table, and every check in the head
-# verifier is expect-driven — so this verifier delegates, following the
-# verify_118162480 -> verify_117565524 twin precedent.
-# To be merged into src/benchmark/verifier.py by the coordinating session
-# AFTER verify_118162481.
-#
-# Twin-specific data still lives in the 117566662 variant inputs: variant_00
-# reproduces the batch_D LIVE e2e probe byte-for-byte (2025-01..08 seed,
-# scores 10..17/20..27 -> Apr,Aug,Feb,Jan,Jul,Jun — the strongest live
-# anchor for the alphabetical-MONTHNAME + engine-appended 'limit 6' quirk),
-# and variant_01 proves the quirk UNDER the limit (3 rows -> Feb,Jan,Mar).
 
 
 def verify_117566662(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162481(result)
 
 
-# Verifier fragment for recipe 118159799 (workato_recipe_function.execute
-# 8b893097 with 4 required string parameters -> TRY { LIVE
-# snowflake.run_custom_sql 17ed1d04: 'ALTER TABLE <event_log_database>.
-# <event_log_schema>.<event_log_table>\nADD <sql_script_for_adding_fields>'
-# interpolated VERBATIM (update_only 'false') -> return_result a029e8b7
-# {success: 'true'} } CATCH 09d0de88 { return_result 0f4503dd {success:
-# 'false', error_message: catch.message} }). Cousin of the 1181624xx
-# AUTOMATION_COMPASS family (same try/catch skeleton); NO byte twin.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - `success` is the raw input literal STRING 'true'/'false' — the engine
-#   applies NO boolean_conversion on return_result (probe-verified); a
-#   boolean pin is wrong groundtruth. This verifier type-checks it.
-# - expect.resolved_sql pins the 4-pill interpolation verbatim; the seeded
-#   snowflake_live table key must BYTE-MATCH the db.schema.table the trigger
-#   parameters assemble (that is what _rewrite_sql keys on, giving env
-#   isolation), and expect.table_key records it for the cleanup check.
-# - added_column_true: live DDL through run_custom_sql returns rows
-#   [{status: 'Statement executed successfully.'}] -> rows_affected 1
-#   (live-probed). The DDL PERSISTS: the final snapshot rows must carry the
-#   new UPPERCASE column key (NULL on every seeded row) while the initial
-#   rows must NOT — and stripping the new key (plus its lowercase read-back
-#   alias) from the final rows must reproduce the initial rows exactly
-#   (multiset compare; no other cell may change). Seeds keep >= 1 row so the
-#   read-back proves the column.
-# - duplicate_column_false: the LIVE deterministic Snowflake error
-#   "001430 (42601): SQL compilation error:\ncolumn '<COL>' already exists"
-#   is pinned VERBATIM (batch_D live probe); the failed snowflake call never
-#   traces (1 action), the 09d0de88 catch payload message equals the pinned
-#   error_message, and the table is UNCHANGED (snapshot equality). No
-#   force_action_error anywhere — both branches are live-natural.
-# - return_result is TERMINAL; cleanup is MANDATORY on every path because
-#   ALTER persists on the seeded table (runner finally drops it).
 
 
 def verify_118159799(result: dict[str, Any]) -> dict[str, Any]:
@@ -31304,33 +29278,6 @@ def verify_118159799(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 120762631 (workato_api_platform.receive_request
-# {zoominfo_id!, user_objectives} -> TRY { declare workflow_run_id ==workato.uuid
-# -> workato_pub_sub.publish_to_topic 47402 '[RIQ] New DeepResearch Job'
-# -> return_response 201 {success 'true', workflow_run_id} TERMINAL }
-# CATCH dbd9e528 -> return_response 500 {message: catch.message, success
-# 'false'}). ALL Workato-internal mocks; no live backend, no cleanup.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - =workato.uuid resolves from seed.workato_uuids consumed in call order;
-#   the verbatim declare node evaluates the formula TWICE (args resolution +
-#   result resolution), so every variant seeds [u, u] with IDENTICAL values.
-#   The declare trace row must show the SAME uuid in args
-#   (variables.data.workflow_run_id) and result (workflow_run_id), and that
-#   uuid must flow into both the published message and the 201 body.
-# - zoom_info_id goes through =pill.to_i: variant_02 seeds the STRING
-#   '00421' and the published message must carry the INTEGER 421 (json type
-#   check, not string comparison).
-# - the 201 return is ENGINE-TERMINAL: publish_201 traces must show exactly
-#   [declare, publish, 201-return] and never reach the catch return.
-# - catch_500 uses seed.force_action_error on fa742e11 (pure-mock publish has
-#   no other deterministic failure): the error raises BEFORE the tool call so
-#   the trace has NO publish row; the catch payload message must equal the
-#   forced error and the 500 body echoes it with success 'false' (LITERAL
-#   strings -- the body success values are custom-value strings, not bools).
-# - return_value must equal the returned response body on both outcomes.
 
 
 def verify_120762631(result: dict[str, Any]) -> dict[str, Any]:
@@ -31499,36 +29446,6 @@ def verify_120762631(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 119586008 (workato_api_platform.receive_request
-# {date!, account_id!} -> TRY { LIVE snowflake.run_custom_sql 28928828
-# MAX(CALENDAR_DATE) <= request.date -> LIVE run_custom_sql 58637f4a CTE
-# battery (account_info is_paying/cust_type='direct', subproc_list
-# != 'not conclusive', ARRAY_AGG(DISTINCT), OBJECT_AGG x2, dept_scorecard
-# CONCAT(...ROUND(...)... '%, ') GROUP BY all, final SELECT s.*,
-# s.department_scorecard (dup column collapses), to_json(...) JOIN without
-# ON) -> 213ea423 skip:true DEAD } CATCH 6d3b3e78 -> 404 (terminal, no body)
-# ; after try -> 200 e62afcce with 8 source-mapped fields).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - department_scores pins the SINGLE-'%' rendering: the engine gap fixed for
-#   this recipe doubled literal % to %% when the statement had no bind
-#   params. The fragment hard-fails any '%%' in the returned scorecard.
-# - expect.max_calendar_date pins the step-3 MAX: variant_01 places
-#   request.date BETWEEN the two seeded snapshots, so a >-vs-<= or
-#   latest-date-always engine bug flips the whole response (different ARR /
-#   company size / scorecard).
-# - the 200 response is TYPED: CURRENT_ARR_USD must be the JSON NUMBER from
-#   the live read-back (int), and on the 0-row variant ALL EIGHT fields must
-#   be null (current_item over empty rows) -- an IF-like 404 on empty rows is
-#   WRONG (the catch fires only on SQL failure).
-# - the dead step 213ea423 must appear in the trace ONLY as a skipped marker
-#   on SQL branches (dead-branch proof), and exactly 2 snowflake calls run.
-# - catch_404 uses seed.force_action_error on 28928828: NO snowflake row in
-#   the trace, the 404 is ENGINE-TERMINAL (no trailing 200 row), body {}.
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after, and cleanup must drop exactly the two seeded plg tables.
 
 
 def verify_119586008(result: dict[str, Any]) -> dict[str, Any]:
@@ -31716,44 +29633,6 @@ def verify_119586008(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 123216893 (clock.scheduled_event -> TRY {
-# LIVE snowflake.run_custom_sql 2a246498: CTE breach_times (sla_name=
-# 'PM_TRIAGE_SLA', row_number() OVER (PARTITION BY key ORDER BY breachtime
-# DESC)) -> rn=1 latest breach per key; SELECT 13 j.* cols + b.breached +
-# b.breachtime FROM jsm_psm_issues j LEFT JOIN breach_time b WHERE
-# j.issuetype='Enhancement' -> FOREACH rows -> workato_db_table.upsert_record
-# 747954b2 (MOCK table 33563, primary 'key') } CATCH 9e9e7b09 -> STOP
-# 6b5e3996 stop_with_error).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.upsert_records pin every upsert's record args VERBATIM AND TYPED:
-#   pm_triage_breach is the JSON boolean from the live read-back (true/false)
-#   or null on a LEFT-JOIN miss; created/updated/pm_triage_breach_time are
-#   the TIMESTAMP_NTZ isoformat strings; description goes through
-#   =pill.present? ? pill.gsub('"', "'")[0,9999] : null -- double quotes
-#   swapped to single quotes, blank -> null (the two engine gaps fixed for
-#   this recipe).
-# - expect.upsert_created pins insert-vs-update per row: the dashed
-#   primary_field_id must match the pre-seeded stale row after
-#   dash->underscore normalization (created:false), new keys insert
-#   (created:true).
-# - expect.sql_rows_keys pins the SQL row set AND ORDER (the recipe SQL has
-#   no final ORDER BY; seeds pin insertion order -- live-lane checked): the
-#   trace rows' j.key sequence must match, the Bug decoy must be absent, and
-#   PSM-1's breach must come from the LATEST PM_TRIAGE_SLA row (the OTHER_SLA
-#   decoy would win rn=1 if the sla_name filter broke).
-# - initial/final_table_rows pin the FULL mock-table state transition
-#   byte-exact (stringified storage: booleans -> 'True'/'False', nulls
-#   dropped; _row_id/_created_by/_modified_by bookkeeping) -- ghost writes,
-#   decoy mutations, or wrong upsert targets fail.
-# - catch_stop: the forced error raises BEFORE the tool call (NO snowflake
-#   row), the catch payload is exactly {type, message} and the run ends at
-#   the 6b5e3996 stop marker (stop_reason is NOT resolved into the trace --
-#   engine semantics pinned).
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after, and cleanup must drop exactly the two seeded jsm tables.
 
 
 def verify_123216893(result: dict[str, Any]) -> dict[str, Any]:
@@ -31931,33 +29810,6 @@ def verify_123216893(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 88708198 (workato_service.receive_request
-# 'Update Campaign Activity' -> TRY { LIVE salesforce.update_sobject
-# Campaign_Activity__c with 27 per-field formula guards (21 present??:skip +
-# 6 .presence-or-skip) -> send_reply success echoing the request id } CATCH
-# 2d7b3539: send_reply error carrying catch.message).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - SKIP guards drop columns BEFORE the tool call: update args.fields must
-#   equal expect.updated_fields EXACTLY (args_contains alone tolerates extra
-#   keys) and every expect.absent_fields column must be absent - present-but-
-#   blank request values ('' through either guard kind) skip identically to
-#   missing ones, and the seeded live values they would have overwritten must
-#   survive (expect.untouched_fields vs the final snapshot).
-# - admin_load=true writes a real BOOLEAN to the Admin_Load__c checkbox
-#   (bool-insensitive compare against the live read-back). admin_load=false
-#   is never pinned: the engine passes False through `present??` where Ruby
-#   would skip - the seeder rejects it (probe-verified divergence).
-# - The catch branch executes exactly ONE action (the refused update never
-#   traces) and its error reply message is the DETERMINISTIC OwnedSalesforce
-#   refusal text pinned in expect.catch_message; the seeded record must be
-#   byte-identical between initial and final snapshots.
-# - send_reply is NOT terminal but is the last step either way; the recipe's
-#   return_value is the final reply args verbatim (expect.reply).
-# - Every variant owns exactly one live Campaign_Activity__c record: cleanup
-#   must report ok with no leftovers.
 
 
 def verify_88708198(result: dict[str, Any]) -> dict[str, Any]:
@@ -32200,32 +30052,6 @@ def verify_88708198(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 88676796 (slack_bot.new_event
-# block_actions:button with trigger filter actions[current_item].value
-# contains 'check_design_tickets' -> TRY { call_service 'Get Email by Slack
-# ID' 45178535 -> call_service '[Firefighter x Smartsheet] View Design
-# Ticket' 45178957 } CATCH 039d01ad: call_service 'APJ Recipe Errors'
-# 45178280 + STOP stop_with_error). FULL MOCK - Workato-internal only.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The trigger filter is a SUBSTRING contains over the FIRST actions element
-#   ('check_design_tickets_2024' matches); the false arm runs ZERO actions
-#   with an empty trace and trigger_filter_matched false.
-# - user_email in the modal call is the e288d19a seeded reply's
-#   profile.email - the fragment cross-checks the propagation against the
-#   recorded reply args, not just a pinned literal.
-# - The catch branch pins the APJ request VERBATIM: error_message == the
-#   forced error, job_id/job_url/recipe_id == seed.job_context values (a
-#   missing job_context renders null SILENTLY - seeder-enforced), stop_recipe
-#   the literal string 'false'; then the STOP node records a stopped trace
-#   row (stop args are not traced) and nothing may execute after it.
-# - Flow-id discrimination: both branches trace two call_service rows, so
-#   the second row's flow_id (45178957 vs 45178280) is what separates the
-#   happy path from the catch path.
-# - No live lane: snapshots must stay empty and no send_reply/return_value
-#   exists on any branch.
 
 
 def verify_88676796(result: dict[str, Any]) -> dict[str, Any]:
@@ -32432,38 +30258,6 @@ def verify_88676796(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 103711977 (slack_bot.dynamic_menu '[CB] Search
-# by User' -> declare privatequery (schema-only, nil) -> mock exception-table
-# get_records 12788 filtered on uemail.downcase -> IF first-record RecordID
-# blank: update privatequery='AND u.isprivate = FALSE' -> LIVE snowflake
-# run_custom_sql over 6 bare DEMOINFRA_* tables (:parameter bind +
-# workspace_ids/privatequery pills inline) -> generate_menu_options with the
-# 3-segment gsub label and int relationid value).
-# Family head; 102760065 is the mechanical near-twin.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The IF gate reads records[current_item].RecordID: ZERO rows (or a non-
-#   matching email after .downcase) -> blank TRUE -> the suffix is APPENDED
-#   and private users are hidden (5 actions); a matching row -> blank FALSE
-#   -> update_variables never runs and the NIL pill renders '' so the SQL
-#   ends with a bare newline and private users are VISIBLE (4 actions).
-# - expect.resolved_sql pins the trace SQL verbatim: workspace_ids
-#   interpolates INLINE into IN (...) while the typeahead stays a :parameter
-#   BIND ('%'+value.downcase+'%' in args.parameters) - conflating the two is
-#   the classic regression.
-# - The suffix<->branch coupling is re-derived here (endswith), not just
-#   compared to expect, so a stale expect cannot mask a branch flip.
-# - Menu labels are recomputed from the ACTUAL live SQL rows
-#   (username.gsub('.onmicrosoft.com','') + ' || ' + application_name +
-#   ' || ' + workspace_name) and values must be INT relationids (Snowflake
-#   NUMBER -> int, never a string).
-# - No ORDER BY: multi-row menus compare as a MULTISET
-#   (expect.menu_options_ordered false); single/empty pin exact order.
-# - Read-only on Snowflake: initial/final snapshots identical and cleanup
-#   must drop all 6 registered tables; the declared privatequery state on
-#   97ffa775 must be {} (untouched) on the excepted branch.
 
 
 def verify_103711977(result: dict[str, Any]) -> dict[str, Any]:
@@ -32738,41 +30532,6 @@ def verify_103711977(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 102760065 (slack_bot.dynamic_menu '[CB] Search
-# by User' -> declare privatequery (schema-only, nil) -> mock exception-table
-# get_records 13516 filtered on uemail.downcase -> IF first-record RecordID
-# blank: update privatequery='AND u.isprivate = FALSE' -> LIVE snowflake
-# run_custom_sql over 5 bare DEMOINFRA_* tables (:parameter bind +
-# workspace_ids/privatequery pills inline) -> generate_menu_options with the
-# 2-segment gsub label and int relationid value).
-# NEAR-TWIN of family head 103711977: table 12788->13516, the SQL drops the
-# DEMOINFRA_WORKSPACES join (users_workspaces aliased w, not wu), the output
-# row carries 'name' instead of application_name/workspace_name, and the
-# label drops its third segment. The twin's v1 seeds duplicate memberships so
-# DISTINCT provably collapses the duplicated output row (head-inexpressible).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The IF gate reads records[current_item].RecordID: ZERO rows (or a non-
-#   matching email after .downcase) -> blank TRUE -> the suffix is APPENDED
-#   and private users are hidden (5 actions); a matching row -> blank FALSE
-#   -> update_variables never runs and the NIL pill renders '' so the SQL
-#   ends with a bare newline and private users are VISIBLE (4 actions).
-# - expect.resolved_sql pins the trace SQL verbatim: workspace_ids
-#   interpolates INLINE into IN (...) while the typeahead stays a :parameter
-#   BIND ('%'+value.downcase+'%' in args.parameters) - conflating the two is
-#   the classic regression.
-# - The suffix<->branch coupling is re-derived here (endswith), not just
-#   compared to expect, so a stale expect cannot mask a branch flip.
-# - Menu labels are recomputed from the ACTUAL live SQL rows
-#   (username.gsub('.onmicrosoft.com','') + ' || ' + name; 2 segments) and
-#   values must be INT relationids (Snowflake NUMBER -> int, never a string).
-# - No ORDER BY: multi-row menus compare as a MULTISET
-#   (expect.menu_options_ordered false); single/empty pin exact order.
-# - Read-only on Snowflake: initial/final snapshots identical and cleanup
-#   must drop all 6 registered tables; the declared privatequery state on
-#   97ffa775 must be {} (untouched) on the excepted branch.
 
 
 def verify_102760065(result: dict[str, Any]) -> dict[str, Any]:
@@ -33046,38 +30805,6 @@ def verify_102760065(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 124258051 (clock.scheduled_event cron
-# '10 12 2 * *' -> TRY: LIVE snowflake.run_custom_sql INSERT INTO
-# PRODUCT.ITERABLE.USAGE_EMAIL_ALERT_TOP10RECIPES (~30-CTE pipeline over 14
-# source tables; sysdate()/current_date pinned from seed current_time --
-# engine fix re-probed green; final SELECT FROM top_10_recipes_monthly =
-# CUMULATIVE-rank CTE _5) -> slack success post to literal C05LVU4NVN0
-# (auto-routed to SLACK_CHANNEL_OVERRIDE); CATCH 6acde0a3 -> slack failure
-# post, same routing). TWIN of 124261270 (V2): deltas are the INSERT target
-# (_V2), the final CTE (monthly-rank _6) and the 'V2' slack texts -- this
-# fragment hard-pins the V1 side of each delta as a twin-drift guard.
-#
-# NEW verify_124258051 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the full raw INSERT SQL bytes; the INSERT read-back is
-#   a single summary row whose 'number of rows inserted' cell must equal
-#   expect.inserted_row_count (6 / 0) -- checked here against the live result.
-# - expect.final_snowflake_tables pins the target EXACTLY: 6 rows matched per
-#   (DT_MONTH, FLOW_ID) with full-row equality -- the June RN order (71 cum
-#   110 > 73 cum 90 > 72 cum 80) proves the CUMULATIVE ranking and provably
-#   differs from the V2 twin's monthly order; NULL flow_name pins the
-#   flows_persistent left-join miss; INGESTION_DATE/REPORTING_MONTH pin the
-#   sysdate()/current_date rewrites.
-# - empty_insert: 0 rows inserted but the SUCCESS text still posts (the try
-#   completes clean -- business-empty is not an error).
-# - catch_failure: forced error fires BEFORE the adapter -> no snowflake
-#   trace row, no live state (snapshots {}), no cleanup; the failure text
-#   posts from step 60a29776; catch payload message pinned.
-# - the org literal channel C05LVU4NVN0 must NEVER reach the live call.
-# - the 14 seeded source tables are read-only: initial == final snapshot.
 
 def verify_124258051(result: dict[str, Any]) -> dict[str, Any]:
     SQL_STEP = "fcbdd078"
@@ -33268,39 +30995,6 @@ def verify_124258051(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 124261270 (clock.scheduled_event cron
-# '10 12 2 * *' -> TRY: LIVE snowflake.run_custom_sql INSERT INTO
-# PRODUCT.ITERABLE.USAGE_EMAIL_ALERT_TOP10RECIPES_V2 (~30-CTE pipeline over
-# 14 source tables; sysdate()/current_date pinned from seed current_time --
-# engine fix re-probed green; final SELECT FROM top_10_recipes_monthly_v2 =
-# MONTHLY-rank CTE _6) -> slack 'V2' success post to literal C05LVU4NVN0
-# (auto-routed to SLACK_CHANNEL_OVERRIDE); CATCH 6acde0a3 -> slack 'V2'
-# failure post, same routing). V2 TWIN of head 124258051: deltas are the
-# INSERT target (_V2), the final CTE (monthly-rank _6) and the 'V2' slack
-# texts -- this fragment hard-pins the V2 side of each delta as a
-# twin-drift guard.
-#
-# NEW verify_124261270 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the full raw INSERT SQL bytes; the INSERT read-back is
-#   a single summary row whose 'number of rows inserted' cell must equal
-#   expect.inserted_row_count (6 / 0) -- checked here against the live result.
-# - expect.final_snowflake_tables pins the target EXACTLY: 6 rows matched per
-#   (DT_MONTH, FLOW_ID) with full-row equality -- the June RN order (72
-#   monthly 60 > 73 monthly 40 > 71 monthly 10) proves the MONTHLY ranking
-#   and provably differs from the head twin's cumulative order; NULL
-#   flow_name pins the flows_persistent left-join miss; INGESTION_DATE/
-#   REPORTING_MONTH pin the sysdate()/current_date rewrites.
-# - empty_insert: 0 rows inserted but the SUCCESS text still posts (the try
-#   completes clean -- business-empty is not an error).
-# - catch_failure: forced error fires BEFORE the adapter -> no snowflake
-#   trace row, no live state (snapshots {}), no cleanup; the failure text
-#   posts from step 60a29776; catch payload message pinned.
-# - the org literal channel C05LVU4NVN0 must NEVER reach the live call.
-# - the 14 seeded source tables are read-only: initial == final snapshot.
 
 def verify_124261270(result: dict[str, Any]) -> dict[str, Any]:
     SQL_STEP = "fcbdd078"
@@ -33491,44 +31185,6 @@ def verify_124261270(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 130550781 (workato_recipe_function.execute ->
-# TRY: LIVE Snowflake CTAS plg.chi_<anon>2023</anon>_process_complexity_
-# scoring_aggregated_operational (percent_rank workflow percentile, lateral
-# flatten(split(apps_used)) app split, tier-1/2 left join with JDBC/'On-prem
-# files' arms, rank() qualify <=4 top-apps, listagg distinct, nvl fallbacks,
-# volume/complexity/process CASE cascades, complexity_1..10 pivot,
-# '* exclude' final join) + skip:true run_custom_sql_async_v2 twin ->
-# return {status:'success'}; CATCH 275a5039: return {status:'failed'}
-# TERMINAL, trailing STOP 4d914476 ('#{catch.type}, #{catch.message}')
-# unreachable dead code). Seeds register the CLEAN de-tagged 2-part names;
-# args_contains pins the tagged raw CTAS bytes verbatim (de-tag happens at
-# the snowflake_live boundary only).
-#
-# NEW verify_130550781 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the full tagged CTAS bytes; result_count 1 pins the
-#   live single-row "successfully created" read-back.
-# - expect.final_snowflake_tables pins the aggregated table EXACTLY (row
-#   count + every output column per account: counts, percentages, metric,
-#   volume/complexity/process verdicts, all ten pivot columns). EXCEPTION:
-#   BIZ_CRITICAL_APP_NAMES / DISPLAY_OUTPUT_TOP_APPS come from
-#   listagg(distinct ...) WITHOUT a within-group order -- live element order
-#   is unspecified, so expects pin the canonical sorted comma-set and this
-#   verifier compares the comma-SPLIT SETS (same multiset, order-free);
-#   every other column is exact-equality.
-# - expect.async_step_skipped pins the skip:true async twin (traced once as
-#   {skipped: true}, no tool) on success paths; on the catch path the twin
-#   is never reached (forced error precedes it inside the TRY).
-# - stop_node_never_traced pins the dead STOP 4d914476: the catch
-#   return_result is engine-terminal, so the '#{catch.type}, #{catch.
-#   message}' stop_reason is unreachable dead code on EVERY path.
-# - catch path: forced error fires BEFORE the snowflake adapter -> the
-#   pre-dropped CTAS target stays absent (snapshot count 0) and the two
-#   seeded sources stay untouched.
-# - cleanup must drop exactly the three registered tables.
 
 _LISTAGG_SET_COLUMNS_130550781 = {"BIZ_CRITICAL_APP_NAMES", "DISPLAY_OUTPUT_TOP_APPS"}
 
@@ -33676,40 +31332,6 @@ def verify_130550781(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 121086244 (clock.scheduled_event daily 06:00
-# -> LIVE snowflake.search_rows_sql open-invoice SQL (DATEDIFF PAST_DUE off
-# the pinned current_time, IFNULL tax, IS_PAID CASE, 'Salesforce Environment'
-# project_property urls, FLAT_CUSTOMER join with NOT LIKE 'I/C%', CURRENCY
-# join, LEFT JOIN SALESFORCE."ACCOUNT" quoted key, WHERE remaining>0 /
-# IS_PAID=FALSE / ACTIVE=TRUE-or-NULL / PAST_DUE NOT NULL / status NOT IN
-# 'Pending Approval') -> declare new_records int 0 -> FOREACH rows: mock
-# workato_db_table.upsert_record 1670 (primary NetSuite Invoice ID dash-form,
-# Churn Oppty ID '=skip' dropped) -> IF created is_true: new_records += 1).
-#
-# NEW verify_121086244 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - the SELECT has NO ORDER BY, so live row order across >1 qualifying
-#   invoice is unspecified. expect.upserts pins the FULL typed record +
-#   created flag PER INVOICE ID (order-free exact match: every expected
-#   upsert must appear exactly once, args byte-equal incl. explicit nulls on
-#   the LEFT-JOIN-miss arm, and no unexpected upsert may exist).
-#   Per-index tool_expectations only pin order-invariant fields.
-# - expect.new_records_final pins the counter (declare-int coercion '0'->0
-#   plus one +1 per created:true) read from step_outputs['1ea22b2c'].
-# - expect.final_table_rows pins the ENTIRE mock table as a canonical
-#   multiset (stringified cells, null cells dropped by the mock, seed rows
-#   updated in place keep _created_by 'seed' + gain _modified_by 'agent',
-#   created rows carry _created_by 'agent'); _row_id is compared as the
-#   sorted expect.final_row_ids set because creation order follows the
-#   unspecified live row order.
-# - live snowflake tables are READ-ONLY: initial and final snapshots must be
-#   identical for all four registered keys, and cleanup must drop exactly
-#   those four (incl. the quoted SALESFORCE."ACCOUNT" registration).
-# - zero_rows variant: foreach runs 0 iterations -> exactly 2 executed
-#   actions and an untouched pre-seeded decoy row (no ghost writes).
 
 _DB_TABLE_121086244 = "1670"
 _PRIMARY_121086244 = "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c"
@@ -33880,40 +31502,6 @@ def verify_121086244(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 121967119 (workato_webhooks.new_event
-# rawdatatxt -> json_parser.parse_json(document=#{payload raw string}) -> IF
-# document.data.runStatus == 'Success' -> workato_db_table.get_records MOCK
-# table 16848 (filter loaded istrue + ORDER BY entry_date DESC + LIMIT 1,
-# honored under seed.workato_db_table.honor_order_and_limit) -> LIVE
-# snowflake.search_rows_sql 'select entry_date from edw_db.workato_usage.
-# flows_snapshot where entry_date > <latest> group by all' + executor-appended
-# 'ORDER BY entry_date ASC' -> FOREACH rows -> upsert_record (primary
-# entry_date, loaded='true' literal) -> unconditional non-error STOP 282ae64d).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - THE FIXED ENGINE GAP: get_records must return EXACTLY ONE record whose
-#   entry_date is the LATEST LOADED date, with the trace args carrying the
-#   UNDERSCORED order_by_field_id + order_direction desc + limit '1'. Seeds
-#   place an UNLOADED decoy row NEWER than every loaded row: a broken
-#   loaded-filter/order interplay (or the legacy seed-order + limit-drop
-#   behavior) surfaces the wrong date and poisons the SQL's > filter.
-# - the executed SQL must end with 'group by all ORDER BY entry_date ASC'
-#   (the node's separate orderby input appended by the executor) and carry
-#   the latest loaded date in the > literal; the result rows must be the
-#   DEDUPED (group by all collapsed the seeded duplicate) ASC-ordered dates.
-# - upserts pin the literal-STRING loaded value 'true' (custom-value toggle)
-#   vs the seeded JSON-boolean true rows; created flags pin insert vs the
-#   primary-key UPDATE on an existing entry_date (dashed id normalization).
-# - the trailing STOP (282ae64d, stop_with_error false) runs on EVERY path;
-#   return_value stays null; the not-Success branch executes ONLY parse_json
-#   (dead-branch proof: no get/sql/upsert trace rows, zero tool_calls).
-# - initial/final_table_rows pin the FULL mock-table transition byte-exact
-#   (_row_id/_created_by/_modified_by bookkeeping; seed booleans stay True,
-#   written rows carry the string 'true').
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after, and cleanup must drop exactly the seeded flows_snapshot.
 
 
 def verify_121967119(result: dict[str, Any]) -> dict[str, Any]:
@@ -34128,46 +31716,6 @@ def verify_121967119(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 91556848 (slack_bot.dynamic_menu 'List of
-# Records' as 6f2a4ce9, parameters {type} + typeahead.value -> TRY {
-# lookup_table.get_entry 355280 '[SFBOT] Objects' {col1: type} -> LIVE
-# snowflake.search_rows_sql with DYNAMICALLY COMPOSED SQL
-# 'select #{entry.col2} display_name, id from salesforce.#{type} where
-# lower(display_name) like lower(:search_term)' + connector orderby
-# 'display_name' appended + limit '10000', bind '%typeahead%' }
-# CATCH 9e7ca880 -> stop (stop_with_error) } -> generate_menu_options
-# a20f9927 label <- display_name_431ff3ca / value <- id_b497e547).
-# Same hash-suffix + orderby-append class as verify_122406899.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the SQL is COMPOSED FROM PILLS: the lookup entry's col2 lands in the
-#   SELECT alias position and parameters.type lands in the FROM clause
-#   (salesforce.<type>, the registered 2-part seed table). args.sql must
-#   equal expect.resolved_sql BYTE-EXACTLY and is re-derived here from the
-#   traced get_entry result + the trigger (a stale expect cannot mask a
-#   composition regression).
-# - the raw SQL has NO ORDER BY: the connector's SEPARATE Order-by input
-#   ('display_name') is appended by the engine -- args.sql must end with
-#   ' ORDER BY display_name' and the raw limit '10000' rides along.
-# - the bind is '%<typeahead.value>%' with CASE PRESERVED (lower() runs in
-#   Snowflake on BOTH LIKE arms; display_name in the WHERE is a Snowflake
-#   LATERAL column alias, triage-verified live).
-# - menu options resolve via the HASH-SUFFIXED pills display_name_431ff3ca /
-#   id_b497e547 (`_<8-hex>` strip + case-insensitive retry over the live row
-#   keys): labels/values are recomputed from the ACTUAL live rows, exact
-#   order (the appended ORDER BY pins it; seeds enforce distinct ASCII
-#   display values), [] for zero matches.
-# - catch branch: the forced error on 41c16eb0 raises BEFORE the live
-#   adapter -> catch payload {type RawRecipeExecutionError, message} keyed
-#   9e7ca880 -> STOP. The engine records only the bare stop marker
-#   {number 6, stopped true} (stop_reason is never evaluated) and the stop
-#   must be the LAST trace row -- generate_menu_options sits AFTER the try
-#   and must never execute. The variant owns NO live state (empty snapshots,
-#   no cleanup call).
-# - happy runs are READ-ONLY on Snowflake: initial == final snapshot and
-#   cleanup drops exactly the one registered 'salesforce.<type>' key.
 
 
 def verify_91556848(result: dict[str, Any]) -> dict[str, Any]:
@@ -34396,37 +31944,6 @@ def verify_91556848(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 88783356 (workato_service.receive_request
-# 'Add person to Salesforce campaign' as d422758b -> TRY { LIVE
-# salesforce.create_record CampaignMember {CampaignId <- request.campaign_id,
-# Campaign_Member_Notes__c <- request.notes (MISSING pill drops the column),
-# ContactId = starts_with?("003") ? id : skip, LeadId = starts_with?("00Q")
-# ? id : skip, Status <- request.status} -> send_reply eae47ad6 success
-# {campaign_member_id <- salesforce.25a6445f.id} } CATCH b3123d81 ->
-# send_reply c764d8ca error {message <- catch.message}).
-# Service->SF sibling of verify_88708198 (update; this one CREATES).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the SKIP-TERNARY PAIR splits ONE request field: a 003-id keeps ContactId
-#   and DROPS LeadId, a 00Q-id the reverse, any other prefix drops BOTH (the
-#   id never reaches Salesforce; the live org then rejects the memberless
-#   create -> catch). create args.fields are compared EXACTLY (== on
-#   expect.created_fields), so a leaked SKIP sentinel or a stray column
-#   fails.
-# - the success reply THREADS the live created id: reply.campaign_member_id
-#   must equal the create result id (well-formed 00v... CampaignMember key
-#   prefix) -- it is never a pinnable literal, expect carries __ANY__.
-# - the catch reply forwards ONLY reply_type/reply/message; the raw node's
-#   'code' 500 and 'custom_error_response' true are dropped by the adapter
-#   (re-probed) -- their absence from args IS asserted. The message is LIVE
-#   Salesforce error text: pinned as non-empty + equal to the catch payload,
-#   never as an exact string. The failed create never traces (1 action).
-# - live-state proof: success runs go 0 -> 1 owned CampaignMember whose live
-#   read-back matches created_fields; the catch run keeps the snapshot
-#   IDENTICAL (seeded Campaign untouched, no member); cleanup deletes ALL
-#   owned records (the recipe-created member included) with zero leftovers.
 
 
 def verify_88783356(result: dict[str, Any]) -> dict[str, Any]:
@@ -34618,44 +32135,6 @@ def verify_88783356(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 123992155 (slack_bot.bot_command_v2 79c4a18b
-# 'Namecard' {email} -> lookup_table.search_entries 12079e4b table 1840306
-# col5=email -> logger.log_message 1f7aeafc (job_created_at in Asia/Singapore
-# '%d %B %Y') -> lookup_table.update_entry 171ad1f8 (FIRST matching entry:
-# col9 'Completed', col10 'Completed on <date>') -> LIVE google_sheets
-# search 89357d8d (col_Remarks = PRE-update col10 SNAPSHOT + col_'Workato
-# Email') -> LIVE update_row cfa21416 (row_number pill; Status/Remarks) ->
-# slack_bot.post_bot_message 336b10f9 advanced.ts = trigger ts -> LIVE
-# chat.update of the seed-posted bot message in the override channel).
-# Strictly linear; lookup_table is the only mock (Workato-internal).
-#
-# NEW verify_123992155 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - pre-update-snapshot trap: step 5 searches by the STEP-2 col10 snapshot,
-#   not the value step 4 just wrote -- the fragment pins search args
-#   col_Remarks == the SEEDED col10 of the updated entry and != the
-#   post-update 'Completed on <date>' string (seeded col10 is required
-#   non-empty: a blank criterion would be DROPPED by engine semantics and
-#   silently widen the search to email-only).
-# - chat.update threading: the ONE slack.post_message call must carry
-#   ts == the live seed-posted message ts == the trigger ts (bot-owned
-#   message update, never a fresh post: thread_ts stays empty), channel ==
-#   the override channel, text byte-equal to expect.slack_text (section +
-#   5 'Title: value' attachment lines over the FIRST matching entry).
-# - date rendering: the logger trace row (as 1f7aeafc) must render
-#   expect.rendered_date (job_created_at shifted to Asia/Singapore) and the
-#   same string must appear in the update_entry col10, sheet Remarks.
-# - byte-exact final state on BOTH stores: final lookup table 1840306 ==
-#   expect.final_lookup_rows (only the target entry mutated, _modified_by
-#   'agent'); final live sheet == expect.final_sheet_rows (FORMATTED
-#   read-back; only expect.target_row_number mutated). Initial snapshots are
-#   re-derived from the seeded sections (USER_ENTERED rendered-form pin) and
-#   every non-target row must be byte-untouched (ghost writes fail).
-# - cleanup: the run must delete the seeded bot message (rerun determinism);
-#   the fragment fails when cleanup_response is not ok.
 
 
 def verify_123992155(result: dict[str, Any]) -> dict[str, Any]:
@@ -34897,44 +32376,6 @@ def verify_123992155(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 123424618 (slack_bot.bot_command_v2 79c4a18b
-# 'Namecard' {email} -> lookup_table.search_entries 12079e4b table 1889458
-# col5=email -> logger.log_message 1f7aeafc (job_created_at in Asia/Singapore
-# '%d %B %Y') -> lookup_table.update_entry 171ad1f8 (FIRST matching entry:
-# col9 'Completed', col10 'Completed on <date>') -> LIVE google_sheets
-# search 89357d8d (col_Remarks = PRE-update col10 SNAPSHOT + col_'Workato
-# Email') -> LIVE update_row cfa21416 (row_number pill; Status/Remarks) ->
-# slack_bot.post_bot_message 336b10f9 advanced.ts = trigger ts -> LIVE
-# chat.update of the seed-posted bot message in the override channel).
-# Strictly linear; lookup_table is the only mock (Workato-internal).
-#
-# NEW verify_123424618 -- to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - pre-update-snapshot trap: step 5 searches by the STEP-2 col10 snapshot,
-#   not the value step 4 just wrote -- the fragment pins search args
-#   col_Remarks == the SEEDED col10 of the updated entry and != the
-#   post-update 'Completed on <date>' string (seeded col10 is required
-#   non-empty: a blank criterion would be DROPPED by engine semantics and
-#   silently widen the search to email-only).
-# - chat.update threading: the ONE slack.post_message call must carry
-#   ts == the live seed-posted message ts == the trigger ts (bot-owned
-#   message update, never a fresh post: thread_ts stays empty), channel ==
-#   the override channel, text byte-equal to expect.slack_text (section +
-#   5 'Title: value' attachment lines over the FIRST matching entry).
-# - date rendering: the logger trace row (as 1f7aeafc) must render
-#   expect.rendered_date (job_created_at shifted to Asia/Singapore) and the
-#   same string must appear in the update_entry col10, sheet Remarks.
-# - byte-exact final state on BOTH stores: final lookup table 1889458 ==
-#   expect.final_lookup_rows (only the target entry mutated, _modified_by
-#   'agent'); final live sheet == expect.final_sheet_rows (FORMATTED
-#   read-back; only expect.target_row_number mutated). Initial snapshots are
-#   re-derived from the seeded sections (USER_ENTERED rendered-form pin) and
-#   every non-target row must be byte-untouched (ghost writes fail).
-# - cleanup: the run must delete the seeded bot message (rerun determinism);
-#   the fragment fails when cleanup_response is not ok.
 
 
 def verify_123424618(result: dict[str, Any]) -> dict[str, Any]:
@@ -35176,128 +32617,10 @@ def verify_123424618(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 108516287 (workato_api_platform.receive_request
-# 458af9a1 {account_id, workspace_ids} -> TRY { LIVE snowflake.search_rows_sql
-# 5a86b1ad 'select LISTAGG(distinct wd.workspace_name, ', ') workspaces,
-# count_if x10 from product.workato_usage.recipe_dim rd left join
-# product.workato_usage.workspace_dim wd on wd.workspace_id = rd.user_id
-# where rd.is_latest and rd.running and wd.is_latest and not wd.is_deleted
-# and wd.is_paid_workspace and not wd.is_internal and wd.workspace_id in
-# (#{workspace_ids RAW}) and wd.sales_account_id = '#{account_id}'' limit '1'
-# offset '0' -> return_response 426432f0 200 {11 fields via hash-suffix
-# rows[current_item] pills} } CATCH c96801ed { return_response 1c0a9f98 500
-# BODYLESS — response {} }). Head of the 108333874 near-twin pair.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - BOTH request pills interpolate into the SQL TEXT (no bind parameters):
-#   the verifier REBUILDS the expected SQL from details.trigger and pins the
-#   traced args verbatim (raw IN-list + quoted account_id).
-# - The aggregate always returns EXACTLY ONE row (sql_row_count 1 on every
-#   data variant, zero-match included).
-# - count_if values are NATIVE INTS (Decimal -> int via _json_value) even
-#   though the recipe schema says float_conversion; workspaces is a single
-#   string or JSON null (LISTAGG over an empty group is NULL and the
-#   single-pill template passes the typed null through).
-# - LISTAGG(distinct ...) has NO WITHIN GROUP ORDER BY: the recompute
-#   REFUSES >1 distinct matched workspace name (seeds keep it single-valued;
-#   duplicate-name workspaces prove DISTINCT collapses).
-# - The verifier RECOMPUTES all 11 fields from the initial live snapshot +
-#   trigger (join on workspace_id == user_id, every WHERE arm, OR-composite
-#   function_recipe) and requires equality with the pinned response — live
-#   parity is derived, not just asserted.
-# - catch_500: the forced error on 5a86b1ad fires BEFORE the adapter — NO
-#   snowflake trace row, NO live state (snapshots {} and cleanup None), the
-#   c96801ed catch payload message equals the pinned catch_message, and the
-#   500 body is EXACTLY {} (bodyless return_response; exactly ONE action).
-# - Data variants are READ-ONLY on Snowflake: exact snapshot equality +
-#   cleanup of BOTH registered WORKATO_USAGE dim tables (shared with twin
-#   108333874 — lanes serialize).
 
 
-# Verifier fragment for recipe 108516287 (workato_api_platform.receive_request
-# 458af9a1 {account_id, workspace_ids} -> TRY { LIVE snowflake.search_rows_sql
-# 5a86b1ad 'select LISTAGG(distinct wd.workspace_name, ', ') workspaces,
-# count_if x10 from product.workato_usage.recipe_dim rd left join
-# product.workato_usage.workspace_dim wd on wd.workspace_id = rd.user_id
-# where rd.is_latest and rd.running and wd.is_latest and not wd.is_deleted
-# and wd.is_paid_workspace and not wd.is_internal and wd.workspace_id in
-# (#{workspace_ids RAW}) and wd.sales_account_id = '#{account_id}'' limit '1'
-# offset '0' -> return_response 426432f0 200 {11 fields via hash-suffix
-# rows[current_item] pills} } CATCH c96801ed { return_response 1c0a9f98 500
-# BODYLESS — response {} }). Head of the 108333874 near-twin pair.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - BOTH request pills interpolate into the SQL TEXT (no bind parameters):
-#   the verifier REBUILDS the expected SQL from details.trigger and pins the
-#   traced args verbatim (raw IN-list + quoted account_id).
-# - The aggregate always returns EXACTLY ONE row (sql_row_count 1 on every
-#   data variant, zero-match included).
-# - count_if values are NATIVE INTS on matched rows (Decimal -> int via
-#   _json_value) even though the recipe schema says float_conversion;
-#   workspaces is the single matched name. ZERO-MATCH SHAPE IS LIVE-PROBED
-#   (output/108516287/variant_01, 2026-07-08): every count_if column is
-#   NULL (NOT int 0) and LISTAGG renders '' (NOT null) — the typed None/''
-#   row values pass through the single-pill template as JSON null / "".
-# - LISTAGG(distinct ...) has NO WITHIN GROUP ORDER BY: the recompute
-#   REFUSES >1 distinct matched workspace name (seeds keep it single-valued;
-#   duplicate-name workspaces prove DISTINCT collapses).
-# - The verifier RECOMPUTES all 11 fields from the initial live snapshot +
-#   trigger (join on workspace_id == user_id, every WHERE arm, OR-composite
-#   function_recipe) and requires equality with the pinned response — live
-#   parity is derived, not just asserted.
-# - catch_500: the forced error on 5a86b1ad fires BEFORE the adapter — NO
-#   snowflake trace row, NO live state (snapshots {} and cleanup None), the
-#   c96801ed catch payload message equals the pinned catch_message, and the
-#   500 body is EXACTLY {} (bodyless return_response; exactly ONE action).
-# - Data variants are READ-ONLY on Snowflake: exact snapshot equality +
-#   cleanup of BOTH registered WORKATO_USAGE dim tables (shared with twin
-#   108333874 — lanes serialize).
 
 
-# Verifier fragment for recipe 108516287 (workato_api_platform.receive_request
-# 458af9a1 {account_id, workspace_ids} -> TRY { LIVE snowflake.search_rows_sql
-# 5a86b1ad 'select LISTAGG(distinct wd.workspace_name, ', ') workspaces,
-# count_if x10 from product.workato_usage.recipe_dim rd left join
-# product.workato_usage.workspace_dim wd on wd.workspace_id = rd.user_id
-# where rd.is_latest and rd.running and wd.is_latest and not wd.is_deleted
-# and wd.is_paid_workspace and not wd.is_internal and wd.workspace_id in
-# (#{workspace_ids RAW}) and wd.sales_account_id = '#{account_id}'' limit '1'
-# offset '0' -> return_response 426432f0 200 {11 fields via hash-suffix
-# rows[current_item] pills} } CATCH c96801ed { return_response 1c0a9f98 500
-# BODYLESS — response {} }). Head of the 108333874 near-twin pair.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - BOTH request pills interpolate into the SQL TEXT (no bind parameters):
-#   the verifier REBUILDS the expected SQL from details.trigger and pins the
-#   traced args verbatim (raw IN-list + quoted account_id).
-# - The aggregate always returns EXACTLY ONE row (sql_row_count 1 on every
-#   data variant, zero-match included).
-# - count_if values are NATIVE INTS on matched rows (Decimal -> int via
-#   _json_value) even though the recipe schema says float_conversion;
-#   workspaces is the single matched name. ZERO-MATCH SHAPE IS LIVE-PROBED
-#   (output/108516287/variant_01, 2026-07-08): every count_if column is
-#   NULL (NOT int 0) and LISTAGG renders '' (NOT null) — the typed None/''
-#   row values pass through the single-pill template as JSON null / "".
-# - LISTAGG(distinct ...) has NO WITHIN GROUP ORDER BY: the recompute
-#   REFUSES >1 distinct matched workspace name (seeds keep it single-valued;
-#   duplicate-name workspaces prove DISTINCT collapses).
-# - The verifier RECOMPUTES all 11 fields from the initial live snapshot +
-#   trigger (join on workspace_id == user_id, every WHERE arm, OR-composite
-#   function_recipe) and requires equality with the pinned response — live
-#   parity is derived, not just asserted.
-# - catch_500: the forced error on 5a86b1ad fires BEFORE the adapter — NO
-#   snowflake trace row, NO live state (snapshots {} and cleanup None), the
-#   c96801ed catch payload message equals the pinned catch_message, and the
-#   500 body is EXACTLY {} (bodyless return_response; exactly ONE action).
-# - Data variants are READ-ONLY on Snowflake: exact snapshot equality +
-#   cleanup of BOTH registered WORKATO_USAGE dim tables (shared with twin
-#   108333874 — lanes serialize).
 
 
 def verify_108516287(result: dict[str, Any]) -> dict[str, Any]:
@@ -35585,36 +32908,6 @@ def verify_108516287(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 108333874 — NEAR byte-twin of head 108516287
-# (same as-ids 458af9a1/5a86b1ad/426432f0/c96801ed/1c0a9f98; 93-line raw
-# delta probed 2026-07-08: SQL drops the LISTAGG workspaces column and the
-# wd.workspace_id IN (...) predicate, the trigger/request schema drops
-# workspace_ids, the response drops workspaces (10 fields, not 11), and
-# 426432f0 gains a vestigial toggleCfg block the executor never reads).
-# Because the SQL and the response SHAPE differ, this verifier does NOT
-# delegate — it mirrors verify_108516287 with the twin's own template:
-# account-wide count_if aggregate (sales_account_id is the ONLY trigger
-# filter), no LISTAGG ordering hazard, bodyless 500 catch.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - The single request pill interpolates into the SQL TEXT (no bind
-#   parameters): the verifier REBUILDS the expected SQL from details.trigger
-#   and pins the traced args verbatim.
-# - The aggregate always returns EXACTLY ONE row (sql_row_count 1 on every
-#   data variant, zero-match included); count_if values are NATIVE INTS on
-#   matched rows. ZERO-MATCH SHAPE IS LIVE-PROBED
-#   (output/108333874/variant_01, 2026-07-08): every count_if column is
-#   NULL (NOT int 0) and the typed None row values render JSON null.
-# - The verifier RECOMPUTES all 10 fields from the initial live snapshot +
-#   trigger (join on workspace_id == user_id, every WHERE arm, OR-composite
-#   function_recipe) and requires equality with the pinned response.
-# - catch_500: forced error fires BEFORE the adapter — no snowflake trace
-#   row, no live state, pinned catch payload message, 500 body EXACTLY {}.
-# - Data variants are READ-ONLY on Snowflake: exact snapshot equality +
-#   cleanup of BOTH registered WORKATO_USAGE dim tables (shared with twin
-#   head 108516287 — lanes serialize).
 
 
 def verify_108333874(result: dict[str, Any]) -> dict[str, Any]:
@@ -36117,93 +33410,18 @@ def verify_108332331(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 117566071 — BYTE-identical BODY twin of
-# REGISTERED 118162477 (117566071 is the ORIGINAL flow 61021102 v5,
-# 118162477 the 2025-04-08 re-issue v1; raw_recipe.md differs only in header
-# lines 1 + 11-14: id/created_at/flow_id/updated_at/version_no). The loaded
-# raw dicts are EQUAL (probe 2026-07-08: load_raw_recipe('117566071') ==
-# load_raw_recipe('118162477')), the recipes read the same shared physical
-# AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD table, and every check in
-# verify_118162477 is expect-driven (trace by outcome, pinned 8-scalar
-# response == return_value, CEIL/SUM recompute from the initial live
-# snapshot, read-only snapshot equality, cleanup, 1-action catch with dead
-# trailing stop) — so this verifier delegates, following the
-# verify_117566182 -> verify_118162479 twin precedent.
-# To be merged into src/benchmark/verifier.py by the coordinating session
-# AFTER verify_118162477 (already registered).
-#
-# Twin-specific groundtruth still lives in the 117566071 variant inputs (own
-# bp-117566071-* ids, own aggregate mixes 284/6-289/6 and 393/8-405/8 — no
-# byte-sharing with the head's 337/7-331/7 and 307/6-293/6 variants).
 
 
 def verify_117566071(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162477(result)
 
 
-# Verifier fragment for recipe 117564458 — BYTE-identical BODY twin of
-# REGISTERED 118162473 (117564458 is the ORIGINAL flow 61019853 v12,
-# 118162473 the 2025-04-08 re-issue v1; raw_recipe.md differs only in header
-# lines 1 + 11-14: id/created_at/flow_id/updated_at/version_no). The loaded
-# raw dicts are EQUAL (probe 2026-07-08: load_raw_recipe('117564458') ==
-# load_raw_recipe('118162473')), the recipes read the same shared physical
-# AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD table, and verify_118162473
-# (-> verify_118162472) is fully expect-driven (exact return_value pinning
-# incl. bind-filtered ORDER BY level,name order, presence||nil nulls, 0
-# staying 0 and fractional FLOAT survival; no-stop-trace-row; read-only
-# snapshot equality; cleanup) — so this verifier delegates, following the
-# verify_117566182 -> verify_118162479 twin precedent.
-# To be merged into src/benchmark/verifier.py by the coordinating session
-# AFTER verify_118162473 (already registered).
-#
-# Twin-specific groundtruth still lives in the 117564458 variant inputs (own
-# bp-117564458-* ids and own BU codes OPS/MKT with no-match code SLS — no
-# byte-sharing with the head's FIN/HR/PLM variants; the twin's 0-stays-0
-# proof rides CURRENT_AUTOMATION_LEVEL instead of the head's
-# AI_INVOLVEMENT_LEVEL).
 
 
 def verify_117564458(result: dict[str, Any]) -> dict[str, Any]:
     return verify_118162473(result)
 
 
-# Verifier fragment for recipe 113804593 (clock.scheduled_event daily 17:00,
-# payload-less -> lookup_table.truncate 3900147 '[X-Ray Bot] List of
-# Customers on Old Pricing' -> LIVE snowflake run_custom_sql over
-# edw_db.workato_usage_intermediate.accounts_snapshot (max(entry_date)
-# scalar subselect + account_id NOT IN product.plg
-# .salesforce_internal_accounts_jiawei + NOT IN product.plg
-# .sfdc_hard_deleted_accounts + bare is_direct/is_paying, trailing ';') ->
-# add_batch a909681c col1..col10 (account_id=col9, pricing_model=col10).
-# The trailing rows_affected IF/ELSE subtree (stop fd3c9883 / else >
-# add_batch fadff562) is skip:TRUE in its ENTIRETY -- provably dead.
-# Family SIBLING (not twin) of registered 103520604; same truncate/SQL/
-# add_batch class with 2 extra NOT IN subqueries and a dead (vs live) IF.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - DEAD-SUBTREE PROOF: the skip:true IF node traces exactly ONE
-#   {skipped: true} row (keyword 'if', number 5, NO tool) and its condition
-#   is NEVER evaluated -- fd3c9883 (stop) and fadff562 (else-batch) must be
-#   absent from the trace entirely, on EVERY variant including the 0-row
-#   one (a live IF would have entered the 0-row arm; skip beats truthiness).
-# - LIVE-GROUNDED WHERE RECONSTRUCTION: the fragment re-derives the
-#   qualifying set FROM THE INITIAL LIVE SNAPSHOT (all 3 seeded tables) --
-#   global max(entry_date), both NOT IN lists, bare booleans -- and demands
-#   multiset equality with the rows the live SELECT actually returned. An
-#   engine that drops any WHERE arm fails against its own seeded data.
-# - Snowflake row ORDER is not guaranteed (no ORDER BY): batch entries and
-#   final lookup rows compare as exact MULTISETS keyed on (col9, col2,
-#   full-row json); the seeder keeps qualifying account_ids distinct.
-# - column mapping trap vs sibling 103520604: HERE account_id -> col9 and
-#   pricing_model -> col10 (the sibling maps account_id -> col10); the
-#   pinned batch_entries encode that ordering.
-# - truncate is proven by deleted_rows == the pre-seeded stale row count
-#   AND by final-table bijection; the 0-rows case leaves the table
-#   truncated-EMPTY (final_row_count 0, faithful no-op add).
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after; cleanup must drop exactly the 3 seeded 3-part tables.
 
 _SNAPSHOT_TABLE_113804593 = "edw_db.workato_usage_intermediate.accounts_snapshot"
 _INTERNAL_TABLE_113804593 = "product.plg.salesforce_internal_accounts_jiawei"
@@ -36479,53 +33697,6 @@ def verify_113804593(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 113187253 (workato_api_platform
-# .receive_request as b9957e99, request schema [serial_number REQUIRED] ->
-# TRY { LIVE snowflake.search_rows_sql 0c921f5f: 'select pin, created_at
-# from jamf.lock where serial_number = :serial_number UNION select
-# pin::text, date_created as created_at from sycomp.jamf_lock where
-# serialnumber = :serial_number' + connector orderby 'created_at DESC' ->
-# return_response 452d8e25 200 {serial_number: request echo, passcodes:
-# ____source over rows -> {passcode <- pin_1c4f7b84, date_generated <-
-# created_at_9bdc63f8}} } CATCH ca54e56b -> return_response 30d5d137 400
-# {error_message: 'Please contact <anon>support@company.com</anon> with the
-# Job ID: #{job_context.job_id}'}). Registered class precedent: 122406899
-# (hash-suffix pills + appended orderby) and 123154292 (catch shape).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - ONE bind name fills BOTH union arms: args.parameters must be exactly
-#   {'serial_number': <request value>} (a second bind key or a renamed key
-#   fails here; _bind_sql maps both :serial_number occurrences onto the same
-#   pyformat parameter -- re-probed).
-# - the raw SQL has NO ORDER BY: the connector's SEPARATE Order-by input is
-#   appended by the engine -- args.sql must be exactly RAW_SQL +
-#   ' ORDER BY created_at DESC' (Snowflake applies it to the whole union).
-# - UNION (not UNION ALL) semantics: expect.sql_row_count is the DEDUPED
-#   tuple count -- variants seed an identical (pin, created_at) pair across
-#   the two tables, so an engine that ran UNION ALL returns one row too
-#   many and fails the count + the exact passcodes list.
-# - the sycomp arm's INTEGER pin is ::text-cast: every passcode in the 200
-#   body must be a str (pinned type check), and the `(?<!:)` lookbehind in
-#   _bind_sql must leave `::text` untouched for the SQL to compile at all.
-# - hash-suffixed pills pin_1c4f7b84 / created_at_9bdc63f8 resolve via
-#   lookup_path's `_<8-hex>` strip + case-insensitive retry over the live
-#   row keys -- the exact passcodes array pins that whole path.
-# - passcodes are pinned in STRICTLY DESCENDING date_generated order
-#   (seeder enforces distinct created_at after dedupe); timestamps read
-#   back naive isoformat 'YYYY-MM-DDTHH:MM:SS'.
-# - branch discriminator is the return step AS-ID (452d8e25 200 vs 30d5d137
-#   400) + http_status_code; return_response is TERMINAL so exactly one
-#   return traces and return_value == its response body.
-# - the catch 400 body renders the <anon>support@company.com</anon> literal
-#   VERBATIM plus the seeded job_context.job_id (engine renders anon tags
-#   as-is; 989 registered outputs already pin <anon> strings).
-# - the catch branch (forced error on 0c921f5f, pre-adapter) must trace NO
-#   snowflake call, record the forced message in the ca54e56b catch
-#   payload, and own NO live state (empty snapshots, no cleanup call).
-# - non-catch variants are READ-ONLY on Snowflake: snapshot equality
-#   before/after + cleanup drops exactly the two seeded lock tables.
 
 _RESOLVED_SQL_113187253 = (
     "select pin, created_at\n"
@@ -36723,44 +33894,6 @@ def verify_113187253(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 104943316 (salesforce.new_custom_object as
-# eb620bea over Campaign_Activity__c with a Browser_Timezone__c-present
-# trigger FILTER -> LIVE salesforce.search_sobjects 00734942 (Id =
-# trigger.Id, limit 150 -> salesforce.search_records with an Id filter) ->
-# IF list_size > 0 -> lookup_table.search_entries 149f4719 (mock 3817174,
-# col1 = the LIVE re-read record's Browser_Timezone__c) -> IF entries size
-# > 0 -> LIVE salesforce.update_sobject 0acbf52d (Region__c <- entry.col2,
-# Person_Country__c <- entry.col3, id = search current_item Id). No catch.
-# Registered class precedents: 88708198 (Campaign_Activity__c schema-in-
-# seed + NON_OWNED_ID), 118427850 (new_custom_object trigger + $CA_ID).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _snapshot_record, _contains_salesforce_field_subset.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - the trigger payload IS the created record: the step-2 search re-reads
-#   it LIVE by Id, and the LOOKUP key is the RE-READ record's
-#   Browser_Timezone__c (not the trigger field) -- pinned via the lookup
-#   args col1 equaling the live record's stored timezone.
-# - branch discriminators are the two IFs: expect.search_list_size (0/1)
-#   and expect.lookup_entries_count (null = never ran / 0 / N) plus
-#   expect.steps_absent_from_trace pin exactly which actions traced;
-#   trigger_filter_matched must be True on every variant (a blank timezone
-#   would mean the trigger never fires -- not a recipe branch).
-# - record_not_found sends the pinned NON-OWNED id for the READ only: the
-#   harness search returns 0 owned matches deterministically, the outer IF
-#   is false, and the seeded decoy record must stay untouched.
-# - multi_entry_first_wins: entries current_item OUTSIDE a foreach = FIRST
-#   entry -- the update args must carry the FIRST matching lookup row's
-#   col2/col3 (rows differ, so wrong-row selection is observable).
-# - update args.fields must equal expect.updated_fields EXACTLY (both
-#   Region__c and Person_Country__c, nothing else); the final LIVE record
-#   must carry expect.final_record_fields (updated values on update
-#   variants, the original seeded values on untouched variants).
-# - record_untouched variants pin initial==final snapshot fields for the
-#   seeded record (live no-write proof).
-# - cleanup deletes the benchmark-owned record (ok + no leftovers);
-#   provisioned schema persists by design.
 
 def verify_104943316(result: dict[str, Any]) -> dict[str, Any]:
     SEARCH_STEP = "00734942"
@@ -37019,41 +34152,6 @@ def verify_104943316(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 91033108 (slack_bot.new_event
-# member_left_channel eb16353c -> lookup_table.search_entries f9501965 table
-# 3357221 config {col2: channel} -> IF size==0 STOP 4 (non-error, bare
-# marker) -> lookup_table.search_entries 902801c9 table 3357223 schedule
-# {col2: user AND col3: channel} -> lookup_table.delete_entry c0945c6f table
-# 3357223 id = entries[current_item].id, ignore_not_found 'false'). All
-# backends Workato-internal mocks (lookup tables + seeded trigger event).
-#
-# NEW verify_91033108 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - FIRST-MATCH delete: the delete id pill is entries[current_item].id
-#   OUTSIDE any foreach = the FIRST schedule row matching user+channel; the
-#   fragment recomputes the match from the INITIAL snapshot + the seeded
-#   trigger and requires args.id == expect.deleted_entry_id == first match,
-#   every OTHER matching row still present in the final table (a
-#   delete-all-matches implementation fails here), and the deleted id absent.
-# - AND-match: rows sharing only the user (different channel) or only the
-#   channel (different user) must survive — pinned via the byte-exact
-#   final_table_rows and the delete-scope check.
-# - stop semantics: the stop trace row is the bare marker {number: 4,
-#   keyword: 'stop', stopped: true} (stop_with_error is never evaluated, the
-#   node carries NO as-id); stopped variants pin the marker as the LAST
-#   trace row and exactly one search tool call.
-# - ignore_not_found stays the literal STRING 'false' in the delete args
-#   (toggleCfg custom value) and the mock reports deleted: true.
-# - byte-exact initial/final_table_rows for BOTH tables (incl.
-#   _row_id/_created_by bookkeeping); the config table 3357221 must be
-#   identical before/after on every branch (ghost writes fail).
-# - UNGUARDED EDGE (documented, never seeded): config present + zero
-#   matching schedule rows is a catchless job error (engine NonRecipeError
-#   'lookup_table.delete_entry requires a resolved entry id') — the seeder
-#   refuses such seeds, so the verifier never sees that path.
 
 
 def verify_91033108(result: dict[str, Any]) -> dict[str, Any]:
@@ -37224,44 +34322,6 @@ def _91033108_rows(snapshot: dict[str, Any], table_id: str) -> list[dict[str, An
     return [row for row in rows if isinstance(row, dict)]
 
 
-# Verifier fragment for recipe 128894356 (google_sheets.new_spreadsheet_row_v4
-# 887471b0 (only columns.col_1 dereferenced) -> get_records 28116 '[WWW]
-# Quest List' filter Quest Code eq 'SOCIAL_FOLLOW_X' (LITERAL, UNGUARDED) ->
-# get_records 28114 'Profiles' filter X Handle eq #{col_1} -> IF size==0
-# STOP a1d17201 (non-error) -> add_record 28115 '[WWW] Quest Activity'
-# {Quest Name/Code from quest config, User ID = FIRST profile's Email,
-# Status 'CREDITED', Credited Date = =now.in_time_zone('Asia/Tokyo')
-# .strftime('%m/%d/%Y') — CLEAN zone, unlike siblings 128894355/131671865}).
-# All backends Workato-internal mocks. NOT a twin of 128894355 (different
-# step trees).
-#
-# NEW verify_128894356 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - Credited Date pins the Asia/Tokyo render of the seeded now: the add args
-#   record must equal expect.credited_record EXACTLY (all five parameter
-#   keys, nothing more — a Points Earned write or a UTC-date render fails);
-#   the seeder cross-checks expect.credited_date == zoneinfo render, and
-#   variant_02 seeds a now whose Tokyo DATE differs from the UTC date so a
-#   no-op timezone implementation fails byte-exact.
-# - FIRST-MATCH credit: with 2+ profiles sharing the X Handle the User ID is
-#   the FIRST matching record's Email (records[current_item] outside any
-#   foreach) — the fragment recomputes the first match from the step-3 trace
-#   result and requires equality.
-# - stop semantics: the stop trace row is the bare marker {number: 5, as:
-#   'a1d17201', keyword: 'stop', stopped: true} (stop_with_error never
-#   evaluated), LAST trace row, and exactly two get_records calls ran.
-# - state transition: final 28115 == initial 28115 + exactly ONE row carrying
-#   the credited_record fields with _created_by 'agent'; 28116/28114 must be
-#   byte-identical before/after on every branch; byte-exact
-#   initial/final_table_rows for all three tables (incl. _row_id
-#   bookkeeping) kill ghost writes and decoy mutations.
-# - UNGUARDED quest lookup (documented, never seeded empty): an empty
-#   SOCIAL_FOLLOW_X match still credits with null Quest Name/Code (silent
-#   null passthrough, mock drops the null cells) — the seeder requires
-#   exactly ONE config row so the verifier never sees that shape.
 
 
 def verify_128894356(result: dict[str, Any]) -> dict[str, Any]:
@@ -37448,75 +34508,8 @@ def verify_128894356(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 126785103 (workato_webhooks.new_event
-# f7b25750 json suffix 'cisa' -> workato_pub_sub.publish_to_topic 07044084
-# topic 51467 'CISA Scattered Spider': message = 5 scalar payload pills +
-# details.____source projection of payload.details (8 string fields per
-# item); FOREACH f56ee60c subtree is skip:true WHOLESALE — it contains the
-# ONLY slack_bot step, so the recipe has NO live backend). Pure
-# Workato-internal mock; the pub_sub mock is stateless (echoes topic_id +
-# message), so verification pins the publish trace args byte-exact.
-#
-# NEW verify_126785103 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - single-level ____source projection: args.message must equal
-#   expect.published_message EXACTLY — every details item re-projected to
-#   exactly the 8 mapped fields, list length == expect.detail_count
-#   (variants cover 2 / 0 / 1 items; the empty case publishes details []
-#   with scalars intact — probe-verified). The seeder recomputes the
-#   projection from the seeded payload so the pin can never drift from the
-#   trigger seed.
-# - date_time schema does NOT coerce: period_start/period_end publish as the
-#   seeded strings verbatim (byte-equality via the message pin).
-# - DEAD-BRANCH PROOF: the trace must be exactly [publish action row,
-#   skipped marker {number: 3, as: 'f56ee60c', keyword: 'foreach',
-#   skipped: true}] — the marker is the LAST row, carries NO tool, and no
-#   slack/slack_bot tool may appear anywhere in the trace or the harness
-#   call log (the skip:true subtree holds the recipe's only slack step and
-#   its blank IF is never evaluated — probe-verified).
-# - the pub_sub mock result must echo the args (topic_id '51467' + message)
-#   and the run's return_value stays null (no terminal step).
 
 
-# Verifier fragment for recipe 85944692 (slack_bot.bot_command_v2 /confirm
-# 2849d972 {blockid} -> TRY slack_bot.update_blocks_by_block_id 74ec3e0a
-# (LIVE chat.update: message_json = trigger context.original_message_json,
-# replace block <blockid> with the ':white_check_mark: Marked as completed'
-# section, remove_block literal 'false' = DEAD remove path) / CATCH 8471803f
-# -> logger '#{catch.type} : #{catch.message}'). slack runs LIVE (the seed
-# live-posts the bot-owned target message and injects its real channel/ts
-# JSON; cleanup deletes it). logger is Workato-internal (trace-only marker,
-# never in tool_calls).
-#
-# NEW verify_85944692 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there
-# (_verify_replay_recipe, _check) plus a locally-imported json (the module
-# has no top-level json import — established fragment convention).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - update branches: args.message_json must parse to EXACTLY the live seeded
-#   message (channel + ts + text + blocks) — proves the trigger context pill
-#   carried the real posted JSON, not a synthetic one (the engine fail-fasts
-#   on JSON without channel/ts). blocks_to_update is pinned verbatim via
-#   args_contains in the strict framework (message_json '__ANY__' there; the
-#   parse-check here is the exact half).
-# - expect.final_blocks pins the chat.update block list byte-exact: the
-#   target block replaced IN PLACE (replacement inherits the TARGET
-#   block_id, no accessory), every neighbour byte-identical, order and
-#   length preserved (probe: an unmatched blockid would APPEND — the pinned
-#   length/order rules that out).
-# - catch branch: tool_calls MUST be [] (the forced error fires before arg
-#   resolution -> chat.update never happens; the seeded live message stays
-#   untouched); the trace carries exactly ONE action row — the logger — with
-#   the pinned 'RawRecipeExecutionError : <forced text>' rendering; the
-#   catch step output pins {type, message} exactly.
-# - dead-branch proof on update variants: NO logger row in the trace (the
-#   catch never fires on the happy path).
-# - cleanup guard: details.cleanup_response.ok pinned true with the seeded
-#   channel/ts (the run chat.updates that exact ts; rerun determinism).
 
 
 def verify_85944692(result: dict[str, Any]) -> dict[str, Any]:
@@ -37663,35 +34656,6 @@ def _85944692_in_place_mismatches(
     return mismatches
 
 
-# Verifier fragment for recipe 117976116 (slack_bot.bot_command_v2 /update
-# 3605cd52 {name, chilipiper, duration, blurb} -> 4x LIVE
-# google_sheets.update_row_v4_new on the ADMIN sheet rows 2/3/4/5, each
-# writing {Answer: <param>} (col_Answer label-decoded; row_number is the
-# LITERAL string '2'..'5'; positional addressing — the Question column is
-# never consulted) -> slack_bot.post_bot_reply_v2: channel = override,
-# thread_ts = trigger message_ts, text = both section_texts + trailing
-# context.user_name pill). google_sheets + slack run LIVE; strictly linear.
-#
-# NEW verify_117976116 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - expect.reply_text pins the rendered reply byte-exact IN FULL: section 1
-#   (incl. the U+1F916 robot emoji, the anon google-docs link literal and
-#   the curly-quoted 'Failed Test') + '\n' + the
-#   section_with_button_with_long_action's section_text (the Start button /
-#   bot_command 44341431 / style are dropped metadata in a text reply) +
-#   '\n' + user_name. The reply must land on the exact override channel AND
-#   thread on the exact trigger message_ts.
-# - the 4 updates are cross-checked against the TRIGGER parameters in step
-#   order (name->2, chilipiper->3, duration->4, blurb->5), each data payload
-#   exactly {'Answer': <param>} — nothing else may be written.
-# - expect.final_rows pins the ENTIRE final live tab row-by-row: rows 2-5
-#   carry the new Answers, every other cell (Question/Search/Sets of Gift
-#   Cards + any decoy row) byte-identical to the seed; update-in-place is
-#   proven by the initial-snapshot check (pre-update Answers really lived in
-#   the tab) plus a cell-level only-Answer-changed guard.
 
 
 def verify_117976116(result: dict[str, Any]) -> dict[str, Any]:
@@ -37880,90 +34844,8 @@ def _117976116_cell(value: Any) -> str:
     return text.upper() if text.upper() in ("TRUE", "FALSE") else text
 
 
-# Verifier fragment for recipe 86565519 (workato_webhooks.new_event 63ec2722
-# json suffix 'New Gong Call linked to Opportunity' -> TRY > workato_pub_sub
-# .publish_to_topic 1eceadea topic 28398 'New Gong Calls' / CATCH 0f68139b
-# EMPTY (max_retry 0). The published message = 13 flat metaData pills +
-# isTest pill + a THREE-level nested ____source projection: context ->
-# objects (current_item in the collection path) -> fields (DOUBLE
-# current_item). Pure Workato-internal mock (webhook + pub_sub, no live
-# backend, no cleanup); the pub_sub mock is stateless (echoes topic_id +
-# message), so verification pins the publish args byte-exact.
-#
-# NEW verify_86565519 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - NESTED double-current_item ____source projection (the engine gap this
-#   recipe was blocked on, fix RE-PROBED verbatim 2026-07-08): args.message
-#   must equal expect.published_message EXACTLY, and the nested cardinality
-#   must match expect.context_count / objects_counts / fields_counts. The
-#   OLD engine (collection_path truncated at the first current_item hop)
-#   published the correct outer systems/counts but null objectType/objectId
-#   and [] fields at every inner level — probe-simulated 2026-07-08: the
-#   multi-outer x multi-inner variant fails BOTH the byte-exact pin and the
-#   independent no-null-leak walk below. The no-null walk is deliberately
-#   expect-independent so a weakened expect cannot mask a truncation
-#   regression.
-# - TYPED passthrough: metaData.duration keeps its seeded JSON number type
-#   and isTest keeps its seeded type. Python == cannot see 1800.0 vs 1800 or
-#   True vs 1, so the fragment checks type() against expect.duration_type
-#   ('float'/'int') and expect.is_test_type ('bool'/'str') explicitly. The
-#   date_time schema does NOT coerce scheduled/started (byte-equality via
-#   the message pin).
-# - EMPTY-CATCH SWALLOW (catch_swallowed_error true variant): forced publish
-#   failure -> the run completes OK with a completely EMPTY trace (the try/
-#   catch emit no rows and the action raises before calling the tool), zero
-#   tool calls anywhere (tool_calls AND harness log), and the catch step
-#   output step_outputs['0f68139b'] records exactly {type:
-#   'RawRecipeExecutionError', message: expect.swallowed_error_message} —
-#   proving the error was CAUGHT (not never-raised) and swallowed.
-# - happy-path trace shape: exactly ONE row (the publish action, as
-#   1eceadea, number 3) — the try wrapper and the never-fired catch add no
-#   rows; return_value stays null on every variant (no terminal step).
-# - the pub_sub mock result must echo the args (topic_id '28398' + message).
 
 
-# Verifier fragment for recipe 115850922 (HEAD of the SF-composite twin trio,
-# batch 07 batch_D). Seeded Workato_User__History event -> LIVE salesforce
-# search_sobjects 57ccff6f (Id = ParentId; live_tools aliases the records list
-# under the 'Workato_User__c' key for the recipe's current_item pills) ->
-# LIVE snowflake search_rows_sql 73109306 (SELECT Id, Account__c FROM
-# EDW_DB.SALESFORCE.WORKATO_USER WHERE OEM_ID__c = ... AND OEM_Account__c !=
-# ... AND Data_Center__c = ...) -> FOREACH d4ab6d55 (batch, zero iterations on
-# an empty source) -> composite_update_sobject a9df1a62 (one live
-# salesforce.update_record per row; OEM_Account__c = the parent search's
-# CONSTANT Account__c).
-# TRUE TWIN: 101954510 (byte-identical executable inputs on all 5 nodes,
-# same as-ids) — its fragment delegates here, so THIS function must be merged
-# into src/benchmark/verifier.py first. Structural near-twin: 116477352
-# (IFNULL null-KEEPING WHERE; mirror-image SQL-arm pins live in its own
-# fragment).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - PLAIN '!=' is NULL-EXCLUDING (live-probed): every relink variant seeds a
-#   NULL-OEM child and expect.final_oem_accounts pins it UNTOUCHED (None =
-#   read-back absent/null). The sql text must carry the plain arm verbatim
-#   ("AND OEM_Account__c != '") and must NOT contain IFNULL — the
-#   mirror-image of the 116477352 pins, so a twin-flavor swap fails loudly.
-# - the composite writes ONE CONSTANT value (the parent's live Account__c):
-#   every update call must carry fields == {OEM_Account__c: new_oem_account}
-#   and the update id SET must equal expect.updated_children (the SQL has no
-#   ORDER BY, so multi-row order is NOT contractual — set compare, while the
-#   composite trace arm still pins bare-args for 1 row vs records-list for N).
-# - foreach batch semantics: 0 rows -> the composite NEVER traces (2 trace
-#   actions, no update registry calls); N rows -> exactly 3 trace actions
-#   with ONE composite action row regardless of N.
-# - trigger->search wiring: the seeded event's ParentId must be the exact Id
-#   filter of the live search, the search must return exactly the parent
-#   (count 1, aliased under 'Workato_User__c'), and the event Field must be
-#   'Account__c' (trigger-query coherence).
-# - both live backends clean up: snowflake cleanup drops exactly the
-#   registered EDW table (read-only during the run: snapshot equality),
-#   salesforce cleanup reports zero leftovers.
 
 
 def verify_115850922(result: dict[str, Any]) -> dict[str, Any]:
@@ -38231,68 +35113,12 @@ def verify_115850922(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 101954510 — TRUE TWIN of 115850922 (scale
-# batch 07, batch_D). The executable recipe is BYTE-IDENTICAL to the head on
-# all 5 nodes (same as-ids 364d5c88/57ccff6f/73109306/d4ab6d55/a9df1a62; the
-# 106-line raw diff is CSV metadata + extended-schema noise only — re-proved
-# 2026-07-08 via key-by-key node comparison), so every check in
-# verify_115850922 is expect-driven and applies verbatim: seeded __History
-# event -> live parent search (sobject alias pin) -> live Snowflake WHERE with
-# the PLAIN NULL-EXCLUDING '!=' arm (mirror-image of 116477352's IFNULL pins)
-# -> single-batch composite writing the parent's CONSTANT Account__c.
-# Twin-specific groundtruth (own Account/user names, OEM ids 313/528/664, own
-# live ids) lives entirely in this recipe's variant inputs and flows through
-# result.details.expect — nothing head-specific is hardcoded in the shared
-# function.
-# MERGE ORDER: requires the 115850922 fragment to be merged into
-# src/benchmark/verifier.py FIRST (delegation precedent: verify_117564458 ->
-# verify_118162473).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_101954510(result: dict[str, Any]) -> dict[str, Any]:
     return verify_115850922(result)
 
 
-# Verifier fragment for recipe 116477352 (structural near-twin of the
-# 115850922/101954510 pair, batch 07 batch_D). Seeded Workato_User__History
-# event (Field = 'OEM_Account__c') -> LIVE salesforce search_sobjects ba2d4881
-# (Id = ParentId; live_tools aliases the records list under the
-# 'Workato_User__c' key for the recipe's current_item pills) -> LIVE snowflake
-# search_rows_sql 5d9bd6b7 (SELECT Id, Account__c, OEM_Account__c FROM
-# EDW_DB.SALESFORCE.WORKATO_USER WHERE Workspace_Id__c = ... AND
-# (IFNULL(OEM_Account__c,'') != ...) AND Data_Center__c = ...) -> FOREACH
-# 6e4c63b7 (batch, zero iterations on an empty source) ->
-# composite_update_sobject 4eca0c8b (one live salesforce.update_record per
-# row; OEM_Account__c = the parent search's CONSTANT OEM_Account__c).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - the IFNULL arm is NULL-KEEPING (LIVE end-to-end probed: a NULL-OEM child
-#   was selected AND updated) — the exact opposite of the head twins' plain
-#   NULL-EXCLUDING '!='. The sql text must carry the IFNULL arm verbatim
-#   ("AND (IFNULL(OEM_Account__c,'') != '") and must NOT carry the plain arm
-#   ("AND OEM_Account__c != '") — the mirror-image of the 115850922 pins, so
-#   a twin-flavor swap fails loudly on BOTH sides.
-# - expect.final_oem_accounts pins NULL-OEM children FLIPPED to the constant
-#   when selected (v0/v2) — on the head twins the same seed shape pins them
-#   UNTOUCHED.
-# - the composite writes ONE CONSTANT value (the parent's live
-#   OEM_Account__c): every update call must carry fields ==
-#   {OEM_Account__c: new_oem_account}; the update id SET must equal
-#   expect.updated_children (no ORDER BY -> set compare) while the composite
-#   trace arm still pins bare-args for 1 row vs records-list for N.
-# - foreach batch semantics: 0 rows -> the composite NEVER traces; N rows ->
-#   exactly 3 trace actions with ONE composite action row.
-# - trigger->search wiring: the seeded event's ParentId must be the exact Id
-#   filter of the live search, which must return exactly the parent (count 1,
-#   aliased under 'Workato_User__c'); the event Field must be
-#   'OEM_Account__c' (this flavor's trigger-query coherence — the head twins
-#   pin 'Account__c').
-# - both live backends clean up: snowflake cleanup drops exactly the
-#   registered EDW table (read-only during the run: snapshot equality),
-#   salesforce cleanup reports zero leftovers.
 
 
 def verify_116477352(result: dict[str, Any]) -> dict[str, Any]:
@@ -38566,41 +35392,6 @@ def verify_116477352(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 108028920 (clock.scheduled_event weekly ->
-# TRY: LIVE Snowflake CTAS product.plg.sfdc_hard_deleted_accounts AS SELECT
-# a.account_id, a.account_name FROM edw_db.workato_usage.accounts_dim a LEFT
-# JOIN workato_business_systems.salesforce.account b ON a.account_id = b.id
-# WHERE 1=1 AND is_latest AND is_paying AND b.id IS NULL; CATCH ddf5dd60 ->
-# LIVE slack_bot.post_bot_message to C07594FG2ER (routed to the benchmark
-# override channel) with '@john.smith something wrong ...' after the raw
-# dataset's anonymization wrapper is removed at the Slack rendering boundary
-# link:#{job_context.recipe_url}\nworkspace: plg dev env\n').
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the CTAS bytes VERBATIM (3-part production names; the
-#   rewrite into the benchmark database happens inside snowflake_live only --
-#   registering the CTAS TARGET with rows [] is what makes the create land in
-#   a benchmark-owned table instead of the original namespace).
-# - expect.final_snowflake_tables pins the POST-RUN live read-back of all
-#   three registered tables: the target's exact hard-deleted set (count +
-#   per-row exact-once match on account_id, order-free -- CTAS emits no ORDER
-#   BY) and both sources unchanged. variant_00 proves each exclusion arm
-#   (in-SF / non-paying / non-latest), variant_01 pins target == [] with the
-#   status row still present (CTAS succeeds empty), variant_02 pins the NULL
-#   is_latest row excluded (three-valued logic on the bare boolean) with
-#   sf.account EMPTY (every b.id NULL).
-# - expect.status_row pins the live CTAS status text ('Table
-#   SFDC_HARD_DELETED_ACCOUNTS successfully created.'); dual-case row keys
-#   from the live read-back are handled via the lowercase key.
-# - catch variant: the CTAS must NOT appear in the trace (the failed try step
-#   never records); the Slack alert text is pinned BYTE-EXACT incl the
-#   rendered '@john.smith' literal (the dataset-only anon wrapper is removed), the seeded
-#   job_context.recipe_url and the trailing newline; the catch payload
-#   {type: RawRecipeExecutionError, message: <forced>} is pinned exactly.
-# - cleanup must drop exactly the three registered tables (incl the
-#   CTAS-created target) -- the leak-proof for the recipe-created object.
 
 
 def verify_108028920(result: dict[str, Any]) -> dict[str, Any]:
@@ -38772,87 +35563,8 @@ def _snowflake_table_checks_108028920(
     return checks
 
 
-# Verifier fragment for recipe 98802887 (workato_recipe_function.execute ->
-# declare account_ids_string = AccountList&.pluck("AccountID").join("','") ->
-# LIVE salesforce.search_sobjects_soql_v2 (Workato_Task__c, infix LIKE
-# '%First Value - Direct%' + Account__c IN pill) -> smart_list create_list
-# 'FVStatus' -> query_list ROW_NUMBER-CTE (PARTITION BY Account__c ORDER BY
-# CreatedDate DESC, rn = 1 = latest task per account) -> return_result
-# result.FVStatus ____source-mapped). Linear, no try/catch. TWIN of
-# 103939956 (same 5-step skeleton, payload deltas only).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the RESOLVED SOQL verbatim: the pluck/join pill closes
-#   the IN list correctly ("'id1','id2'"; IN ('') on the empty AccountList
-#   variant) with this run's live seeded Account ids threaded via $REF
-#   tokens.
-# - expect.smart_list_sqls pins the resolved CTE bytes (all identifiers from
-#   list_name/columns pills); expect.query_rows pins the rn=1 output EXACTLY
-#   -- the projected rows carry BOTH source columns and the positional index
-#   aliases ({Account__c, Status__c, AccountID, Status}); order = window sort
-#   (Account__c ASC = seed-creation id order).
-# - DEDUP GROUNDTRUTH IS LIVE, NOT ASSUMED: for every account with >=2
-#   LIKE-matching tasks the fragment re-derives the winner from the live
-#   CreatedDate read-back in the search trace (max CreatedDate must carry the
-#   Status that query_rows pins for that account) and asserts all CreatedDate
-#   values within the partition are strictly distinct (the 1.2s phase-spaced
-#   seeding pattern, 88704851/123859779 precedent -- a tie would make rn=1
-#   nondeterministic and MUST fail the run, not pass silently).
-# - final_result pins the exact ____source expansion ({FVStatus: []} on the
-#   zero-match and empty-AccountList branches -- create_list registers the
-#   EMPTY 3-column table from the node schema so the CTE query returns []
-#   instead of 'no such table').
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers. Smart lists are per-run in-memory state -- no cleanup.
 
 
-# Verifier fragment for recipe 98802887 (workato_recipe_function.execute ->
-# declare account_ids_string = AccountList&.pluck("AccountID").join("','") ->
-# LIVE salesforce.search_sobjects_soql_v2 (Workato_Task__c, infix LIKE
-# '%First Value - Direct%' + Account__c IN pill) -> smart_list create_list
-# 'FVStatus' -> query_list ROW_NUMBER-CTE (PARTITION BY Account__c ORDER BY
-# CreatedDate DESC, rn = 1 = latest task per account) -> return_result
-# result.FVStatus ____source-mapped). Linear, no try/catch. TWIN of
-# 103939956 (same 5-step skeleton, payload deltas only).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the RESOLVED SOQL verbatim: the pluck/join pill closes
-#   the IN list correctly ("'id1','id2'"; IN ('') on the empty AccountList
-#   variant) with this run's live seeded Account ids threaded via $REF
-#   tokens.
-# - expect.smart_list_sqls pins the resolved CTE bytes (all identifiers from
-#   list_name/columns pills); expect.query_rows pins the rn=1 output rows --
-#   the projected rows carry BOTH source columns and the positional index
-#   aliases ({Account__c, Status__c, AccountID, Status}) -- compared as an
-#   exact MULTISET: the final SELECT has NO ORDER BY, so the emitted order is
-#   SQLite's window sort by Account__c BYTE order, and live-assigned SF id
-#   suffixes are NOT lexicographically monotonic with creation order
-#   (LIVE-OBSERVED 2026-07-08 on this recipe: second-created ...Ve6hb...
-#   sorted before first-created ...VeAWg..., flipping the two rows).
-#   120183307/121086244 no-ORDER-BY precedent. Row-order INFORMATION is not
-#   lost: final_result must project the ACTUAL query rows 1:1 IN ORDER (the
-#   ____source mapping is order-preserving), so only the un-contracted list
-#   order is relaxed, never the row->result mapping.
-# - DEDUP GROUNDTRUTH IS LIVE, NOT ASSUMED: for every account with >=2
-#   LIKE-matching tasks the fragment re-derives the winner from the live
-#   CreatedDate read-back in the search trace (max CreatedDate must carry the
-#   Status that query_rows pins for that account) and asserts all CreatedDate
-#   values within the partition are strictly distinct (the 1.2s phase-spaced
-#   seeding pattern, 88704851/123859779 precedent -- a tie would make rn=1
-#   nondeterministic and MUST fail the run, not pass silently).
-# - final_result pins the ____source expansion as the SAME exact multiset
-#   ({FVStatus: []} on the zero-match and empty-AccountList branches --
-#   create_list registers the EMPTY 3-column table from the node schema so
-#   the CTE query returns [] instead of 'no such table'); the variant_00
-#   return_result tool_expectation pins result_contains {FVStatus: __ANY__}
-#   only (presence) because _contains_subset list compare is positional --
-#   the exact rows are pinned here, order-free.
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers. Smart lists are per-run in-memory state -- no cleanup.
 
 
 def verify_98802887(result: dict[str, Any]) -> dict[str, Any]:
@@ -39169,34 +35881,6 @@ def verify_103939956(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 92570340 (clock.scheduled_event 73e5c27a
-# weekly Mon-Fri 06:00 America/Los_Angeles, payload-less ->
-# lookup_table.get_entries a39f8379 over mock table 3417234 '[GTM] Chatter -
-# Log' -> FOREACH e89b1cf4 over entries -> IF entry.col5.to_date less_than
-# =180.days.ago -> lookup_table.delete_entry c66fb912 {id = foreach.id,
-# ignore_not_found 'true'}). FULL MOCK — Workato-internal lookup table only;
-# determinism via the REQUIRED seed['now'].
-# Twin: 92570331 (own fragment; deltas table 3424183 / col10 / 365 days).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - deletion ids are the mock's 0-based seed-order _row_ids and must arrive
-#   IN SEED ORDER (the foreach iterates the get_entries order); the trace
-#   delete args pin them via expect.deleted_ids and per-call args_contains.
-# - the branch discriminator is (initial_row_count, deleted_ids): all-recent
-#   proves the foreach RAN (rows > 0) yet the IF was false everywhere (zero
-#   deletes); empty_table proves the zero-iteration path (rows == 0).
-# - the FINAL mock-table snapshot must equal expect.final_table_rows exactly
-#   (id + col1..col5 projection, order preserved) AND be the seed-order
-#   complement of deleted_ids — a delete of the wrong row with
-#   ignore_not_found 'true' would still return ok, so only the final-state
-#   bijection catches it (result.deleted true is also pinned per call).
-# - boundary/blank col5 rows are seeder-forbidden (clock-coupled string
-#   compare deletes exactly-at-cutoff dates and silently deletes blanks,
-#   probe-verified) — the fragment never sees them.
-# - no live lane: initial/final snapshots carry ONLY the mock lookup_table
-#   section, return_value is null, and nothing may stop the run.
 
 
 def verify_92570340(result: dict[str, Any]) -> dict[str, Any]:
@@ -39328,36 +36012,6 @@ def verify_92570340(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 92570331 (clock.scheduled_event 73e5c27a
-# weekly Mon-Fri 06:00 America/Los_Angeles, payload-less ->
-# lookup_table.get_entries a39f8379 over mock table 3424183
-# '[GTM Automation] Alerts - Log' -> FOREACH e89b1cf4 over entries -> IF entry.col10.to_date less_than
-# =365.days.ago -> lookup_table.delete_entry c66fb912 {id = foreach.id,
-# ignore_not_found 'true'}). FULL MOCK — Workato-internal lookup table only;
-# determinism via the REQUIRED seed['now'].
-# Twin of head 92570340 (mechanical derivation; deltas vs head: table
-# 3424183 vs 3417234, date column col10 vs col5, cutoff 365 vs 180 days;
-# as-ids identical).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - deletion ids are the mock's 0-based seed-order _row_ids and must arrive
-#   IN SEED ORDER (the foreach iterates the get_entries order); the trace
-#   delete args pin them via expect.deleted_ids and per-call args_contains.
-# - the branch discriminator is (initial_row_count, deleted_ids): all-recent
-#   proves the foreach RAN (rows > 0) yet the IF was false everywhere (zero
-#   deletes); empty_table proves the zero-iteration path (rows == 0).
-# - the FINAL mock-table snapshot must equal expect.final_table_rows exactly
-#   (id + col1..col5+col10 projection, order preserved) AND be the seed-order
-#   complement of deleted_ids — a delete of the wrong row with
-#   ignore_not_found 'true' would still return ok, so only the final-state
-#   bijection catches it (result.deleted true is also pinned per call).
-# - boundary/blank col10 rows are seeder-forbidden (clock-coupled string
-#   compare deletes exactly-at-cutoff dates and silently deletes blanks,
-#   probe-verified) — the fragment never sees them.
-# - no live lane: initial/final snapshots carry ONLY the mock lookup_table
-#   section, return_value is null, and nothing may stop the run.
 
 
 def verify_92570331(result: dict[str, Any]) -> dict[str, Any]:
@@ -39489,33 +36143,6 @@ def verify_92570331(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 88676643 (slack_bot.bot_command_v2 0d147108
-# domain 'fridaybot' name 'do' scope 'nothing' — "This command does nothing.
-# Use this as a vase action." -> TRY { logger.log_message 8a8d5d15, message =
-# trigger context.user_email pill, comment 'Who clicked this?' } CATCH
-# cdf884c4 (max_retry 0) { logger.log_message 71f22ee0, message =
-# catch.message pill }). PURE MOCK — the runtime logger never touches
-# ctx.tools, so tool_calls is ALWAYS [] and all verification is trace-based.
-# Byte-exact twin of 88674737 (raw bodies identical; only CSV metadata
-# differs) — verify_88674737 DELEGATES here.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - BOTH branches trace exactly ONE workato_runtime.log_message row, so the
-#   step AS-ID is the branch discriminator: 8a8d5d15 (try) vs 71f22ee0
-#   (catch); expect.log_step_as pins it and the other log step must be
-#   absent from trace AND step_outputs.
-# - expect.log_message pins the message text VERBATIM: the trigger's
-#   context.user_email on happy (cross-checked against details.trigger, not
-#   just the pinned literal) or the forced error on catch (== the catch
-#   payload message exposed under cdf884c4).
-# - the catch is reachable ONLY via seed.force_action_error on 8a8d5d15
-#   (the mock logger cannot fail naturally); the FAILED try logger records
-#   NOTHING — no 8a8d5d15 step output may exist on the catch branch.
-# - dead-branch proof on happy: no cdf884c4 catch payload in step_outputs.
-# - no live lane: tool_calls [], snapshots {}, return_value null, nothing
-#   stopped.
 
 
 def verify_88676643(result: dict[str, Any]) -> dict[str, Any]:
@@ -39639,59 +36266,12 @@ def verify_88676643(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 88674737 (slack_bot.bot_command_v2 fridaybot
-# '/do' -> TRY logger.log_message 8a8d5d15 (context.user_email) / CATCH
-# cdf884c4 -> logger.log_message 71f22ee0 (catch.message)). BYTE-EXACT twin
-# of 88676643: the two raw_recipe.md files differ ONLY in the title line and
-# CSV metadata (flow_id 44982407 vs 45178933, created_at, version_no 3 vs 1);
-# every recipe-body byte (as-ids, uuids, inputs, schema) is identical —
-# probe-diffed on the current tree, and the normalized raw pins are equal.
-# Ground-truth semantics are therefore identical and this fragment DELEGATES
-# to verify_88676643 (batch-06 delegation precedent — merge that fragment
-# first). Variant data is distinct from the head's.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_88674737(result: dict[str, Any]) -> dict[str, Any]:
     return verify_88676643(result)
 
 
-# Verifier fragment for recipe 129988557 (workato_webhooks.new_event 'Not
-# Interested in Agentic' as 97425b71 -> LIVE snowflake.search_rows_sql
-# 2d42fc76: 3-table join workspace_dim -> account -> USER (reserved word)
-# selecting u.*, WHERE workspace_id = ifnull('#{payload.current_team}',
-# '#{payload.user_id}') -> IF rows[current_item].email present > LIVE
-# slack.get_user_by_email d10ecead (users.lookupByEmail) -> LIVE
-# google_sheets.add_spreadsheet_row_v4 9666ca53 on BOTH branches (benchmark
-# tab redirect; args keep the raw spreadsheet id) -> 4 dead skip:true steps
-# (6db82a50/38168b5e/b4374a34/00c04c9d).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - ifnull() DEAD FALLBACK ARM: both pills render INSIDE single quotes, so an
-#   absent current_team renders '' (empty string, never NULL) and the user_id
-#   arm is unreachable (probed 2026-07-08: "ifnull('','u-77')"). args.sql is
-#   re-derived here from the trigger payload and must contain
-#   ifnull('<current_team>','<user_id>') byte-exactly -- current_team is a
-#   non-negative integer whose interpolation is quoted in the SQL.
-# - the IF guards the FIELD, not the row: slack lookup fires exactly when the
-#   traced first row's email is non-empty (owner_without_email variants
-#   return 1 row and still skip the lookup). Zero rows -> nil pill -> skipped.
-# - lookup success is the workspace fact: the traced result must be ok:true,
-#   carry a non-empty provider id, and have no not_found marker.  The exact id
-#   is environment state and is not an orchestration target.
-# - the sheet row is appended on BOTH branches with the recipe's verbatim
-#   label/value MISMATCHES (USER_NAME=name, WORKSPACE_ID=account,
-#   WORKSPACE_EMAIL=user_id, ACCOUNT_OWNER_EMAIL=current_team,
-#   TIMESTAMP=email); args keep the RAW spreadsheet id while the result
-#   reports the redirected benchmark spreadsheet; the tab is seed-cleared so
-#   the row lands at row_number 2 and the final live snapshot is exactly
-#   [headers + that one row].
-# - snowflake is READ-ONLY (initial == final snapshot); cleanup drops exactly
-#   the 3 product.* seed keys.
-# - the 4 dead steps must appear as skipped markers only (no slack_bot post /
-#   gmail tool ever traces).
 
 
 def verify_129988557(result: dict[str, Any]) -> dict[str, Any]:
@@ -39911,43 +36491,6 @@ def verify_129988557(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118441978 (clock.scheduled_event 7f8a4207 ->
-# LIVE snowflake.search_rows_sql f07d9d06: free-workspace relink CTE (UNION
-# ALL x3 grant arms + QUALIFY ROW_NUMBER() dedupe + future_contracts
-# current_date arm), limit 10000, connector orderby 'account2' -> logger
-# 586bdf86 '=rows.pluck("user_id_dc").join(",")' -> FOREACH 15e7f8fc
-# repeat_mode batch > LIVE salesforce.composite_update_sobject d30ad505
-# (Workato_User__c, per row Id=row.id / Account__c=row.account_id2).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# (The per-update final-state read-back runs via the shared
-# _strict_salesforce_update_checks -- tool_expectations pin sobject/id/fields
-# per salesforce.update_record call.)
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - ORDERBY-APPEND REGRESSION GUARD: the raw SQL's only ORDER BYs live inside
-#   OVER(...) windows, so the connector's separate Order-by input MUST be
-#   appended -- this recipe was NEEDS-ENGINE while the naive \bORDER\s+BY\b
-#   regex suppressed the append; _sql_has_top_level_order_by (paren-depth-0)
-#   fixed it (re-probed 2026-07-08). args.sql is re-derived from the pinned
-#   raw SQL (details.raw_validation.sql, held byte-stable by the module tree
-#   pin) + ' ORDER BY account2' and must match byte-exactly.
-# - the logger message is the ORDER-SENSITIVE observable: re-derived from the
-#   TRACED live rows' user_id_dc in traced order, and equal to
-#   expect.log_message (seeds choose account2 names so the sort REVERSES the
-#   seed order; '' for zero rows).
-# - foreach batch semantics: the composite is ONE trace action regardless of
-#   record count (engine puts the whole source in one batch iteration;
-#   batch_size project-property pill is metadata, never resolved) -- but ONE
-#   salesforce.update_record REGISTRY call per row, in row order, each
-#   {sobject, id=row.id, fields={Account__c: row.account_id2}} re-derived
-#   from the traced live rows. Zero rows -> no composite trace row at all.
-# - live update semantics: updates hit only benchmark-owned records (non-owned
-#   ids are refused fail-fast) and Account__c is a live Lookup(Account), so
-#   every account_id2 must be a live benchmark Account id ($REF_ID-threaded).
-# - snowflake is READ-ONLY (initial == final snapshot); cleanups drop exactly
-#   the 6 BI_DB.* seed keys and delete the owned SF records (zero-rows
-#   variants own NO salesforce state: no snapshot section, no SF cleanup).
 
 
 def verify_118441978(result: dict[str, Any]) -> dict[str, Any]:
@@ -40125,40 +36668,6 @@ def verify_118441978(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 130002208 (workato_pub_sub.subscribe_to_topic
-# topic 39340 -> TRY [workato_variable.declare_variable eafdad03 key_exist.<col>
-# = message.columns.keys.include?("<col>") x8 -> LIVE snowflake.update_rows
-# 04a6799d on PUBLIC.EMPLOYEE_APP, where = message.where_condition verbatim,
-# 8 columns via the 3-way ternary value.present? ? value :
-# key_exist.is_true? ? null : skip] CATCH 3c87292f -> STOP e994dc18
-# stop_with_error).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - KEY-presence vs VALUE-presence: the declare result must equal the pinned
-#   8-boolean key_exist map (Hash#keys + Array#include? -- batch07 engine fix,
-#   distinct from .present?). A key present with a null value is TRUE here.
-# - EXPLICIT-NULL SET (batch07 snowflake_live fix): every expect.update_args
-#   column pinned null must survive to the TOOL args AND the tool result
-#   columns AND read back as SQL NULL in the live final snapshot -- the
-#   pre-fix engine silently dropped None from the SET list (old value
-#   survived; verified live pre-fix with STATUS still 'active').
-# - skip arm: columns whose key is ABSENT from the message must be absent
-#   from args.columns byte-exactly (args equality is exact, not subset).
-# - zero_match branch: the shared _strict_snowflake_update_checks requires a
-#   where-matched row so those variants carry tool_expectations [] -- THIS
-#   fragment pins the verbatim args, rows_updated 0 and initial==final
-#   snapshot equality instead (fail-closed replacement, not a relaxation).
-# - catch_stop branch: forced error on 04a6799d -> NO snowflake tool row may
-#   exist; the stop row must trace {stopped: true} on e994dc18 (engine stop
-#   rows carry no stop_reason -- batch04/05 semantics) and the catch payload
-#   {type, message} pins the groundtruth; the declare still ran.
-# - live table rows are pinned as FULL normalized row dicts (lowercase
-#   columns, TIMESTAMP_NTZ isoformat 'T'), sorted by app_id -- decoy-row
-#   untouchedness is part of every pin.
-# - cleanup is fail-fast: the run's cleanup_response must show the seeded
-#   PUBLIC.EMPLOYEE_APP dropped.
 
 
 def verify_130002208(result: dict[str, Any]) -> dict[str, Any]:
@@ -40385,40 +36894,6 @@ def verify_130002208(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 118858472 (clock.scheduled_event weekly Monday
-# 08:00 '<anon>Europe/London</anon>' -> declare week_no =
-# =now.in_time_zone("<anon>Europe/London</anon>").yweek -> LIVE
-# google_sheets.search_spreadsheet_rows_v4_new 9e3dbecf 'Schedule v2.' sheet
-# '2025' by col_'WEEK NO' -> declare us_support / us_shift_period (multi-line
-# if/else on col_BT US 2 == "-" and col_D-US-Alt.present?) -> LIVE
-# slack_bot.post_bot_message x2 (#biztech 4bce594e, #bt-hr 2f65a9ec,
-# byte-identical digest)).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - ANON-TZ DE-TAG (batch07 engine fix): week_no must be the INT ISO week of
-#   the pinned now in Europe/London -- the declare result is pinned exactly,
-#   so a UTC-evaluated or string week fails (registered 118858162 carries the
-#   clean 'Asia/Singapore' spelling; this recipe is the de-tag prover).
-# - The search binds the space-in-header col_'WEEK NO' with the INT pill and
-#   the live tab str-compares (28 vs '28'); result_count + the exact matched
-#   row (subset of the returned row) pin filter selectivity against the
-#   different-week decoy on EVERY variant.
-# - FIRST-ROW semantics: rows current_item derefs sit outside any foreach;
-#   every variant seeds exactly one matching row. The zero-row branch is
-#   DEFERRED (batch07 finding): a nil declared variable interpolates as the
-#   literal 'None' (str(None), raw_executor resolve_value:2883 /
-#   interpolate_literal_text:2901) where Ruby renders '' -- the recipe
-#   module derives the FAITHFUL '' digest, so a zero-row variant fails
-#   closed until nil-parity lands (never pin 'None' as groundtruth).
-# - The 2x2 formula matrix (BT US 2 '-' x D-US-Alt present) is pinned via the
-#   second declare's exact result AND the digest text.
-# - BOTH posts land in the override channel with the byte-identical digest;
-#   the trace as-ids 4bce594e THEN 2f65a9ec (order pinned) distinguish them --
-#   channel uniqueness cannot (118858162 family note).
-# - The sheet is READ-ONLY here: snapshot equality pinned (posts are terminal
-#   observables, never re-read; no cleanup exists by design).
 
 
 def verify_118858472(result: dict[str, Any]) -> dict[str, Any]:
@@ -40591,41 +37066,6 @@ def verify_118858472(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 125342694 (slack_bot.new_event app_home_opened
-# fc4e7116 -> TRY [LIVE slack_bot.open_bot_app_home fd296d51: 25-block ProServ
-# menu home headed by the section_with_image greeting
-# '=today.wday == 5 ? <Friday+timesheet text> : <plain text>'; dead skip:true
-# 8aa4ae07 17-block older home] CATCH 7c0db11c -> LIVE slack_bot.
-# post_bot_message 8bc6eb0f DM to the trigger user).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - today.wday IN TERNARY POSITION (batch07 engine fix): pre-fix the greeting
-#   formula raised inside TRY, silently mis-routing EVERY run into the catch
-#   DM. The friday/weekday variants pin the exact greeting arm AND that no
-#   slack.post_message row exists -- a regressed engine fails on both counts.
-# - BLOCK-COUNT CONSERVATION (batch07 slack_live fixes): 25 raw blocks in ->
-#   25 published Block Kit blocks out, census pinned per type (4 section, 3
-#   divider, 9 actions, 9 CONTEXT). Pre-fix section_with_image + all 9
-#   context blocks were silently dropped (15 delivered).
-# - EMBEDDED-ANON IMAGE SUBSTITUTION: args.view.blocks keep the raw
-#   avatars.slack-edge.com/<anon>2024-01-01</anon>/... url VERBATIM while the
-#   DELIVERED view's first-block accessory must carry the stable Slack
-#   placeholder (Slack downloads image_url at publish; the tagged path is
-#   fiction -- 119575741 published_image_url precedent extended to embedded
-#   tags).
-# - The greeting is the recipe's ONLY dynamic content: the published first
-#   block's mrkdwn text is pinned to the exact ternary arm.
-# - Dead-step asymmetry: skip:true 8aa4ae07 is traced {skipped: true} AFTER a
-#   successful publish but is ABSENT on the catch path (the TRY body aborts
-#   at the raising node before reaching it) -- both directions pinned.
-# - catch_dm: no views.publish row may exist (the forced error raises before
-#   the adapter runs, so fd296d51 never traces); the DM must go to the RAW
-#   U-prefixed user id (kept verbatim, not the override channel) with the
-#   full admin-contact text; the catch payload {type, message} is pinned.
-# - No snapshots/cleanup by design: App Home publishes are idempotent per
-#   user and the DM is never re-read.
 
 
 def verify_125342694(result: dict[str, Any]) -> dict[str, Any]:
@@ -40813,54 +37253,6 @@ def verify_125342694(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 92048772 (clock.scheduled_event daily 22:00
-# Etc/UTC '6AM SGT', payload-less -> workato_variable.declare_variable
-# c440cb90 'employee_i_ds_to_update' (string, no default -> nil) -> LIVE
-# snowflake.run_custom_sql cd4e03b9 (SIGMA.USER_ALERT_EXCLUSION_LIST AS EAUL
-# INNER JOIN PUBLIC.EMPLOYEE ON E.ID = EAUL.EMPLOYEE_ID WHERE UPPER(E.STATUS)
-# = 'TERMINATED' AND EAUL.ACTIVE = TRUE) -> IF rows size > '0' ->
-# workato_variable.update_variables f80af25c (=_dp(rows)
-# .format_map("'%{employee_id}'").join(",\n") via the uuid:c440cb90:field
-# target) -> LIVE snowflake.update_rows bedec5f9 (where EMPLOYEE_ID IN
-# (#{variable}), columns {active 'false' string on BOOLEAN col, reason
-# 'User is no longer with the Company'}); IF-false -> recipe ends after 2
-# actions, variable stays nil, tables untouched.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - LIVE-GROUNDED WHERE RECONSTRUCTION: the qualifying id set is re-derived
-#   FROM THE INITIAL LIVE SNAPSHOT (active exclusions INNER JOINed to
-#   employees with UPPER(status)='TERMINATED') and must equal — as a
-#   multiset — the ids the live SELECT actually returned. An engine that
-#   drops the UPPER() arm, the ACTIVE arm or the INNER JOIN fails against
-#   its own seeded data (variant_02 seeds an ACTIVE join-orphan exclusion
-#   row that must NOT come back and must stay active).
-# - format_map/join RENDER: the update_variables value must be BOTH the
-#   pinned expect.variable_value (seed-order exact string with a REAL
-#   newline separator) AND the "'<id>'" join over the rows the SELECT
-#   ACTUALLY returned in trace order — a live row re-order fails with a
-#   detail naming the re-order instead of silently passing a wrong pin
-#   (SELECT has no ORDER BY; triage live-verified insertion order).
-# - variable TARGET resolution: the declare step's TRACE result is {} (no
-#   default -> nil) while post-run step_outputs[c440cb90] carries the
-#   rendered id list — proves update_variables resolved the
-#   'uuid:c440cb90:employee_i_ds_to_update' target onto the declare step
-#   (trace rows are immutable deepcopies; step_outputs is the live object).
-# - update_rows is deliberately NOT a tool_expectations item: verifier.py's
-#   generic _parse_snowflake_where cannot parse the IN-list where (no '='),
-#   so the exact args {table, where "EMPLOYEE_ID IN ('101',\n'202')",
-#   columns {active 'false', reason ...}} + rows_updated/updated live HERE.
-# - FINAL STATE (multiset — live SELECT * has no ORDER BY): qualifying
-#   exclusion rows read back ACTIVE boolean false (live coerced the string
-#   'false') + the reason text; every other exclusion row byte-identical to
-#   its seed (the seeder rejects seeded reasons equal to the post-update
-#   text so the write is always observable); PUBLIC.EMPLOYEE is READ-ONLY
-#   (initial == final == pinned employee_rows).
-# - IF-false branch (zero qualifying): exactly 2 actions, no f80af25c /
-#   bedec5f9 anywhere in the trace, variable still {}, exclusion snapshot
-#   unchanged.
-# - cleanup must drop exactly the 2 registered 2-part tables.
 
 _EXCLUSION_TABLE_92048772 = "SIGMA.USER_ALERT_EXCLUSION_LIST"
 _EMPLOYEE_TABLE_92048772 = "PUBLIC.EMPLOYEE"
@@ -41171,43 +37563,6 @@ def verify_92048772(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 91193728 (slack_bot.bot_command_v2 80a598fe
-# 'rerun', domain firefighter, scope evaluate_deal {recipe_id, job_id,
-# opportunity_id, opportunity_name} -> TRY[ slack_bot.post_bot_message
-# 096e3f40 advanced.ts = trigger ts -> LIVE chat.update of the seed-posted
-# bot message (opportunity-link section + divider + firefighter section)
-# -> workato_app.rerun_jobs 4d356cc8 (MOCK ack {ok, job_ids}) ]CATCH
-# 9ee228f3 -> STOP 027c7dde stop_with_error 'true', stop_reason =
-# catch.message). Slack runs LIVE; rerun_jobs is Workato-internal.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - chat.update threading: the ONE slack.post_message call must carry
-#   ts == the live seed-posted bot message ts == the trigger ts (bot-owned
-#   in-place update, never a fresh post: thread_ts stays empty and the
-#   result echoes the SAME ts), channel == the override channel (the
-#   context.channel pill is a non-U literal and routes there by design).
-# - text render: args.text must be byte-equal to expect.slack_text AND to
-#   the fragment's own re-derivation from trigger.parameters (opportunity
-#   link line + firefighter line, newline-joined) — the divider block
-#   contributes NO line (established slack_text convention); a stale pin
-#   and a wrong render are distinguishable failures.
-# - rerun ack wiring: args must be EXACTLY {recipe_id: parameters.recipe_id,
-#   job_ids: [parameters.job_id]} (the engine extracts jobs.job_id from the
-#   object form + the top-level recipe_id pill) and the mock must ack
-#   {ok true, job_ids: <same list>}.
-# - catch variant (forced error on 096e3f40, the FIRST action): ZERO
-#   actions, the trace is exactly ONE row — the STOP node {stopped: true}
-#   on 027c7dde as the FINAL row with NO rendered stop_reason /
-#   stop_with_error / args / result (engine stop convention, probed on the
-#   current tree; batch02 precedent) — branch identity comes from the trace
-#   shape plus the recorded catch payload step_outputs[9ee228f3] == {type
-#   'RawRecipeExecutionError', message == the seed-controlled forced text};
-#   catch variants own no live Slack state (no seed message, no cleanup).
-# - cleanup (happy branch only): the run must delete the seeded/updated bot
-#   message (rerun determinism); the fragment fails when cleanup_response
-#   is not ok.
 
 _FIREFIGHTER_LINE_91193728 = (
     ":firefighter_8: We will attempt to check this particular opportunity again."
@@ -41410,48 +37765,6 @@ def verify_91193728(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 85944334 (workato_recipe_function.execute as
-# 3b05163b, dereferences parameters.id only -> LIVE salesforce.search_sobjects
-# 65c57f83 (Account, Id filter, limit 150) -> LIVE
-# salesforce.search_sobjects_soql def5d0b7 (AccountTeamMember, bare WHERE
-# fragment "AccountId = '<id>' AND (TeamMemberRole LIKE '%Consultant' OR
-# TeamMemberRole = 'Partner Manager')" -- STRICT-SOQL ONLY: the legacy
-# grouping matcher silently drops the paren OR-group and leaks non-matching
-# roles in) -> IF where(TeamMemberRole: /.+Consultant$/).length > 0 ->
-# workato_list.accumulate_list_items 64b09d22 'CS Reps' (Workato-internal;
-# solutions/automation consultant via the value-position or-chain: Primary
-# pluck.first or Supporting pluck.first, Ruby or-semantics -- engine fix
-# re-probed 19/19 with the verbatim formulas at build) ->
-# workato_recipe_function.return_result 67cd7068 (TERMINAL, 22 fields).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _snapshot_records.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - or-chain (the recipe's core output): the verifier RE-DERIVES
-#   solutions/automation_consultant from the ATM SEARCH RESULT rows with Ruby
-#   or-semantics (Primary wins whenever present, Supporting only fills a nil
-#   Primary) and requires the accumulate args AND the pinned expect.list_item
-#   to match -- variant_00 seeds Primary + Supporting Solutions Consultants
-#   simultaneously, so the pre-fix engine (null when the LEFT is truthy)
-#   fails this check.
-# - strict-SOQL exclusion: expect.atm_rows pins the search result EXACTLY
-#   (length + per-index UserId/TeamMemberRole) and atm_excluded_user_ids pins
-#   the seeded decoys ('Account Executive'; 'Consultant Lead' proving LIKE
-#   '%Consultant' is END-anchored) that must NOT leak in.
-# - IF-4 regex branch: consultant_if_taken discriminates the arms -- the
-#   accumulate step must trace exactly once (true) or never (false, pinned
-#   via steps_absent_from_trace); partner_manager still resolves on BOTH arms
-#   (the where('Partner Manager') formula lives in the return step).
-# - dead RT skip-arms: record_type_id must read back null LIVE and the 4 CSR
-#   fields must carry the else-arm consultants (or null) -- a skip-arm firing
-#   would DROP the key, which the key-set equality check catches.
-# - return_result is pinned by FULL key-set equality plus per-key values
-#   ("__ANY__" = live-assigned OwnerId/LastModifiedById must be present and
-#   non-empty; files must be EXACTLY [] -- subset semantics cannot prove
-#   emptiness); raw return_value must equal the traced args.result.
-# - read-only proof: initial and final live snapshots must be identical
-#   (the recipe never writes); cleanup deletes every owned record.
 
 def verify_85944334(result: dict[str, Any]) -> dict[str, Any]:
     ACCOUNT_SEARCH = "65c57f83"
@@ -41772,41 +38085,6 @@ def verify_85944334(result: dict[str, Any]) -> dict[str, Any]:
     return {"ok": _checks_ok(checks), "checks": checks}
 
 
-# Verifier fragment for recipe 94001408 (workato_pub_sub.subscribe_to_topic
-# as e3dee984, topic 34038, message {account_id, contact_id, responder_email,
-# type, score, assessment_id, assessment_date} -> TRY: LIVE
-# salesforce.create_custom_object 1e300d60 on Survey_Response__c (Name =
-# "GEARS:" + message.type.titleize, Comments__c 'Responder: <email>', Type__c
-# literal 'GEARS Assessment', straight pills for the rest) / CATCH 0dd86881
-# (max_retry 0): LIVE slack_bot.post_bot_message d9474a4f, channel = seeded
-# GEARS_V2_SLACK_ERROR account property (routes to the benchmark override
-# channel), attachment flattened to 'Salesforce Logger Error\n<catch
-# message>').
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _snapshot_records, _contains_salesforce_field_subset.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - the create args.fields are pinned by EXACT dict equality (all 8 assembled
-#   fields, nothing more): both titleize arms are separate variants ('gears
-#   assessment' -> 'GEARS:Gears Assessment'; 'half_yearly_check' ->
-#   'GEARS:Half Yearly Check').
-# - live read-back: exactly ONE benchmark-owned Survey_Response__c appears in
-#   the final snapshot with the create result's id; Score__c reads back the
-#   STRING '8.5' (the deployed column is Text 255, mdapi probe 2026-07-08)
-#   and Survey_Response_Date__c the Date string -- initial snapshot must be
-#   EMPTY (the recipe, not the seed, creates the row).
-# - branch discrimination: exactly one action executes on either arm; the
-#   untaken step is pinned via steps_absent_from_trace (the forced create
-#   never traces).
-# - catch path: the catch payload (step_outputs 0dd86881) must carry the
-#   sanctioned forced error verbatim, the slack text must equal
-#   'Salesforce Logger Error\n<that message>' (title_link + color dropped by
-#   the established attachment flattening), the post must land ok with a live
-#   ts, and NO Survey_Response__c row may exist in either snapshot.
-# - cleanup deletes the recipe-created row (a no-op that must still report ok
-#   on the catch variant); the slack post is never re-read -> no slack
-#   cleanup per policy.
 
 def verify_94001408(result: dict[str, Any]) -> dict[str, Any]:
     CREATE_STEP = "1e300d60"
@@ -41992,69 +38270,12 @@ def verify_94001408(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 83289926 (recipe function -> IF rows.size>0 ->
-# snowflake.upsert_rows_batch into NETSUITE.REVENUE_DETAIL). Append to
-# src/benchmark/verifier.py; uses only existing helpers (_verify_replay_recipe,
-# _check). Fail-closed: the base replay verifier requires an explicit
-# expect.tools / expect.tool_expectations block, the strict snowflake upsert
-# checks pin the live final table rows and created/updated counts, and the
-# empty-rows branch must additionally prove zero snowflake tool calls plus an
-# unchanged live table. Family cousin of registered 83289213/83289218 (own
-# trigger/IF uuids); same check body as the family fragments.
 
 
-# Verifier fragment for recipe 83289919 (recipe function -> IF rows.size>0 ->
-# snowflake.upsert_rows_batch into NETSUITE.REVENUE_ELEMENT). Append to
-# src/benchmark/verifier.py; uses only existing helpers (_verify_replay_recipe,
-# _check). Fail-closed: the base replay verifier requires an explicit
-# expect.tools / expect.tool_expectations block, the strict snowflake upsert
-# checks pin the live final table rows and created/updated counts, and the
-# empty-rows branch must additionally prove zero snowflake tool calls plus an
-# unchanged live table. BYTE-TWIN (table-swap) of registered 83289213/83289218
-# (identical trigger f5c65386/e5c827bf + IF 92b67715); same check body.
 
 
-# Verifier fragment for recipe 83289243 (recipe function -> IF rows.size>0 ->
-# snowflake.upsert_rows_batch into NETSUITE.CHARGE_SCHEDULE). Append to
-# src/benchmark/verifier.py; uses only existing helpers (_verify_replay_recipe,
-# _check). Fail-closed: the base replay verifier requires an explicit
-# expect.tools / expect.tool_expectations block, the strict snowflake upsert
-# checks pin the live final table rows and created/updated counts, and the
-# empty-rows branch must additionally prove zero snowflake tool calls plus an
-# unchanged live table. BYTE-TWIN (table-swap) of registered 83289213/83289218
-# (identical trigger f5c65386/e5c827bf + IF 92b67715); same check body.
 
 
-# Verifier fragment for recipe 97310724 (weekly clock -> snowflake.run_custom_sql
-# zero-retention COUNT aggregate over workspace_dim/accounts_dim/flows/
-# flow_settings -> foreach over the single aggregate row ->
-# google_sheets.add_spreadsheet_row_v4 Count/LastRunAt, sheet ZeroRetention).
-# Family base of the 8-member batch-08 97310xxx cluster; module derived
-# mechanically from REGISTERED recipe_97310640.py (same skeleton + as-ids).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - UNALIASED SPACED aggregate: the SELECT list is 'count (distinct
-#   ad.account_id)' (space before the paren, no alias). Live Snowflake keeps
-#   the space in the column name and _fetch_rows' lowercase alias equals the
-#   foreach pill path BYTE-EXACTLY (triage live probe P1); this fragment
-#   derefs the traced aggregate row by that exact spaced key so an engine
-#   normalization regression fails closed.
-# - ORDER BY ad.current_arr_usd on the implicit-GROUP-BY aggregate is
-#   ACCEPTED by Snowflake (triage live probe P1) -- args_contains pins the
-#   verbatim SQL incl. the ORDER BY tail, the trailing ';' and both
-#   zero_retention/running join filters.
-# - COUNT over zero matches returns ONE row with 0 -> the foreach still runs
-#   exactly once and the sheet append carries Count=0 (variant_01 is the
-#   dead proof for the zero-iteration foreach branch; the full-pill deref of
-#   int 0 is safe from the falsy-render family).
-# - the foreach node OMITS repeat_mode (registered twin 97310640 carries
-#   'simple'): raw_executor special-cases only 'batch', absence == per-item.
 
 
 def verify_97310724(result: dict[str, Any]) -> dict[str, Any]:
@@ -42088,32 +38309,6 @@ def verify_97310724(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 97310663 (weekly clock -> snowflake.run_custom_sql
-# EKM-addon COUNT aggregate: array_contains('enterprise_key_management'
-# ::variant, wd.plan_addons) AND users.cmk_storage_type in (2,3) -> foreach
-# over the single aggregate row -> google_sheets.add_spreadsheet_row_v4
-# Count/LastRunAt, sheet EKM). 97310xxx family member (base 97310724 /
-# registered 97310640).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - VARIANT column filter: array_contains('enterprise_key_management'
-#   ::variant, wd.plan_addons) -- the '::' cast survives _bind_sql (the
-#   colon-bind rewrite requires a non-colon lookbehind) and plan_addons seeds
-#   through the PARSE_JSON INSERT..SELECT path (batch-08 engine fix in
-#   snowflake_live._insert_row; list rows serialize to JSON, spliced-list
-#   002020 / VARCHAR 002023 both fixed).
-# - both cmk_storage_type IN-list arms (2 and 3) are exercised and the
-#   addon-present-but-cmk-1 / addon-absent-but-cmk-3 decoys prove the AND.
-# - UNALIASED SPACED aggregate 'count (distinct ad.account_id)' -- lowercase
-#   live alias equals the foreach pill path byte-exactly (family live probe).
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_01, dead proof for the zero-iteration branch).
 
 
 def verify_97310663(result: dict[str, Any]) -> dict[str, Any]:
@@ -42147,30 +38342,6 @@ def verify_97310663(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 97310593 (weekly clock, anon-tagged trigger_at
-# inert -> snowflake.run_custom_sql audit-log-streaming COUNT aggregate over
-# workspace_dim/accounts_dim/audit_log_replication_settings, NO ORDER BY ->
-# foreach over the single aggregate row -> google_sheets.add_spreadsheet_row_v4
-# Count/LastRunAt, sheet AuditLogStreaming). 97310xxx family member (base
-# 97310724 / registered 97310640).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - the raw's trigger_at is anonymizer-tagged ('<anon>12:00:00</anon>') and
-#   INERT: scheduled_event trigger inputs are node metadata, the run payload
-#   comes from seed['trigger'] (triage probe: the executor never derefs it).
-# - NO ORDER BY in this family member (and no current_arr_usd column
-#   anywhere) -- args_contains pins the verbatim SQL ending at the
-#   current_arr filter + ';' so an accidental orderby append fails closed.
-# - UNALIASED SPACED aggregate 'count (distinct ad.account_id)' -- lowercase
-#   live alias equals the foreach pill path byte-exactly (family live probe).
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_01, dead proof for the zero-iteration branch).
 
 
 def verify_97310593(result: dict[str, Any]) -> dict[str, Any]:
@@ -42204,30 +38375,6 @@ def verify_97310593(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 97310564 (weekly clock -> snowflake.run_custom_sql
-# SCIM COUNT aggregate: tp.scim_jwt_token_generated_at IS NOT NULL -> foreach
-# over the single aggregate row -> google_sheets.add_spreadsheet_row_v4
-# Count/LastRunAt, sheet SCIM). 97310xxx family member (base 97310724 /
-# registered 97310640).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - NULL-filter live faith: tp.scim_jwt_token_generated_at IS NOT NULL over a
-#   seeded TIMESTAMP column (set vs NULL rows) -- triage live probe P3
-#   counted exactly the non-NULL row.
-# - NO-SPACE aggregate spelling: this family member selects
-#   'count(distinct ad.account_id)' (unlike the spaced 97310724/663/593/
-#   124796779 siblings); live lowercase alias equals the pill path
-#   byte-exactly, and the fragment derefs by the no-space key.
-# - ORDER BY ad.current_arr_usd on the aggregate is live-accepted;
-#   args_contains pins the verbatim SQL.
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_01, dead proof for the zero-iteration branch).
 
 
 def verify_97310564(result: dict[str, Any]) -> dict[str, Any]:
@@ -42261,30 +38408,6 @@ def verify_97310564(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 97310532 (weekly clock -> snowflake.run_custom_sql
-# 2FA COUNT aggregate: tp.required_auth_type LIKE '%two_fa%' -> foreach over
-# the single aggregate row -> google_sheets.add_spreadsheet_row_v4
-# Count/LastRunAt, sheet 2FA). 97310xxx family member (base 97310724 /
-# registered 97310640).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - %-LITERAL live faith: tp.required_auth_type LIKE '%two_fa%' runs
-#   bind-less; _bind_sql doubles % and _executable_sql un-doubles when no
-#   parameters bind, so the literal reaches Snowflake byte-exact (triage live
-#   probe P2). variant_02 pins SUBSTRING semantics (exact 'two_fa' AND
-#   embedded 'saml_two_fa' both match).
-# - NO-SPACE aggregate spelling 'count(distinct ad.account_id)' -- live
-#   lowercase alias equals the pill path byte-exactly.
-# - ORDER BY ad.current_arr_usd on the aggregate is live-accepted;
-#   args_contains pins the verbatim SQL.
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_01, dead proof for the zero-iteration branch).
 
 
 def verify_97310532(result: dict[str, Any]) -> dict[str, Any]:
@@ -42318,29 +38441,6 @@ def verify_97310532(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 97310526 (weekly clock -> snowflake.run_custom_sql
-# SAML-JITP COUNT aggregate: tp.saml_jitp_enabled = true -> foreach over the
-# single aggregate row -> google_sheets.add_spreadsheet_row_v4 Count/LastRunAt,
-# sheet 'SAML JITP'). 97310xxx family member (base 97310724 / registered
-# 97310640).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - boolean-filter live faith: tp.saml_jitp_enabled = true over a seeded
-#   BOOLEAN column (family live probes round-trip seeded booleans through
-#   the same latest/paying guard shape).
-# - NO-SPACE aggregate spelling 'count(distinct ad.account_id)' -- live
-#   lowercase alias equals the pill path byte-exactly.
-# - ORDER BY ad.current_arr_usd on the aggregate is live-accepted;
-#   args_contains pins the verbatim SQL; the sheet name 'SAML JITP' carries
-#   an embedded space.
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_01, dead proof for the zero-iteration branch).
 
 
 def verify_97310526(result: dict[str, Any]) -> dict[str, Any]:
@@ -42374,31 +38474,6 @@ def verify_97310526(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 97310457 (weekly clock -> snowflake.run_custom_sql
-# SAML COUNT aggregate: tp.required_auth_type LIKE '%saml%' -> foreach over
-# the single aggregate row -> google_sheets.add_spreadsheet_row_v4
-# Count/LastRunAt, sheet SAML). 97310xxx family member (base 97310724 /
-# registered 97310640).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - %-LITERAL live faith: tp.required_auth_type LIKE '%saml%' runs bind-less;
-#   _bind_sql doubles % and _executable_sql un-doubles when no parameters
-#   bind, so the literal reaches Snowflake byte-exact. variant_00 pins
-#   substring semantics from all three sides (exact 'saml', suffix
-#   'saml_sso', prefix 'okta_saml'); variant_01 exercises EVERY guard arm
-#   incl. the INNER-JOIN drop (workspace without a team_profiles row).
-# - NO-SPACE aggregate spelling 'count(distinct ad.account_id)' -- live
-#   lowercase alias equals the pill path byte-exactly.
-# - ORDER BY ad.current_arr_usd on the aggregate is live-accepted (triage
-#   live probe); args_contains pins the verbatim SQL.
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_02, dead proof for the zero-iteration branch).
 
 
 def verify_97310457(result: dict[str, Any]) -> dict[str, Any]:
@@ -42432,34 +38507,6 @@ def verify_97310457(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 124796779 (weekly clock -> snowflake.run_custom_sql
-# EKM-v2 COUNT aggregate: users join with data_center/cmk_storage_type/
-# paid-workspace conditions chained in the ON clause, NO WHERE -> foreach over
-# the single aggregate row -> google_sheets.add_spreadsheet_row_v4
-# Count/LastRunAt, sheet EKM). 8th member of the 97310xxx family (closest
-# sibling 97310663, whose older SQL used array_contains).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-# Expect-driven like the registered family verifiers (verify_97310640/
-# verify_97310798) plus one end-to-end value check: seeded-join hand-computed
-# count == live aggregate row value (deref'd by the EXACT column spelling) ==
-# appended sheet Count.
-#
-# SEMANTIC TRAPS pinned via expect (variant input.json):
-# - ALL conditions live in the second JOIN's ON-clause chain (NO WHERE
-#   clause): users matched on workspace_id AND data_center AND
-#   cmk_storage_type IN (2,3) AND the latest/paid/internal/paying guards --
-#   for INNER joins this filters identically to WHERE; variant_01 exercises
-#   every ON arm incl. the data_center equality (mismatched-dc decoy). This
-#   SQL also has NO ad.current_arr filter (unlike the 97310xxx siblings).
-# - UNALIASED SPACED aggregate 'count (distinct ad.account_id)' (with a
-#   trailing space before the FROM newline) -- live Snowflake preserves the
-#   space in the column name and the lowercase alias equals the foreach pill
-#   path byte-exactly (triage live probe).
-# - ORDER BY ad.current_arr_usd on the aggregate is live-accepted;
-#   args_contains pins the verbatim SQL incl. the ';' tail.
-# - COUNT over zero matches returns ONE row with 0 -> foreach still appends
-#   Count=0 (variant_02, dead proof for the zero-iteration branch).
 
 
 def verify_124796779(result: dict[str, Any]) -> dict[str, Any]:
@@ -42493,286 +38540,29 @@ def verify_124796779(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 91607497 — REGISTERED BYTE-TWIN of 107246334
-# (scale batch 08, batch_B). Re-proved on HEAD 07af31c2 (2026-07-08) via
-# load_raw_recipe dict diff: the two raw recipes differ in EXACTLY ONE line —
-# trigger input topic_id ('31417' vs '30314'); every executable node, as-id
-# (495c9cd3 / d356ca4c / fa68dcc7), the root-level 3-condition trigger filter
-# (message.Field equals_to 'StageName' AND message.NewValue present AND
-# message.NewValue contains 'Lost'), the IF conditions (FirstValue_CS_Task__c
-# present AND FirstValue_CS_Task__r.Status__c not_contains 'Achieved'), and
-# both action inputs are byte-identical. The remaining raw_recipe.md text
-# deltas are CSV metadata (created_at/flow_id/version_no) + one summary
-# 'number' line — non-executable.
-# The recipe module and all 6 variants are the registered 107246334 set
-# reused wholesale (id-swapped names only; the two update variants
-# additionally pin fields_contains Status__c 'Cancelled' — a strict SUPERSET
-# of the head's expects); topic_id is trigger CONFIG the executor never
-# evaluates (subscribe payload is seeded), so every check in
-# verify_107246334 (= _verify_replay_recipe, expect-driven) applies verbatim.
-# MERGE ORDER: verify_107246334 already exists in src/benchmark/verifier.py
-# (registered); delegation precedent: verify_101954510 -> verify_115850922.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
 
 
 def verify_91607497(result: dict[str, Any]) -> dict[str, Any]:
     return verify_107246334(result)
 
-# Verifier fragment for recipe 107246322 (workato_pub_sub.subscribe_to_topic
-# as e9a44ba4, topic 30931, root trigger filter message.Field equals_to
-# 'created' -> LIVE salesforce.search_sobjects 7167a712 (Workato_Task__c,
-# Id = trigger message.ParentID, limit 1) -> IF (search current_item
-# Opportunity__r.StageName equals_to 'Closed Lost' AND current_item
-# Status__c not_equals_to 'Achieved') -> LIVE salesforce.update_sobject
-# 0f701199 (Workato_Task__c, id = trigger message.ParentID, Status__c
-# 'Cancelled')). SKELETON SIBLING of registered 107246334 (same 4-node
-# pub_sub -> search -> if -> update shape) with INVERTED traversal: it
-# searches the TASK by Id and walks child->parent Opportunity__r.StageName,
-# where the head searches the Opportunity and walks FirstValue_CS_Task__r;
-# NOT a byte twin (topic, filter arity, IF operands, and update-id source
-# all differ), so this is a standalone expect-driven fragment.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe (which
-# runs _verify_strict_recipe over expect.tool_expectations, including
-# _strict_salesforce_update_checks' live final-snapshot field match).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - Opportunity__r.StageName is NOT stored on the task: Opportunity__c is a
-#   Text id-carrying stand-in field and the seed sets
-#   salesforce.relationship_expansion, so the read-back attaches the owned
-#   parent Opportunity's LIVE fields under Opportunity__r. v00's IF-true
-#   branch is only reachable through that expansion (a MISSING pill renders
-#   '' and '' == 'Closed Lost' is False), so the cancelled update proves the
-#   live parent walk end-to-end.
-# - the update id comes from the pub_sub message ParentID (not the search
-#   pill): pinned via args_contains id = $TASK_ID threaded from the seeded
-#   task through the recipe module's _seed_refs.
-# - trigger filter gate: v01 ('updated') must trace ZERO actions — the
-#   filter is a root raw['filter'] the executor evaluates before any block
-#   node (raw_executor.execute).
-# - current_item OUTSIDE a foreach = first row; empty search -> MISSING ->
-#   both IF conditions false: v04 pins result_count 0 + exactly one traced
-#   action, and its seeded decoy task must stay Open (final snapshot is
-#   captured; no update call may appear in the allowed-tool log).
-# - branch discriminators: executed_action_count 2/0/1/1/1 across
-#   v00/v01/v02/v03/v04 with expect.tools/tool_expectations pinning the
-#   exact tool sequence.
 
 
 def verify_107246322(result: dict[str, Any]) -> dict[str, Any]:
     return _verify_replay_recipe(result)
 
-# Verifier fragment for recipe 87410086 (salesforce.new_custom_object as
-# 7aabcede over OpportunityFieldHistory — the Closed-Won/Forecast_ARR__c
-# narrowing is the trigger's CONFIG-TIME SOQL, raw['filter'] is null and the
-# recipe module fail-fasts if one ever appears -> LIVE
-# salesforce.search_sobjects_soql c037a5b0 (OpportunityFieldHistory, bare
-# condition "Field = 'StageName' AND OpportunityId = '<trigger>' ORDER BY
-# CreatedDate DESC", limit 1) -> IF (history current_item CreatedDate
-# less_than trigger CreatedDate) -> slack_bot.post_bot_message 1812fac7 to
-# the override channel: '! ALERT ! - nswARR changes detected for Closed Won
-# Deal' + 'SFDC Opp Link' title + attachment_text with trigger
-# Opportunity.Name/Type, $OldValue/$NewValue, and the LIVE CreatedBy.Name).
-# BATCH-02 DEFERRAL UNBLOCKED 2026-07-08: OpportunityFieldHistory is an
-# UNSEEDABLE Salesforce audit object; the OpportunityFieldHistory__c
-# stand-in was mdapi-deployed on HEAD 07af31c2 (Field__c/OldValue__c/
-# NewValue__c/OpportunityId__c Text) with SALESFORCE_SOBJECT_MAP +
-# SALESFORCE_FIELD_MAP entries; seeds re-ensure FLS via schema-in-seed
-# (mdapi fields are describe-invisible until FieldPermissions exist).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe (expect-
-# driven strict checks incl. slack text_fragments + override channel).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - CreatedBy.Name is LIVE, never seedable: the stand-in row's CreatedById
-#   is org-assigned; seed read_fields ['CreatedById'] joins it to the
-#   read-back and salesforce.relationship_expansion expands it via
-#   _STANDARD_PARENT_RELATIONSHIPS CreatedById -> (CreatedBy, User), so the
-#   alert renders the live integration user's Name — threaded into the
-#   text_fragments as $USER_NAME from the current_user seed (the harness
-#   creates the row AS the current user; a fabricated name fails here).
-# - branch control WITHOUT controlling live CreatedDate: the seeded row's
-#   CreatedDate ~= run time, so pinning trigger CreatedDate far-future
-#   (v00, IF true) / far-past (v01, IF false) flips the compare; both are
-#   non-numeric ISO strings so less_than string-compares (probed on HEAD).
-# - the trigger row and the searched row are DIFFERENT history events: the
-#   trigger is the Forecast_ARR__c change (its $-prefixed Old/New values
-#   render from the SEEDED payload), the search wants the StageName change.
-#   OpportunityId is a TEXT stand-in column; variants use non-SF-id-shaped
-#   'OPP-87410086-*' tokens on BOTH sides — deliberately, because an OWNED
-#   real id inside a FIELD_MAP-aliased __c column plus relationship
-#   expansion would claim the bare 'OpportunityId' key with the parent DICT
-#   before _logical_aliases runs, breaking the strict SOQL equality (chain
-#   hazard found while probing; recorded batch-08).
-# - zero-history NIL semantics (v02 Field-decoy / v03 OpportunityId-decoy):
-#   an empty search resolves current_item.CreatedDate MISSING -> '' which
-#   string-compares less_than ANY date, so the alert still posts and
-#   '*Updated By*: ' renders EMPTY — pinned by anchoring the fragment
-#   '*New Value*: $<n>\n*Updated By*: ' (engine-documented Workato
-#   nil-condition semantics; never pin the literal 'None').
-# - strict_soql_conditions + result_count pin that each decoy row is
-#   excluded by the exact SOQL leaf (Field equality in v02, OpportunityId
-#   equality in v03) rather than by term-soup matching; ORDER BY applies
-#   under the strict flag and is exercised trivially at limit 1.
 
 
 def verify_87410086(result: dict[str, Any]) -> dict[str, Any]:
     return _verify_replay_recipe(result)
 
-# Verifier fragment for recipe 98303284 (workato_pub_sub.batch_subscribe_to_
-# topic as 1d37dadf, topic 29185 '[Feedback] New comment', batch 100 —
-# Workato-internal mock trigger, precedent 126727654/126727318 -> IF
-# job_context.user_name equals_to 'Environment Production' (no else) ->
-# LIVE snowflake.upsert_rows_batch 254c91be into benchmark-owned
-# FEEDBACK.COMMENTS_F with the THREE-COLUMN key 'ID\nCASE_ID\nUSER_ID').
-# Registered class precedents: 126727654 (pub_sub trigger + production
-# gate + FEEDBACK.* live tables), 83289213/83289218 (seeded-snowflake
-# upsert_rows_batch final-state contract).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _case_field.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - the production gate reads SEEDED job_context.user_name: expect.
-#   production_branch must agree with details.job_context, the branch
-#   decides 1-vs-0 actions, and the non-production variant proves ZERO
-#   recipe tool calls AND a byte-identical live table (initial == final
-#   snapshot rows).
-# - THREE-column key semantics: updates fire only when ALL of id/case_id/
-#   user_id collide (the update+insert variant seeds a decoy sharing id
-#   but not case_id — it must survive untouched); created/updated counts
-#   are pinned from the live result.
-# - intra-batch sequential upsert: two messages sharing one 3-part key =
-#   created 1 + updated 1 and the SECOND message's values win in the
-#   final row.
-# - timestamp normalization: created_at/updated_at reach Snowflake as the
-#   recipe's .in_time_zone("UTC") render; the TIMESTAMP_NTZ read-back is
-#   the offset-free UTC wallclock (a -07:00 seed stores its +7h UTC
-#   instant) — final_table rows pin those exact wallclock strings.
-# - from_email string-into-boolean: the recipe writes comment.email
-#   ('true'/'false' TEXT) into the BOOLEAN column; final rows pin the
-#   cast booleans.
-# - final_table pins the WHOLE table (count + every row, all 8 columns,
-#   matched on the 3-column key) — extra/missing/mutated rows all fail.
-# - cleanup is required on every path: the benchmark-owned table must be
-#   dropped (create-or-replace seed + registered drop).
 
 
-# Verifier fragment for recipe 91386901 (salesforce.new_custom_object as
-# d3da834c over Campaign with a TRIGGER-LEVEL 8-arm OR filter — starts_with
-# 'LE-'/'CONF-'/'TS-'/'EMEA-LE-'/'EMEA-TS-'/'ANZ-LE-'/'JPN-LE-'/'ASIA-LE-'
-# on Name -> IF End_Campaign__c is_not_true (no else) -> LIVE
-# salesforce.update_sobject 621cf8ec: the SAME Campaign, single toggled
-# field End_Campaign__c = 'true' Workato STRING literal).
-# Registered class precedents: 104943316 (new_custom_object trigger +
-# $-token seeded record + untouched no-op proof), 101954510/128165934
-# (Checkbox schema-in-seed).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check,
-# _snapshot_record, _truthy.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - the trigger FILTER is evaluated BEFORE the block: expect.filter_matched
-#   must equal raw_execution.trigger_filter_matched, and the filtered
-#   variant proves trigger_filter_matched False + zero actions + record
-#   untouched.
-# - is_not_true arms: false/ABSENT(nil) -> update fires; true -> no-op.
-#   The already-true no-op is distinguishable from the update ONLY by the
-#   absence of the update call (final flag is True either way) — pinned
-#   via tool_calls == [] plus initial==final field equality.
-# - the update writes the WORKATO STRING 'true' into a live Checkbox:
-#   args.fields must equal {'End_Campaign__c': 'true'} EXACTLY (string,
-#   nothing else) while the live read-back is boolean True — compared with
-#   _truthy parity here BECAUSE the generic
-#   _strict_salesforce_update_checks/_contains_salesforce_field_subset has
-#   no boolean parity clause ('true' vs True fails); that is why every
-#   variant carries tool_expectations [] and pins expect.update_args
-#   instead. If the one-line boolean-parity fix lands centrally, the
-#   variants can be upgraded to a standard update tool_expectation.
-# - the update id must be the SEEDED record's live id (trigger.Id after
-#   $CAMPAIGN_ID substitution) — update_record refuses non-owned ids, so a
-#   drifted id fails loudly on live.
-# - no-op variants pin initial==final snapshot fields (live no-write
-#   proof); update variants pin the flag flip AND that Name stayed intact.
-# - cleanup deletes the benchmark-owned Campaign (ok + no leftovers);
-#   provisioned Checkbox schema persists by design.
 
 
-# Verifier fragment for recipe 86565478 (slack_bot.new_event
-# app_home_opened as 6d2f0522 -> the ONLY executable action, step 6
-# open_bot_app_home b2f6899d, publishes [divider, image('work in
-# progress', dribbble wip.gif)] to the trigger user's App Home; steps
-# 2 (IF not_contains), 3 (open_bot_app_home), 4 (stop) and 5
-# (open_bot_app_home 'Original SIB homepage') are ALL dead by author
-# skip:true flags — raw_executor traces skipped nodes without executing
-# and never descends into the skipped IF's children).
-# Registered class precedents: the app-home publish family
-# 48616658 / 83147854 / 120700492 (dedicated verifiers already in
-# verifier.py). NOT related to near-ids 86565480/86565537/86565519.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - DEAD-STEP PROOF: the trace must carry skipped markers for exactly
-#   steps 2 (the IF) and 5 (the second publish) and NOTHING for steps
-#   3/4 (children of the skipped IF never trace at all); the executed
-#   action set must be exactly [(6, open_bot_app_home)]. A future engine
-#   regression that starts executing skipped nodes fails here loudly.
-# - the published view is pinned BYTE-EXACT inside this function (the
-#   [divider, image] pair with the live-fetchable dribbble URL and the
-#   'work in progress' alt text) — a variant cannot water the pin down,
-#   and the expect.view_blocks must carry the same value.
-# - user binding is a PILL, not a constant: args.user_id must equal the
-#   variant's trigger user (two variants publish to two DIFFERENT live
-#   workspace users), and the live views.publish result must be ok.
 
 
-# Verifier fragment for recipe 108424002 (batch 08 batch_A). slack_bot
-# 'brandbot create web-tix' command -> TRY { workato_service.call_service
-# 8cf49527 (MOCK Workato-internal, flow 45178531, request = static modal_type
-# 'Open' + the four trigger context pills; reply from
-# seed.workato_service_replies) } CATCH 408a1ed0 { STOP step 5
-# (stop_with_error 'true', stop_reason = catch message pill) }.
-#
-# Established HEAD semantics (re-probed 2026-07-08 on 07af31c2): the engine
-# does NOT render stop_reason into the stop trace row ({number:5,
-# keyword:stop, stopped:true} only) — so catch variants pin the CATCH PAYLOAD
-# (raw_execution.step_outputs['408a1ed0'].message == the seed's forced error)
-# instead, following the verify_50815491-family stop precedent. The forced
-# error (seed.force_action_error step_as 8cf49527) fires BEFORE the adapter,
-# so a catch run has ZERO call_service trace rows and zero registry calls
-# while workato_service_replies stays seeded (proves the forced error is the
-# only failure source).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
 
 
-# Verifier fragment for recipe 95543180 (batch 08 batch_A). NEAR-TWIN of
-# REGISTERED 91495261 (same trigger as-id bee88ce4 / upsert as-id 5d679a2e):
-# clock.scheduled_event -> declare_list e0f225fa (MOCK) -> LIVE
-# google_sheets.get_spreadsheet_rows_v4 99ff93ec (col_-LITERAL tab headers
-# WITH SPACES — get_spreadsheet_rows_v4 has no col_ aliasing, re-probed
-# 2026-07-08) -> insert_to_list_batch 952fcb9a (MOCK, uuid:as target ->
-# e0f225fa) -> LIVE snowflake.upsert_rows_batch 5d679a2e into
-# GOOGLE.GOOGLE_ANALYTICS_WEEKLY_USER_TRAFFIC keyed ROW_NUMBER.
-#
-# The registered twin delegates everything to _verify_replay_recipe; this
-# near-twin adds the two Workato-runtime list steps, so on top of the strict
-# expect-driven checks (sheets result_count + snowflake created/updated
-# counts + final-row matches via tool_expectations) it pins:
-# - the exact 4-step trace (declare_list / get rows / insert batch / upsert),
-# - declare_list initializes EMPTY,
-# - insert_to_list_batch appends exactly expect.list_items (the derived
-#   ____source mapping incl. live row_number ints; [] on the empty-sheet
-#   loop boundary),
-# - the upsert args carry the SAME mapping (list buffer and table write are
-#   both derived from the sheet rows, never from each other),
-# - the sheets read is READ-ONLY (initial/final sheet snapshot equality),
-# - the final table row count matches expect.final_row_count (created +
-#   updated + untouched pre-rows — proves the upsert wrote nothing extra),
-# - required snowflake cleanup ran ok and dropped the GA table.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
 
 
 def verify_95543180(result: dict[str, Any]) -> dict[str, Any]:
@@ -42899,30 +38689,6 @@ def verify_95543180(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 120099657 (batch 08 batch_A). slack_bot
-# 'newhire change startdate' command -> declare_variable 17e411b2
-# (job_created_at_formatted = adjusted_start_date.strftime('%d %B %Y'),
-# MOCK) -> LIVE post_bot_reply_v2 bd3a37a3 -> LIVE slack.get_user_by_email
-# be887438 (HARDCODED fictional '<anon>sarah.miller@company.com</anon>' ->
-# deterministic users_not_found, id null, in EVERY variant) -> LIVE
-# post_bot_message 44ad1551 whose channel pill (be887438.id) resolves null
-# -> '' -> env override reroute.
-#
-# Established semantics encoded here (triage-probed + re-probed 2026-07-08):
-# - slack_text renders SECTION_TEXT ONLY: block-level attachment_fields and
-#   the Approve/Reject actions block are dropped (registered 87484821
-#   groundtruth precedent); the <anon> tag stays verbatim in live text —
-#   both post texts are pinned EXACTLY (expect.post_texts), not just as
-#   fragments.
-# - the declared variable's only downstream uses are dropped from rendered
-#   text, so it is pinned via the declare step's traced result
-#   (expect.job_created_at_formatted).
-# - the DM can never reach a real user: the lookup result must be
-#   {ok, not_found:true, id:null} and BOTH posts must land on the SAME
-#   non-'U' channel (a resolved user id channel would start with 'U' —
-#   the reroute proof).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
 
 
 def verify_120099657(result: dict[str, Any]) -> dict[str, Any]:
@@ -43054,34 +38820,6 @@ def verify_120099657(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 116340422 (batch 08 batch_A).
-# workato_api_platform.receive_request (path_params name/sort/page/pagesize/
-# order, all optional) -> declare_variable c05d07c2 (||-defaults with
-# declared-int coercion + escaped-quote LIKE-vs-1=1 ternary, MOCK) -> LIVE
-# snowflake.search_rows_sql 4a921ec5 (WHERE #{query}; orderby pill
-# '#{sort} #{order}' APPENDED as ORDER BY; limit/offset pills; hash-suffixed
-# output pills id_b497e547/… deref via _<8hex> stripping) -> LIVE
-# snowflake.search_rows_sql ac48f6d0 (count(1) row_count, no pagination) ->
-# return_response 58bc5c59 (200 {result: ____source rows, total:
-# current_item-without-source row_count} — TERMINAL). Full LIVE e2e passed
-# by triage on both formula branches; offline re-probe 2026-07-08 on HEAD.
-#
-# On top of the strict expect-driven checks (exact assembled SQL + limit/
-# offset via args_contains, result_count on both queries, return_response
-# echo + response_contains) this pins:
-# - the exact 4-step trace (declare / search / count / return) and that the
-#   TERMINAL return_response is the last trace row,
-# - the declare-step traced result == expect.declared (int-coerced limit/
-#   offset, order/sort/query strings — the ||-default vs param branch),
-# - return_value == expect.response EXACTLY (ordered result rows with int
-#   ids and int total — count(1) on zero matches is int 0, never a falsy
-#   render),
-# - the count query saw the SAME WHERE branch but NO pagination (limit/
-#   offset None) and returned exactly one row,
-# - Snowflake is READ-ONLY (initial/final snapshot equality) and the
-#   required cleanup dropped DEMOINFRA_WORKSPACES.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
 
 
 def verify_116340422(result: dict[str, Any]) -> dict[str, Any]:
@@ -43206,44 +38944,6 @@ def verify_116340422(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 129217932 (clock.scheduled_event a19e917d ->
-# workato_variable.declare_variable 4e603d35 [year_month =
-# =_dp(job_created_at).utc.strftime("%Y/%m")] -> LIVE snowflake.run_custom_sql
-# ea11a3ca [formula-mode COPY INTO SALESFORCE.EVENT_LOGS FROM
-# @SALESFORCE.ACTIVITY_EVENT_LOGS ... PATTERN 'Daily/.*/<ym>/.*/.*\.csv'] ->
-# LIVE snowflake.run_custom_sql 2f2a548f [DELETE 3-month retention over
-# TO_TIMESTAMP(timestamp,'YYYYMMDDHH24MISS.FF3') vs pinned
-# current_timestamp()]).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - .utc chain (batch-08 engine fix): the declare result's year_month is
-#   pinned; variant 01 seeds an offset instant whose LOCAL month differs from
-#   its UTC month ('2026-08-01T05:30+09:00' -> '2026/07'), so a naive
-#   local-month render fails the exact pin.
-# - resolved SQL bytes: both args.sql values are pinned verbatim (the
-#   formula-mode '="..."' COPY resolves through eval_formula with real
-#   newlines and all 8 pill interpolations; PATTERN keeps the single
-#   backslash in \.csv).
-# - COPY result rows: one row per loaded file -- matched to the pinned
-#   {file_suffix, rows_loaded} multiset by SUFFIX (METADATA$FILENAME /
-#   COPY-result file paths may carry a stage prefix; the stage-relative tail
-#   is the groundtruth, same convention as 82302802 staged_file_suffixes),
-#   each with status LOADED. A zero-file COPY (variant 03) must produce NO
-#   LOADED row (shape-agnostic fail-closed check: Snowflake's zero-file
-#   result-row form is not pinned, the loaded-file absence and the final
-#   state are).
-# - DELETE result: exactly one summary row whose 'number of rows deleted'
-#   equals the pinned count -- variant 02 pins 3 = 2 old preseeded rows + 1
-#   old row that COPY loaded in the SAME job (DELETE runs after COPY).
-# - final table rows are matched by UNIQUE event_id (seed-enforced): the five
-#   CSV columns byte-equal, the filename column matched via endswith on the
-#   pinned filename_suffix (preseeded rows carry their exact seeded filename;
-#   loaded rows the stage-relative path).
-# - cleanup is fail-fast: dropped_tables must name the EVENT_LOGS table and
-#   dropped_stages the benchmark-owned stage (its named FILE FORMAT is
-#   dropped alongside by the harness).
 
 
 def verify_129217932(result: dict[str, Any]) -> dict[str, Any]:
@@ -43471,37 +39171,6 @@ def verify_129217932(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 121126518 (workato_recipe_function.execute
-# 05712dbe -> declare_variable 8429b1a9 "type casting" -> declare_variable
-# 7d95b75b "calculate output values" -> return_result eec9b5dc TERMINAL).
-# Pure Workato-internal (recipe_function + variables): no live backend, no
-# snapshots, no cleanup.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (all three batch-08 executor fixes
-# are load-bearing here and each is pinned by value, not by shape):
-# - bare-pill multi-line if (Ruby truthiness): cast enddate must be the
-#   .to_date() THEN value when the trigger param is set ('2026-12-31'), and
-#   nil (blank else) when the param is ABSENT -- the pre-fix truthy() sent
-#   every date string to the else branch.
-# - =blank literal: the cast else branches must produce nil, never a raise
-#   and never the string 'blank'.
-# - Date + pill-sourced .days stays a Date: v2 enddate/expirationdate must be
-#   'YYYY-MM-DD' bytes ('2026-07-10'), not the pre-fix full ISO datetime
-#   ('2026-07-10T00:00:00+00:00') -- the exact-equality pins below fail on a
-#   render regression.
-# - elsif ordering: variant 01 sets BOTH terminmonths and termindays; only the
-#   months value ('2027-06-30') may appear.
-# - nil passthrough: the return_result values are FULL-MATCH #{pill}
-#   templates, so nil crosses as JSON null (the open falsy-render
-#   'None'-string family affects only pills embedded in larger strings and
-#   must NOT appear here: an enddate/expirationdate equal to the string
-#   'None' fails the exact pins).
-# - DEFERRED sub-branch (documented in the recipe module, not covered by any
-#   variant): ABSENT startdate -- the cast ternary's `blank` alternative is
-#   unsupported in eval_dp_formula (raw_executor.py:3564/:3708); the seeder
-#   fails fast on absent startdate until that engine gap lands.
 
 
 def verify_121126518(result: dict[str, Any]) -> dict[str, Any]:
@@ -43630,45 +39299,6 @@ def verify_121126518(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 105192491 (clock.scheduled_event monthly
-# day-3 10:00 Asia/Singapore, payload-less -> LIVE snowflake.search_rows_sql:
-# 3-CTE lookup-table-stats SQL over workato_usage.{lookup_table_entries,
-# lookup_tables,workspace_dim,accounts_dim,line_stats,recipe_dim}, final
-# SELECT distinct lut_id, lut_name, total_rows WHERE data_center='US' AND
-# lut_id IN (100 pinned ids), connector-appended limit 100 -> FOREACH
-# 1b368bb3 over rows -> workato_db_table.add_record 1f3cbcf0 table 13575
-# with uuid parameter keys (lut_id / total_rows / snapshot date =
-# job_created_at.in_time_zone("Asia/Singapore").to_date / lut_name)).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - LIVE-GROUNDED CTE RECONSTRUCTION: the fragment re-derives the qualifying
-#   (lut_id, lut_name, total_rows) set FROM THE INITIAL LIVE SNAPSHOT of all
-#   6 seeded tables -- SELECT DISTINCT * entry collapse, the three inner
-#   joins with is_latest flags on BOTH workspace and account, COUNT per
-#   9-key group, the line_stats/recipe_dim(is_latest) existence join, the
-#   final DISTINCT + data_center='US' + the 100-id IN list -- and demands
-#   multiset equality with the rows the live SELECT returned. Variants seed
-#   an EU twin (data_center filter), an id outside the IN list, duplicate
-#   entry rows (DISTINCT collapse), non-latest workspace/account/recipe_dim
-#   decoys and a line_stats-less lut (inner-join exclusion): an engine that
-#   drops any arm fails against its own seeded data.
-# - SELECT row order -- and add_record CALL order -- is NOT guaranteed (no
-#   top-level ORDER BY; the CTE-internal ORDER BY does not order the outer
-#   statement): add_record args and final table rows compare as exact
-#   MULTISETS keyed on the lut_id column; the seeder keeps qualifying
-#   lut_ids distinct.
-# - SG DATE-ROLL PROOF: every written record's date column must equal the
-#   pinned expect.snapshot_date (job_created_at converted to Asia/Singapore,
-#   date part -- an 18:30Z instant rolls to the NEXT day).
-# - total_rows is the live COUNT integer in the trace args (the db-table
-#   mock str()-ifies it in the stored row) -- the added_records pin carries
-#   the int, final_table_rows the string.
-# - add_record APPENDS (no truncate step): final rows = pre-seeded rows +
-#   adds; the zero-match variant must leave exactly the pre-seeded rows.
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after; cleanup must drop exactly the 6 seeded tables.
 
 _ENTRIES_TABLE_105192491 = "workato_usage.lookup_table_entries"
 _LUTS_TABLE_105192491 = "workato_usage.lookup_tables"
@@ -43689,7 +39319,6 @@ _LUT_ID_COL_105192491 = "4a457f1d_c2cf_46a8_95b5_caf1f3a9a5fd"
 _TOTAL_ROWS_COL_105192491 = "7807484b_2fef_41c1_9503_35b19e83ad63"
 _DATE_COL_105192491 = "832eca21_0db3_43c7_a29a_2089c6f0e52c"
 _LUT_NAME_COL_105192491 = "f02aaacd_f104_4a8c_9d7e_836e981e3a2d"
-# The recipe's own 100-id lut_id IN list (static recipe content, pinned):
 _IN_LIST_105192491 = frozenset([
     "3663505", "3188000", "114607", "278133", "239210", "3187998",
     "312866", "2363713", "3627461", "19437", "3298516", "2542966",
@@ -43969,46 +39598,6 @@ def verify_105192491(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 126049785 (workato_recipe_function.execute,
-# no parameters -> workato_variable.declare_variable a2d14c5e (days_threshold
-# '30' + snap_date =now.strftime("%Y-%m-%d"); registry-less trace row) ->
-# LIVE snowflake.run_custom_sql 920ebe3a: CREATE OR REPLACE TABLE
-# plg.chi_2024_first_connections_operational AS <9-CTE first-connections
-# analysis over workato_usage.{accounts_dim,shared_accounts_snapshot,
-# applications_snapshot,calendar_dim,workspace_dim} +
-# plg.recipe_sophistication_app_tier> -> snowflake.run_custom_sql_async_v2
-# 495e1405 skip:TRUE (dead byte-duplicate CTAS) ->
-# workato_recipe_function.return_result {Result:'success'} TERMINAL).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - DEAD-DUPLICATE PROOF: the skip:true async CTAS traces exactly ONE
-#   {skipped: true} row (as 495e1405, number 4, NO tool) and EXACTLY ONE
-#   snowflake.run_custom_sql registry call happens -- a live duplicate would
-#   re-create the table (indistinguishable in final state), so the
-#   single-call pin IS the dead-step proof.
-# - LIVE-GROUNDED CTAS RECONSTRUCTION: the fragment re-derives the created
-#   rows FROM THE INITIAL LIVE SNAPSHOT of the 6 source tables plus the
-#   pinned instant (details.now): startdate window [2024-02-01 .. snap_date]
-#   + is_paying/is_direct + rn=1, success-only first_sha_dates with min()
-#   timestamps, the LEFT JOIN onto yesterday's (current_date - 1)
-#   applications_snapshot with coalesce(title, provider), Monday-of-week
-#   calendar joins, latest+paid workspace mapping, the at.category
-#   workato/others/null -> tier-5 CASE, the connected_after flag, and the
-#   three (category, app_tier, rank) bucket sums/listaggs -- and demands
-#   multiset equality with BOTH expect.created_rows and the final table.
-# - No top-level ORDER BY -> created rows compare as a MULTISET; listagg
-#   part order is not guaranteed either -> the three *_apps_connected
-#   columns compare as SORTED title lists ('' -> []).
-# - snap_date/current_date come from ONE pinned instant (seed.now ==
-#   snowflake_live.current_time, enforced by the module) -- an engine that
-#   resolves =now or current_date from wall-clock fails the resolved-sql /
-#   derivation pins on any other day.
-# - the CTAS target is registered with empty columns: the seeder DROPS any
-#   leftover, so the PRE-run snapshot must show it empty; the 5 sources +
-#   tier table are READ-ONLY (snapshot equality before/after); cleanup must
-#   drop all 7 registered names.
 
 _ACCOUNTS_TABLE_126049785 = "workato_usage.accounts_dim"
 _SHARED_TABLE_126049785 = "workato_usage.shared_accounts_snapshot"
@@ -44487,34 +40076,6 @@ def verify_126049785(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 119144543 (clock.scheduled_event daily,
-# payload-less -> LIVE snowflake.run_custom_sql: verbatim 3-part JOIN
-# EDW_DB.WORKATO_USAGE.ADAPTERS_MAPPING AM JOIN EDW_DB.WORKATO_USAGE.ADAPTERS
-# A ON AM.ADAPTER_ID = A.ID AND AM.DATA_CENTER = A.DATA_CENTER (composite
-# key; alias KEY is live-valid) -> lookup_table.truncate 2257706 '[WORK]
-# Adapter Add-Ons' -> add_batch_of_entries 4bfb1cef col1..col5
-# (data_center_alpha2code, adapter_id, display_name, category, key).
-# IN-BATCH sibling of 130008586 (same truncate+add_batch tail; delta = the
-# read step + 5 vs 4 columns). To be merged into src/benchmark/verifier.py by
-# the coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - LIVE-GROUNDED JOIN RECONSTRUCTION: the fragment re-derives the joined
-#   rows FROM THE INITIAL LIVE SNAPSHOT of both seeded tables (composite
-#   (ADAPTER_ID, DATA_CENTER) equality) and demands multiset equality with
-#   the rows the live JOIN actually returned. The cross_dc variant seeds the
-#   same adapter id in two data centers with DISTINCT names, plus an
-#   id-matches/dc-differs decoy -- an engine that joins on adapter_id alone
-#   (or leaks across data centers) fails against its own seeded data.
-# - Snowflake row ORDER is not guaranteed (no ORDER BY): batch entries and
-#   final lookup rows compare as exact MULTISETS (full-row json key); the
-#   seeder keeps the 5-column projections pairwise distinct.
-# - truncate is proven by deleted_rows == the pre-seeded stale row count AND
-#   final-table replacement; the 0-rows case leaves the table
-#   truncated-EMPTY (faithful no-op add).
-# - the recipe is READ-ONLY on Snowflake: live snapshot equality
-#   before/after; cleanup must drop exactly the 2 seeded 3-part tables.
 
 _MAPPING_TABLE_119144543 = "EDW_DB.WORKATO_USAGE.ADAPTERS_MAPPING"
 _ADAPTERS_TABLE_119144543 = "EDW_DB.WORKATO_USAGE.ADAPTERS"
@@ -44721,35 +40282,6 @@ def verify_119144543(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 130008586 (clock.scheduled_event daily 06:00,
-# payload-less -> LIVE snowflake.search_rows over ITAM.HR_LAPTOP_CATALOG with
-# the 4-term connector Order-by "display_inch asc, ram_gb asc, storage_gb
-# asc, (office_location_id != 'All') asc" (the parenthesized boolean
-# EXPRESSION term -- batch-08 _order_by fix -- passes through verbatim;
-# probed on HEAD 07af31c2), limit 100 / offset 0 -> lookup_table.truncate
-# 4473690 '[HTR] Laptop Catalog' -> add_batch_of_entries 55db3318 col1=id,
-# col2=name, col3=office_location_id, col4=slack_emoji.
-# IN-BATCH sibling of 119144543 (same truncate+add_batch tail; delta = the
-# read step). To be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - ORDERED pinning (unlike the multiset siblings): the top-level ORDER BY is
-#   a live row-order guarantee, so SELECT rows, batch entries and the final
-#   lookup rows compare as ORDERED LISTS; the seeder keeps the 4-term sort
-#   key unique per row so the order is total.
-# - EXPRESSION-TERM ORDER PROOF: the expected order is RE-DERIVED from the
-#   initial live snapshot with the same key -- Snowflake booleans sort
-#   false < true ASC, so an 'All' row ties BEFORE a specific-location row on
-#   equal numerics (the orderby_expression_tiebreak variant differs from the
-#   3-key order ONLY through the boolean term; an engine that drops or
-#   reorders the expression term fails).
-# - truncate is proven by deleted_rows == the pre-seeded stale row count AND
-#   final-table replacement; the 0-rows case leaves the table
-#   truncated-EMPTY (faithful no-op add).
-# - Snowflake is READ-ONLY: live snapshot equality before/after; cleanup
-#   must drop exactly the one seeded table.
 
 _CATALOG_TABLE_130008586 = "ITAM.HR_LAPTOP_CATALOG"
 _LOOKUP_TABLE_130008586 = "4473690"
@@ -44922,38 +40454,6 @@ def verify_130008586(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 118290293 (workato_recipe_function.execute ->
-# declare account_ids_string + UNUSED owner_ids_string -> LIVE
-# salesforce.search_sobjects_soql_v2 (Task aggregate: SELECT AccountId,
-# MAX(Closed_Date__c) last_activity WHERE Type IN ('Email', 'Call') AND
-# AccountId IN (<pill>) GROUP BY AccountId) -> return_result
-# result.LastSFDCActivity ____source-mapped). Linear, no try/catch. BYTE-TWIN
-# of 103988481 (dead-RT Event build); same registered family as
-# 98802887/103939956.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the RESOLVED SOQL verbatim (live seeded Account ids
-#   via $REF tokens; the pluck/join pill closes the IN list; '' on the
-#   empty-AccountList branch -> IN ('') matches nothing).
-# - MAX/GROUP-BY aliasing: aggregate rows carry AccountId + the alias
-#   last_activity as a YYYY-MM-DD STRING (Date read-back; ISO strings order
-#   lexicographically = chronologically) -- the fragment shape-checks every
-#   aggregate record so a datetime or float there fails.
-# - Type IN is exact: variant_00/_01 seed a Type='Meeting' decoy that must
-#   NOT contribute to any group; the per-account MAX must pick the latest
-#   Closed_Date__c among Email/Call rows only.
-# - Task.AccountId is DERIVED live from WhatId: every Task seed declares
-#   read_fields ['AccountId'] (without it the strict IN leaf silently
-#   rejects the row -- the seeder fails closed on that shape).
-# - FALSY-RENDER (open family, deliberately NOT pinned): owner_ids_string
-#   renders 'None' on the schema-faithful trigger (no SuccessOwner_UserID
-#   key) where Workato yields ''. It is VARIABLE-ONLY (never reaches the
-#   SOQL/result/live calls), so no check reads the declare step's
-#   owner_ids_string -- pinning it would groundtruth the wrong literal.
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 
 def verify_118290293(result: dict[str, Any]) -> dict[str, Any]:
@@ -45051,42 +40551,6 @@ def verify_118290293(result: dict[str, Any]) -> dict[str, Any]:
 
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 103988481 (workato_recipe_function.execute ->
-# declare account_ids_string + owner_ids_string -> LIVE
-# salesforce.search_sobjects_soql_v2 (Event aggregate: SELECT AccountId,
-# MAX(EndDate) last_csm_meeting WHERE IsDeleted = FALSE AND RecordTypeId =
-# '012o0000000tRwxAAE' AND Type IN (13 CSM types) AND OwnerId IN (<pill>) AND
-# AccountId IN (<pill>) GROUP BY AccountId) -> return_result
-# result.LastCSMMeetings ____source-mapped). Linear, no try/catch. BYTE-TWIN
-# of registered 118290293 (the live-buildable head of the 35a0e063 family).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# DEAD QUERY (org-capability, 90485335/110005007 precedent): the WHERE
-# hard-codes a FOREIGN RecordTypeId literal. Record type ids are
-# org-generated and cannot be chosen/imported; benchmark-org Event rows read
-# back with the org's OWN RecordTypeId (or none), so the strict equality
-# NEVER matches and the search returns [] on EVERY input, forever. Probes on
-# HEAD 07af31c2 (2026-07-08): P11 all-arms-but-RT decoy -> 0 records; P11b
-# counterfactual foreign-RT read-back matches with the MAX alias evaluated
-# (live-data impossibility, not an engine gap); P11c arm isolation (only the
-# RT equality is False on the decoy). Rewriting the literal to a visible org
-# RT is BANNED (matcher hack).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the RESOLVED SOQL verbatim: BOTH pluck-derived id
-#   strings close their IN lists (owner uniq join + account join; '' on the
-#   empty-AccountList branch).
-# - result_count is 0 and final_result is exactly {'LastCSMMeetings': []} on
-#   every variant (the seeder REJECTS any non-empty expectation).
-# - DEAD-BRANCH ATTESTATION (zero-match honesty): expect.decoy_events pins
-#   the seeded decoy Event(s); the fragment matches each against the
-#   initial snapshot's live read-back -- Type/AccountId/OwnerId satisfy the
-#   non-RT arms (IsDeleted false) while the REAL RecordTypeId differs from
-#   the foreign literal, attributing the empty result to the RT filter
-#   (or to IN ('') on the empty-list variant), never to an empty org.
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 _FOREIGN_RT_103988481 = "012o0000000tRwxAAE"
 
@@ -45179,44 +40643,6 @@ def verify_103988481(result: dict[str, Any]) -> dict[str, Any]:
 
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 125214871 (workato_recipe_function.execute ->
-# declare account_ids_string + owner_ids_string -> LIVE
-# salesforce.search_sobjects_soql_v2 (Event aggregate: SELECT AccountId,
-# MAX(EndDate) last_gears_meeting WHERE IsDeleted = FALSE AND RecordTypeId =
-# '012o0000000tRwxAAE' AND Type IN ('GEARS') AND OwnerId IN (<pill>) AND
-# AccountId IN (<pill>) GROUP BY AccountId) -> return_result
-# result.LastGEARSMeetings ____source-mapped). Linear, no try/catch.
-# 35a0e063-family sibling; closest twin 103988481 (same dead foreign-RT Event
-# shape), live head 118290293.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# DEAD QUERY (org-capability, 90485335/110005007 precedent): the WHERE
-# hard-codes a FOREIGN RecordTypeId literal. Record type ids are
-# org-generated and cannot be chosen/imported; benchmark-org Event rows read
-# back with the org's OWN RecordTypeId (or none), so the strict equality
-# NEVER matches and the search returns [] on EVERY input, forever. Probes on
-# HEAD 07af31c2 (2026-07-08): P12 all-arms-but-RT GEARS decoy -> 0 records;
-# P12b empty IN lists -> 0 records; P11b/P11c family probes (counterfactual
-# foreign-RT read-back matches + arm isolation) prove a live-data
-# impossibility, not an engine gap. Rewriting the literal to a visible org RT
-# is BANNED (matcher hack).
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the RESOLVED SOQL verbatim: the account join
-#   ("id1','id2" / bare single id / ''), and the owner uniq join (a shared
-#   SuccessOwner_UserID collapses to ONE id in variant_02 -- the resolved
-#   query text is the observable for the declare derivations).
-# - result_count is 0 and final_result is exactly {'LastGEARSMeetings': []}
-#   on every variant (the seeder REJECTS any non-empty expectation).
-# - DEAD-BRANCH ATTESTATION (zero-match honesty): expect.decoy_events pins
-#   the seeded decoy Event(s); the fragment matches each against the initial
-#   snapshot's live read-back -- Type='GEARS'/AccountId/OwnerId satisfy the
-#   non-RT arms (IsDeleted false) while the REAL RecordTypeId differs from
-#   the foreign literal, attributing the empty result to the RT filter (or
-#   to IN ('') on the empty-list variant), never to an empty org.
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 _FOREIGN_RT_125214871 = "012o0000000tRwxAAE"
 
@@ -45309,42 +40735,6 @@ def verify_125214871(result: dict[str, Any]) -> dict[str, Any]:
 
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 103988401 (workato_recipe_function.execute ->
-# declare account_ids_string = AccountList&.pluck("AccountID").join("','") ->
-# LIVE salesforce.search_sobjects_soql_v2 (Survey_Response__c aggregate:
-# SELECT Account__c, AVG(Score__c) avg_nps WHERE IsDeleted = FALSE AND Name
-# LIKE '%NPS%' AND Status__c = 'Survey Completed' AND Survey_Response_Date__c
-# != null AND Survey_Response_Date__c = LAST_N_DAYS:365 AND Account__c IN
-# (<pill>) GROUP BY Account__c) -> return_result result.YTDAverageNPSList
-# ____source-mapped). Linear, no try/catch. 35a0e063-family sibling (own as
-# ids); closest registered skeleton 103939956 (COUNT aggregate); AVG landed
-# at HEAD 07af31c2 (type-aware, NULL on all-null groups) and re-probed
-# verbatim 2026-07-08.
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - args_contains pins the RESOLVED SOQL verbatim (live seeded Account ids
-#   via $REF tokens close the IN list; '' on the empty-AccountList branch;
-#   note the raw query's trailing spaces after 'GROUP BY Account__c   ').
-# - AVG TYPING: avg_nps is a plain INT when the Decimal average is exactly
-#   integral (8,6,7 -> 7) and a FLOAT otherwise (8,7 -> 7.5) -- the fragment
-#   TYPE-checks every aggregate record and result row, so 7.0 (float) or '7'
-#   (string) where int 7 is expected fails even though 7 == 7.0 in Python.
-# - six WHERE arms each excluded by a dedicated decoy across the variants:
-#   Name without 'NPS', Status__c != 'Survey Completed', a ~400-day-old
-#   response (LAST_N_DAYS:365 wall-clock window; seeds use relative
-#   $TODAY_MINUS_<N>D tokens resolved at seed time so reruns never rot),
-#   a NULL-date response ('!= null' arm), an account outside AccountList,
-#   and IsDeleted = FALSE evaluating the LIVE read-back (every seed declares
-#   read_fields ['IsDeleted'] -- without it the row is silently rejected,
-#   probe P16; the seeder fails closed on that shape).
-# - Score__c is a TEXT org field: seeds carry numeric STRINGS and the AVG
-#   parses them as Decimals; all-null-score groups are deliberately
-#   unrepresented (avg None would hit the OPEN falsy-render family at the
-#   single-pill return template -- documented in the module comment).
-# - live seeded records are deleted in a finally block; cleanup must report
-#   zero leftovers.
 
 
 def verify_103988401(result: dict[str, Any]) -> dict[str, Any]:
@@ -45459,40 +40849,6 @@ def verify_103988401(result: dict[str, Any]) -> dict[str, Any]:
 
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 86990074 (daily clock -> LIVE
-# snowflake.search_rows d1dbd7b0 FULL-TABLE read of
-# PUBLIC.FULL_APP_ACCESS_LEVEL (no where, limit 50000, offset '0' dropped) ->
-# FOREACH a4327fb6 -> workato_db_table.upsert_record 330069fa table 4326 with
-# DASHED primary_field_id 6dce61e4-27e7-4174-9d3f-e15ae3665454 matched
-# against UNDERSCORED record keys, 12 pill parameters). Snowflake live,
-# db-table Workato-internal mock. FAMILY sibling of in-batch 121287116 (same
-# clock|snowflake-read|foreach|dt.upsert signature; this id reads a full
-# table, the sibling runs a join query into a different dt table).
-#
-# NEW verify_86990074 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - NO ORDER BY on the full-table read: upserts and the final table are
-#   pinned as MULTISETS keyed by App Access Level ID (expect.upsert_records /
-#   expect.created_by_primary maps + expect.final_table_records with _row_id
-#   stripped); positional pins would flake on live row order. _row_id
-#   integrity is checked separately (unique, exactly seeded+inserted count).
-# - TYPED args vs STRINGIFIED storage: each upsert's args.record must equal
-#   the typed 12-key record (bools True/False, non-integral float cost, None
-#   for NULL cells) while the final stored rows carry the mock's _clean
-#   stringification (True->'True', 129.5->'129.5') with None params DROPPED —
-#   both re-probed on HEAD 07af31c2.
-# - insert vs update by DASHED primary: created flags must match
-#   expect.created_by_primary exactly; updated rows keep _created_by 'seed'
-#   (+_row_id) and gain _modified_by 'agent' with values overlaid IN PLACE
-#   (row count unchanged for matches); a NULL cell on the update arm leaves
-#   the previous stored value (the absent key never overwrites).
-# - zero_rows: foreach runs zero iterations -> exactly one tool call and the
-#   seeded table byte-identical.
-# - live snowflake is READ-ONLY: initial/final snapshots identical; cleanup
-#   drops exactly PUBLIC.FULL_APP_ACCESS_LEVEL.
 
 
 def verify_86990074(result: dict[str, Any]) -> dict[str, Any]:
@@ -45713,39 +41069,6 @@ def verify_86990074(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 121287116 (daily clock -> LIVE
-# snowflake.search_rows_sql 0fc36612: Non-Payment churn opportunity join over
-# SALESFORCE.OPPORTUNITY / SALESFORCE.ACCOUNT (INNER) / SALESFORCE.USER
-# joined TWICE under aliases AO+SO (LEFT), WHERE O.TYPE='Churn' AND
-# O.CHURN_TYPE__C='Non Payment', limit 50000 -> FOREACH e421eda4 ->
-# workato_db_table.upsert_record 34efd203 table 29282 with DASHED
-# primary_field_id 7282605a-5019-4d32-9bca-ad22eee221a6 ('Opp ID') and 10
-# pill parameters). Snowflake live, db-table Workato-internal mock. FAMILY
-# sibling of in-batch 86990074 (same clock|snowflake-read|foreach|dt.upsert
-# signature; this id runs the join query, the sibling reads a full table).
-#
-# NEW verify_121287116 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - SQL byte-pin incl. the DOUBLE USER join: the traced args must carry the
-#   verbatim 2-part SQL with BOTH 'LEFT JOIN SALESFORCE.USER' arms (the
-#   <BENCH_DB>.SALESFORCE.* rewrite happens inside the live adapter only).
-# - LEFT-JOIN NULL vs INNER-JOIN drop: NULL owner/CSM lookups keep the row
-#   with None email cells (typed None in the upsert args, key DROPPED from
-#   the stored record by _clean — re-probed on HEAD 07af31c2), while an
-#   account miss drops the row entirely (INNER arm, where_arms_zero seeds it
-#   explicitly alongside both WHERE-mismatch arms).
-# - TYPED args vs STRINGIFIED storage: args.record pins the typed 10-key
-#   record (DAYS_PAST_DUE int, None for NULLs); the stored rows carry
-#   '12'-style strings with None params dropped; on the update arm the
-#   absent key leaves the previous stored value and the untouched Message ID
-#   column must survive (the recipe never writes it).
-# - NO ORDER BY: upserts + final table pinned as MULTISETS keyed by Opp ID
-#   (expect.upsert_records / created_by_primary / final_table_records with
-#   _row_id stripped); _row_id uniqueness checked separately.
-# - live snowflake READ-ONLY; cleanup drops exactly the three seeded tables.
 
 
 def verify_121287116(result: dict[str, Any]) -> dict[str, Any]:
@@ -45983,35 +41306,6 @@ def verify_121287116(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 87485576 (hourly clock -> LIVE
-# snowflake.search_rows_sql 7e1c2e4f: SELECT DISTINCT E.EMAIL FROM
-# STAFF_MOVEMENT_LOG EML JOIN EMPLOYEE E ON EML.EMPLOYEE_ID = E.ID WHERE
-# EML.STATUS IN ('Pending Apps Exchange','Pending Staff Movement','Pending'),
-# limit 50000, BARE 1-part table names rewritten by the engine's from/join
-# bare-name path -> FOREACH 6693f032 -> workato_pub_sub.publish_to_topic
-# 3ff46377 topic 28798 message {email} — deterministic Workato-internal mock
-# echo; snowflake is the only live backend). No twin in batch 08.
-#
-# NEW verify_87485576 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - the SELECT has NO ORDER BY: the published emails are pinned as an exact
-#   MULTISET (sorted compare) against expect.published_emails, never
-#   positionally (batch-07 no-ORDER-BY rule). DISTINCT is proven twice: the
-#   live row count must equal the distinct email count AND the dedupe variant
-#   seeds duplicate pending rows that must collapse to ONE publish.
-# - SQL byte-pin: the traced args must carry the recipe's verbatim SQL
-#   (bare-name FROM/JOIN + all three IN-list arms) and limit '50000' — the
-#   rewrite happens inside the live adapter, never in the trace.
-# - publish echo: every publish must carry topic_id '28798' and a
-#   single-key {email} message, and the mock result must echo BOTH back
-#   (ok/topic_id/message) — the deterministic Workato-internal contract.
-# - foreach zero/N: zero pending rows -> the publish never traces (exactly
-#   one tool call); N rows -> exactly N publishes, one per DISTINCT email.
-# - live snowflake is READ-ONLY here: initial/final snapshots must be
-#   identical and cleanup must drop exactly the two seeded tables.
 
 
 def verify_87485576(result: dict[str, Any]) -> dict[str, Any]:
@@ -46175,40 +41469,6 @@ def verify_87485576(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 121898837 (workato_pub_sub.subscribe_to_topic
-# 3cf14e01 topic 47223 with ROOT trigger filter message.event equals_to
-# '<anon>End Date Changed</anon>' -> workato_db_table.get_records 3528cee8
-# table 26786 filters ticketkey eq #{message.ticket.key} + event eq
-# 'NEAR_EXPIRE_EVENT' (limit 100, order_direction asc WITHOUT
-# order_by_field_id, seeds opt into honor_order_and_limit) -> IF records
-# size > 0 -> delete_record 2e33611c record_id = FIRST matching record's
-# Record ID). All backends Workato-internal mocks (seeded pub_sub payload +
-# db-table mock). No twin in batch 08.
-#
-# NEW verify_121898837 — to be merged into src/benchmark/verifier.py by the
-# coordinating session. Uses only helpers already defined there:
-# _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects (variant input.json):
-# - MIXED-ANON filter semantics (engine fix re-probed on HEAD 07af31c2): the
-#   recipe-literal rhs stays tagged in the raw; the CLEAN seeded event 'End
-#   Date Changed' must match (trigger_filter_matched true) and any other
-#   clean event must not. raw_execution.trigger_filter_matched is pinned per
-#   variant and the filter-false branch must produce ZERO tool calls and an
-#   empty trace.
-# - honor_order_and_limit arg passthrough: the get_records args must carry
-#   limit '100' + order_direction 'asc' and must NOT carry order_by_field_id
-#   (order_direction alone -> NO re-sort; seeded order is the contract).
-#   Seeder guards keep seeds < 100 rows so the limit never truncates.
-# - FIRST-match delete: get_records result records must equal
-#   expect.matched_records byte-exact (seeded order, _row_id/_created_by
-#   bookkeeping included) and the delete args record_id must equal the FIRST
-#   matched record's Record ID — a last-match or filtered-order
-#   implementation fails.
-# - state transition: initial/final table 26786 byte-exact
-#   (expect.initial_table_rows / final_table_rows = seeded rows minus exactly
-#   the deleted row); non-delete branches must leave the table byte-identical.
-# - table targeting: every db call must hit table 26786.
 
 
 def verify_121898837(result: dict[str, Any]) -> dict[str, Any]:
@@ -46392,38 +41652,6 @@ def verify_121898837(result: dict[str, Any]) -> dict[str, Any]:
     ))
     return {"ok": _checks_ok(checks), "checks": checks}
 
-# Verifier fragment for recipe 87241695 (clock.scheduled_event aed2f0c4 ->
-# LIVE google_sheets.search_spreadsheet_rows_v4_new 329ab153 [col_Future =
-# 'Yes', count 200] -> foreach fecbd8a2 over rows -> LIVE
-# slack_bot.post_bot_message 582c85b9 [channel = literal DM user id
-# 'U02T2EDQD1U', blocks = ONE repeat_block_group whose objects.____source is
-# the FULL rows pill and whose inner section derefs the OUTER foreach pills]).
-# To be merged into src/benchmark/verifier.py by the coordinating session.
-# Uses only helpers already defined there: _verify_replay_recipe, _check.
-#
-# SEMANTIC TRAPS encoded via exact expects:
-# - repeat_block_group repetition (batch-08 engine re-fix, slack_block_lines
-#   objects.____source branch): every message text is pinned as
-#   "\n".join([line_i] * repeat_count) where repeat_count = TOTAL matching
-#   rows and line_i comes from the OUTER foreach row. A once-render
-#   regression (1 line), a current-row-source bug (1 line), or a
-#   double-render regression (repeat_count + 1 lines via the old ambient
-#   fall-through) all fail the byte-exact structural check below.
-# - byte-exact col_ aliases: the adapter maps col_<name> -> header name[4:]
-#   with NO underscore->space conversion, so the bench tab is seeded with the
-#   underscored headers; the search-result rows must carry the
-#   col_Requested_By/col_Start_Date/col_End_Date aliases equal to their
-#   header values (checked on every returned row).
-# - live filter proof: every returned search row must carry Future == 'Yes'
-#   (exact, case-sensitive -- variant 04 seeds 'YES'/'yes' decoys that must
-#   NOT come back), and the returned count is pinned.
-# - live DM isolation: the raw channel literal is a real user id; every
-#   slack.post_message arg channel must be non-empty and must NOT be the raw
-#   U-id (the seed's slack_channel_map routes it to the override channel).
-# - read-only sheet: the tab snapshot must be byte-identical before and after
-#   the run and equal the seeded rows (headers + row order) -- proves the
-#   seed landed and the recipe wrote nothing.
-# - zero-row branch (variant 02): no slack row in the trace at all.
 
 
 def verify_87241695(result: dict[str, Any]) -> dict[str, Any]:

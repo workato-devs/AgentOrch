@@ -514,9 +514,7 @@ def _render_chat_prompt(
     # reasoning_effort) through one declared env knob; absent → {} keeps
     # every existing lane byte-identical.
     extra = json.loads(_setting("HF_CHAT_TEMPLATE_KWARGS") or "{}")
-    # Some models control reasoning via system-prompt text (e.g. Muse
-    # Glimmer's "Reasoning strength: high"); declared per lane, absent →
-    # prompts stay byte-identical.
+    # Optional model-specific system-prompt text is applied before rendering.
     suffix = _setting("HF_SYSTEM_PROMPT_SUFFIX")
     if suffix:
         system = f"{system}\n{suffix}"

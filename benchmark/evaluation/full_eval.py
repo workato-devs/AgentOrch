@@ -153,15 +153,15 @@ def main(argv: list[str] | None = None) -> int:
         ),
         epilog="""Model and evaluation options (forwarded to the canonical evaluator):
   --model MODEL       hf:<repo-or-path>, compat:<served-model>, or provider model ID
-  --modes MODES       plan_execute,react,incremental_workflow,replan,global_input
+  --modes MODES       plan_execute,react,incremental_workflow,global_input
   --ids ID [ID ...]   select recipes (fresh-clone sample: 64112882)
   --limit N          limit recipe count; 0 means all (default)
   --variants CHOICE  all (default), 0, or nonzero
   --resume           append only tasks not already recorded
   --runs N           repeated evaluations per variant (default: 1)
-  --max-replans N    maximum accepted suffix replans (default: 2)
-  --replan-protocol  v1 (default) or v2
   --scripted-selftest replay reference trajectories without calling a model
+
+Replan: python -m experiments.replan_iter (complete-workflow revision).
 
 Self-hosted HTTP endpoint: set LOCAL_LLM_BASE_URL (including /v1) and use
 --model compat:<served-model>. See benchmark/README.md for complete commands.""",
