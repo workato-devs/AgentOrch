@@ -59,12 +59,10 @@
   },
   "prepared": {
     "repo_id": "JesseLiu/agentorch-training",
-      "revision": "1fe76111cb384c70bc047e75e44f8b75e58bf5ea",
+    "revision": "1fe76111cb384c70bc047e75e44f8b75e58bf5ea",
     "allow_patterns": [
       "sft_v1_80k/*",
-      "rl_verl_v1/*",
-      "rl_trl_v1/*",
-      "rl_trl_v1_31b/*"
+      "rl_verl_v1/*"
     ]
   }
 }

@@ -154,7 +154,7 @@ See [metric definitions](doc/metric.md) and the [pipeline](doc/pipeline.md).
 | [global_input.csv](results/global_input.csv) | Input-Conditioned Global; Table 4. |
 | [replan_iter.csv](results/replan_iter.csv) | Execution-feedback revision; Figure 4, Table 7, and Appendix B.2. |
 | [COST.csv](results/COST.csv) | Inference usage; Figure 1 and Appendix F. |
-| [validation_checks/](results/validation_checks/README.md) | Simulator fidelity and workflow characteristics; Appendices D and E. |
+| [validation_checks/](results/validation_checks/README.md) | Workflow-characteristic metadata; Appendix E. |
 | [training results](../training/results/training.csv) | Five base/SFT/RL comparisons; Table 8. |
 
 Aggregate JSON records are in `results/leaderboards/`. To recompute a

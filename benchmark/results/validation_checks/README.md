@@ -1,25 +1,12 @@
-# Simulator fidelity and workflow characteristics
+# Workflow characteristics
 
-These records support Appendices D and E.
+These files contain the reference-workflow and runtime-variant features
+used for the workflow-characteristic analysis in Appendix E.
 
-| Files | Contents |
+| File | Contents |
 | --- | --- |
-| `simulator_replay_fidelity.csv` / `.md` | Agreement from replaying recorded real-backend reference actions in simulation. |
-| `global_vs_step_stratified.csv` / `.md` | Global versus Step-by-Step by workflow size, application count, control flow, nesting depth, and fault injection. |
-| `sop_structural_features.csv` | Reference-workflow features for each SOP. |
-| `variant_features.csv` | Runtime-variant features used in the subgroup analysis. |
+| `sop_structural_features.csv` | Per-SOP tool-call counts, application families, branches, loops, try/catch regions, and nesting depth. |
+| `variant_features.csv` | Runtime-variant features, including fault injection and reference call counts. |
 
-Reference-action replay uses the same tool interfaces, variant state, and
-scorer as model-generated runs. It is available with:
-
-```bash
-PYTHONPATH=benchmark python -m evaluation.full_eval \
-  --run-name reference-actions --backend simulated --model scripted-gold \
-  --modes react --variants all --scripted-selftest
-```
-
-The fidelity comparison concerns trace components and side effects. SOP
-features count tool-call nodes, application families, conditional branches,
-loops, try/catch regions, and maximum nesting depth. Runtime fault injection
-is a variant-level feature. Failed model executions remain in the subgroup
-denominators at zero accuracy.
+Workflow structure is defined at the SOP level. Fault injection is defined
+at the runtime-variant level.

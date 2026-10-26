@@ -20,7 +20,7 @@ Global Orchestration Accuracy (%) on all 3,220 benchmark variants (Table 8):
 
 The better of SFT and SFT + RL improves over the base by 12.18 percentage
 points on average. [training.csv](results/training.csv) records metrics,
-confidence intervals, and per-checkpoint settings. The ten merged models
+confidence intervals, and model links. The ten merged models
 are linked in the [project README](../README.md#models).
 
 ## Data and code
@@ -34,7 +34,8 @@ python scripts/download_data.py --only training --prepared
 
 The download provides recipe specifications under `input/`, complete-workflow
 targets under `groundtruth/`, and prepared SFT/GRPO data under `data/`.
-The prepared files reproduce the data configuration used for the checkpoints.
+Prepared downloads include the SFT data and Qwen GRPO prompt set.
+Build the 1,000-prompt Gemma GRPO set with the command below.
 Each recipe has 64 tool cards; the targets span 1,033 tool operations across
 305 namespaces. Target validation checks workflow structure and tool interfaces
 without execution. See Appendix A.6 and [DATA_CARD.md](../DATA_CARD.md).
@@ -78,7 +79,8 @@ Scoring checkpoints needs the benchmark environment from
 
 ## 1. Prepare the data
 
-The prepared files in `data/` are what the published models trained on.
+The prepared SFT files are downloaded into `data/`. GRPO uses 1,000
+training prompts selected by prompt length, as described in Appendix A.7.
 To rebuild the prepared data from `input/` and `groundtruth/`, or prepare
 a different context budget, run the data builders below. The builders preserve
 source row order and use a seeded train/evaluation split.
@@ -89,10 +91,9 @@ cd training
 python src/data/build_sft_messages.py                 # -> data/sft_messages_v1.jsonl
 # length filter with the exact Qwen tokenizer (rows over the budget are DROPPED, never truncated)
 python src/sft/prepare_dataset.py                     # 80k budget -> data/sft_v1_80k/
-python src/sft/prepare_dataset.py --max-context 65536 --out data/sft_v1_64k
 # RL prompt sets (short prompts with complete-workflow targets)
 python src/rl/verl/make_rl_dataset.py --n 1000        # -> data/rl_verl_v1/
-python src/rl/trl_gemma/make_trl_dataset.py --n 500   # -> data/rl_trl_v1/
+python src/rl/trl_gemma/make_trl_dataset.py --n 1000   # -> data/rl_trl_1000/
 ```
 
 Use the downloaded `data/sft_v1_80k/{train,eval}.jsonl` to reproduce the
@@ -123,8 +124,7 @@ sbatch src/sft/sbatch_sft.sh --model google/gemma-4-26B-A4B-it --attn-impl sdpa 
        --max-len 81920 --run-name sft-gemma26b-v1 --output output/checkpoints/sft-gemma26b-v1-lora
 ```
 
-Per-model settings behind every published row are in the `sft_*` columns of
-`results/training.csv`. The trainer seeds torch, CUDA and the sampler
+The SFT configuration is described in Appendix A.7, Table 9. The trainer seeds torch, CUDA and the sampler
 (`--seed`, default 0), pins the base revision (`--model-revision`, defaulting to
 `$HF_MODEL_REVISION` and then to `src/sft/base_models.json`), optionally
 requests deterministic kernels (`--deterministic`) and writes
@@ -132,7 +132,7 @@ requests deterministic kernels (`--deterministic`) and writes
 checkpoints. Multi-GPU bf16 LoRA is still not bit-exact across GPU counts or
 drivers. Configuration requirements:
 gemma-4's head dimension exceeds FlashAttention-2's limit; flex-attention
-recompiles per sequence length; the 31B model only fits a 64k budget.
+recompiles per sequence length.
 
 ### Merge the adapter
 
@@ -159,7 +159,7 @@ sbatch src/sft/run_benchmark_eval.sbatch output/checkpoints/merged-27b-80k-3ep s
 ```
 
 Results land in `../benchmark/outputs/full_eval/<run_name>/`; `leaderboard.json`
-there is the aggregate reported in `results/training.csv`.
+there contains the aggregate evaluation scores.
 
 ## 3. Reinforcement learning (GRPO)
 
@@ -204,8 +204,7 @@ python src/sft/merge_simple.py --base output/checkpoints/merged-gemma26b-v1 \
        --adapter output/checkpoints/gemma26b-rl-step680-adapter --out output/checkpoints/merged-gemma26b-rl-step680
 ```
 
-Then score with `run_benchmark_eval.sbatch` as above. The `rl_*` columns of
-`results/training.csv` hold every published RL configuration. Finding: the
+Then score with `run_benchmark_eval.sbatch` as above. Appendix A.7, Table 9 gives the RL configuration. Finding: the
 symbolic-match reward lifts weak SFT bases (4B +1.7, gemma-26B +4.0, gemma-12B +3.7)
 and is flat or slightly negative on the strong 27B 3-epoch SFT.
 
@@ -215,5 +214,5 @@ Use the [canonical evaluator](../benchmark/README.md#run-an-evaluation) with
 `--model hf:<checkpoint>` and `--modes plan_execute`. Results are written under
 `benchmark/outputs/full_eval/<run>/<model>/plan_execute/`.
 
-Reported training settings are in [training.csv](results/training.csv).
+Reported evaluation scores are in [training.csv](results/training.csv).
 Aggregate records are in `results/leaderboards/`.

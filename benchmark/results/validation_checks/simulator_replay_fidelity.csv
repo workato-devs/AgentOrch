@@ -1,9 +1,0 @@
-mode,metric,value,n
-react,Tool selection,0.972,3220
-react,Tool order,0.972,3220
-react,Tool execution,0.972,3220
-react,Required arguments,0.9997,3220
-react,Control path,0.972,3220
-react,Execution Trace Accuracy,0.9776,3220
-react,Side-Effect Accuracy,0.9932,3220
-react,Orchestration Accuracy,0.9854,3220

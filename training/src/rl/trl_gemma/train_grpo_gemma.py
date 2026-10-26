@@ -1,7 +1,6 @@
 """GRPO on AgentOrch plan generation for gemma-4 models via TRL.
 
-verl 0.9 does not support gemma-4 (no fused/ulysses registry entries; two
-model initialization is unsupported by the pinned verl stack), so the gemma RL leg
+The pinned verl stack does not support Gemma-4, so Gemma GRPO
 uses the public TRL GRPOTrainer instead. Same Tier-1 symbolic-match reward as
 the verl runs (rl/reward.py), same v1 prompts, LoRA r16/a32 on the v1-SFT
 merged checkpoint.
@@ -36,7 +35,7 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--model", default=str(TRAIN_ROOT / "output" / "checkpoints"
                                           / "merged-gemma26b-v1"))
-    p.add_argument("--data", type=Path, default=TRAIN_ROOT / "data" / "rl_trl_v1")
+    p.add_argument("--data", type=Path, default=TRAIN_ROOT / "data" / "rl_trl_1000")
     p.add_argument("--run-name", default="trl-grpo-gemma26b-v1")
     p.add_argument("--max-rows", type=int, default=0)
     p.add_argument("--num-generations", type=int, default=8)
@@ -52,6 +51,8 @@ def main() -> None:
     a = p.parse_args()
 
     train = load_dataset("json", data_files=str(a.data / "train.jsonl"), split="train")
+    if len(train) != 1000 and not a.max_rows:
+        raise ValueError("GRPO expects 1,000 training prompts; rebuild with make_trl_dataset.py --n 1000")
     if a.max_rows:
         train = train.select(range(min(a.max_rows, len(train))))
 
@@ -65,7 +66,7 @@ def main() -> None:
         generation_batch_size=a.batch_prompts * a.num_generations,
         num_generations=a.num_generations,
         max_completion_length=a.max_completion,
-        beta=0.001,  # KL anchor to the SFT policy — the 27B run's drift lesson
+        beta=0.001,  # KL anchor to the SFT policy
         bf16=True,
         gradient_checkpointing=True,
         use_vllm=True,

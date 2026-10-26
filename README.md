@@ -124,7 +124,7 @@ the individual checks and aggregation.
 
 Global Orchestration Accuracy (%) for the checkpoints linked below.
 Δ is the better of SFT and SFT + RL minus the base score; it is measured in
-percentage points. Checkpoint settings are recorded in the
+percentage points. Checkpoint scores and model links are recorded in the
 [training results](training/results/training.csv).
 
 | Model | Base | SFT | SFT + RL | Δ |
@@ -192,10 +192,9 @@ print(prompts[0]["task"])
 
 The benchmark configs are `global` (650 rows), `local` (650), `react` (3,220),
 and `replan` (3,220). The Hub's `train` split name is a storage convention;
-these are **benchmark evaluation prompts**. The training dataset provides
-`sft_messages_v1`, `sft_v1_80k`, `rl_verl_v1`, `rl_trl_v1`, and
-`rl_trl_v1_31b`. Configs, fields, and subset sizes are described in the dataset
-cards.
+these are **benchmark evaluation prompts**. Prepared training downloads provide `sft_v1_80k` and `rl_verl_v1`.
+Build the Gemma GRPO dataset with the 1,000-prompt preparation command in the
+[training guide](training/README.md#1-prepare-the-data).
 
 ## Models
 

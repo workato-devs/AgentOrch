@@ -8,7 +8,7 @@ fit the 4096 decode cap, take the --n shortest prompts, shuffle
 deterministically.
 
 Usage:
-  python make_trl_dataset.py --n 500 --out ../../../data/rl_trl_v1
+  python make_trl_dataset.py --n 1000 --out ../../../data/rl_trl_1000
 """
 from __future__ import annotations
 
@@ -41,17 +41,25 @@ def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--data", type=Path, default=DATA / "sft_v1_80k" / "train.jsonl")
     p.add_argument("--eval-data", type=Path, default=DATA / "sft_v1_80k" / "eval.jsonl")
-    p.add_argument("--n", type=int, default=500)
+    p.add_argument("--n", type=int, default=1000)
     p.add_argument("--n-eval", type=int, default=24)
     p.add_argument("--max-prompt-chars", type=int, default=260_000,
                    help="~65k gemma tokens; caps rollout prefill cost")
-    p.add_argument("--out", type=Path, default=DATA / "rl_trl_v1")
+    p.add_argument("--out", type=Path, default=DATA / "rl_trl_1000")
     a = p.parse_args()
 
-    a.out.mkdir(parents=True, exist_ok=True)
+    selected = []
     for src, n, name in [(a.data, a.n, "train"), (a.eval_data, a.n_eval, "eval")]:
-        rows = sorted(load_rows(src, a.max_prompt_chars), key=lambda r: r[0])[:n]
+        rows = sorted(load_rows(src, a.max_prompt_chars), key=lambda r: r[0])
+        if len(rows) < n:
+            raise ValueError(
+                f"{name}: requested {n} prompts, but only {len(rows)} fit the configured limits"
+            )
+        rows = rows[:n]
         random.Random(7).shuffle(rows)
+        selected.append((name, rows))
+    a.out.mkdir(parents=True, exist_ok=True)
+    for name, rows in selected:
         with (a.out / f"{name}.jsonl").open("w") as f:
             for chars, prompt, golden in rows:
                 f.write(json.dumps({"prompt": prompt, "golden": golden}) + "\n")
