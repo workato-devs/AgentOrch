@@ -15,10 +15,6 @@ SEED_TYPE = "workbot_message_log_service_variant"
 TRACK = "workbot_message_log_service"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Slack Workbot message-log service (lookup table "Slack Message Temp Log",
-# id 1889414). A try wraps four Operation branches (Update / Read /
-# Read-noClear-by-JobID / Read-noClear-by-ObjectID); a catch replies with the
-# error. Actions in raw-summary (collect) order:
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "search_entries"),
     ("lookup_table", "add_entry"),

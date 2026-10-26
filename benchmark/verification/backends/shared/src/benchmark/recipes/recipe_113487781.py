@@ -24,12 +24,7 @@ SEARCH_STEP_AS = "4700b64e"
 ALERT_POST_AS = "b2adabc3"
 CATCH_AS = "8d0fff6e"
 CATCH_POST_AS = "69fde971"
-# The literal 3-part name the SQL references; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.ETL_METADATA.ELT_WORKFLOW_MONITORING).
 MONITOR_TABLE = "workato_business_systems.etl_metadata.elt_workflow_monitoring"
-# 'date' is seeded as a STRING column (the org's output schema types it
-# string) so the `date = :date` bind equality is exact text comparison.
 MONITOR_COLUMNS = {
     "ID": "number",
     "DATE": "string",
@@ -48,42 +43,6 @@ ALERT_TEXT = (
 )
 CATCH_DM_CHANNEL = "U07GCQL582H"
 
-# clock.scheduled_event (as bd074867, daily 23:58 Asia/Singapore) — the ONLY
-# trigger pill dereferenced is scheduled_time (strftime'd into the variable).
-# Body = one TRY (step 2):
-#   3  workato_variable.declare_variable 3b02e1c6 (mock):
-#      date = =_dp(scheduled_time).strftime("%Y-%m-%d") — formatted from the
-#      literal seeded timestamp, NO timezone conversion (probe-verified:
-#      '2026-07-07T23:58:00+08:00' -> '2026-07-07').
-#   4  snowflake.search_rows_sql 4700b64e (LIVE): RAW_SQL with the :date bind
-#      -> pyformat %(date)s, parameters {date: <declared date>}. select *
-#      returns live cursor columns (original case + lowercase alias).
-#   IF 5: rows current_item id_b497e547 present — current_item OUTSIDE a
-#      loop = FIRST row; the hashed output-schema name resolves through
-#      lookup_path's _<8hex> suffix-strip + case-insensitive retry against
-#      the live 'id' column; empty rows -> MISSING -> present false:
-#     6  slack_bot.post_bot_message b2adabc3 (LIVE): section_with_text
-#        ALERT_TEXT to '#dbt-notifications' — not a 'U' literal, so the
-#        adapter auto-routes it to SLACK_CHANNEL_OVERRIDE.
-#   CATCH 7 (as 8d0fff6e, max_retry_count 0):
-#     8  slack_bot.post_bot_message 69fde971 (LIVE): '#{job_context.
-#        recipe_name} ded' to the literal org-foreign DM channel
-#        'U07GCQL582H' — passes the U-check, so catch variants MUST route it
-#        via seed.slack_channel_map {'U07GCQL582H': '__override__'}.
-#
-# Branch mapping:
-# - alert: exactly ONE seeded row matches all three WHERE predicates
-#   (status/workflow/date); decoys for each predicate prove the filter bites
-#   live. 3 actions, post text pinned verbatim (including '@here ').
-# - silent: only decoys -> 0 rows -> present false -> no post. 2 actions.
-# - catch_dm: seed.force_action_error on 4700b64e fires BEFORE the adapter
-#   (no live SQL, no snowflake seed, nothing to clean); the catch posts
-#   '<job_context.recipe_name> ded'. 2 actions.
-#
-# Backends: Snowflake runs LIVE (create-or-replace seed + drop in the
-# runner's finally; READ-ONLY — snapshot equality pinned). Slack posts are
-# live terminal observables (never re-read; no cleanup). The declare step is
-# the Workato-internal variable mock.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "bd074867", "skip": false, "input": {"time_unit": "days", "timezone": "Asia/Singapore", "trigger_at": "23:58:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "3b02e1c6", "skip": false, "input": {"variables": {"data": {"date": "=_dp('{\"pill_type\":\"output\",\"provider\":\"clock\",\"line\":\"bd074867\",\"path\":[\"scheduled_time\"]}').strftime(\"%Y-%m-%d\")"}, "schema": "[{\"name\":\"date\",\"type\":\"date\",\"optional\":true,\"label\":\"date\",\"details\":{\"real_name\":\"date\"},\"control_type\":\"date\",\"parent\":[\"variables\",\"data\"]}]"}}, "block": []}, {"number": 4, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "4700b64e", "skip": false, "input": {"output_schema": "[{\"control_type\":\"number\",\"label\":\"ID\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"id\"},{\"control_type\":\"text\",\"label\":\"Date\",\"type\":\"string\",\"name\":\"date\"},{\"control_type\":\"text\",\"label\":\"Workflow\",\"type\":\"string\",\"name\":\"workflow\"},{\"control_type\":\"text\",\"label\":\"Status\",\"type\":\"string\",\"name\":\"status\"},{\"control_type\":\"text\",\"label\":\"Created at\",\"render_input\":\"date_time_conversion\",\"parse_output\":\"date_time_conversion\",\"type\":\"date_time\",\"name\":\"created_at\"},{\"control_type\":\"text\",\"label\":\"Modified at\",\"render_input\":\"date_time_conversion\",\"parse_output\":\"date_time_conversion\",\"type\":\"date_time\",\"name\":\"modified_at\"}]", "parameters": {"data": {"date": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"3b02e1c6\",\"path\":[\"date\"]}')}"}, "schema": "[{\"name\":\"date\",\"type\":\"date\",\"optional\":true,\"label\":\"date\",\"details\":{\"real_name\":\"date\"},\"control_type\":\"date\"}]"}, "sql": "select * from workato_business_systems.etl_metadata.elt_workflow_monitoring\nwhere status = 'In Progress' and workflow = 'Snowflake Data Load' and date = :date "}, "block": []}, {"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"4700b64e\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"id_b497e547\"]}')}", "operand": "present", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "b2adabc3", "skip": false, "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "@here Daily Run has not started because Snowflake Data Load is still in progress, please check!"}], "channel": "#dbt-notifications"}, "block": []}]}, {"number": 7, "keyword": "catch", "provider": "", "name": "", "as": "8d0fff6e", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 8, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "69fde971", "skip": false, "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "#{_dp('{\"pill_type\":\"job_context\",\"path\":[\"recipe_name\"]}')} ded"}], "channel": "U07GCQL582H"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

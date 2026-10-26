@@ -17,8 +17,6 @@ TRACK = "workato_api_platform_employee_typeahead_export"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "33b2d099"
-# BARE 1-part table name: _rewrite_sql maps a TABLE-position bare reference
-# onto <SNOWFLAKE_DATABASE>.<SNOWFLAKE_SCHEMA>.EMPLOYEE (re-probed).
 EMPLOYEE_TABLE = "employee"
 SQL_STEP_AS = "b0b4151a"
 SUCCESS_RETURN_AS = "2f77ac2a"
@@ -28,40 +26,8 @@ RAW_SQL = (
     "select\n\tid,\n    concat(first_name, ' ', last_name, ' (', email, ')') as label\n"
     "from employee"
 )
-# The connector's separate Order-by input ('id DESC') appends to the query
-# (raw_executor snowflake_search_rows_sql; re-probed). The connector limit
-# '100000' is appended AFTER the appended ORDER BY by the live client
-# (LIMIT-last, valid Snowflake).
 RESOLVED_SQL = RAW_SQL + " ORDER BY id DESC"
 
-# workato_api_platform.receive_request (as 33b2d099, request schema [] --
-# NOTHING is dereferenced from the request; trigger_input must be exactly
-# {}). Responses declared 200/400. Body = one TRY:
-#   3  snowflake.search_rows_sql b0b4151a (LIVE): RAW_SQL + connector
-#      orderby 'id DESC' + limit '100000'. Live concat renders the label.
-#   4  return_response 2f77ac2a http 200 {employees: ____source over rows,
-#      id <- rows current_item id_b497e547, label <- rows current_item
-#      label_10e2e5a9}. The HASH-SUFFIXED pill names resolve via the
-#      `_<8-hex>` strip + case-insensitive retry over the live row keys
-#      (re-probed); id stays an INT (NUMBER column via _json_value).
-#      TERMINAL (stops the run). Zero rows -> employees [].
-#   5  CATCH c81b5d08 (max_retry_count 0) -> 6 return_response 9c6d051c
-#      http 400 {error_message: #{catch.c81b5d08.message}}
-#
-# Branch mapping (per benmark_rules):
-# - rows 200: seeded employees render id-DESCENDING (the appended ORDER BY
-#   pins exact order; the seeder requires distinct integer ids) with
-#   live-concat labels 'FIRST LAST (EMAIL)'.
-# - zero-row 200: empty employee table -> employees: [] in the 200 body.
-# - catch 400: seed.force_action_error on b0b4151a raises BEFORE the live
-#   adapter -> catch -> 400 {error_message}. 1 action; the variant owns NO
-#   live state (empty seed, no snapshots, no cleanup call).
-#
-# shape-sibling of the 118162xxx/117566xxx super-family shell but NOT a twin
-# (different as-ids/sql/response schema) -- triaged as a standalone build.
-# Backends: Snowflake runs LIVE (create-or-replace, dropped in the runner's
-# finally); the API platform trigger/responses are deterministic
-# Workato-internal mocks (terminal). READ-ONLY on Snowflake.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

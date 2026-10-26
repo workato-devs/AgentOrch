@@ -16,48 +16,6 @@ SEED_TYPE = "salesforce_bizible_touchpoint_landing_page_backfill_variant"
 TRACK = "live_salesforce_sheets_bizible_touchpoint_backfill"
 TRIGGER_PROVIDER = "salesforce"
 TRIGGER_NAME = "new_custom_object"
-# Salesforce new Campaign_Activity__c trigger (as 275f1578; field_list 12 cols;
-# OR-filter on 4 hardcoded Campaign__c ids) -> IF#2 repeated_job is_not_true ->
-# clock.wait 7200 -> CA re-search by trigger Id (65274018) ->
-#  IF#5 Bizible_Touchpoint__c present:
-#    touchpoint search by Id (c1aea3da) -> update#7 CA bizible URL fields
-#    (presence-or-skip chains; Landing_Page__c = Form/Landing/AdDest 3-way) ->
-#    CA re-read (b34eb31d) -> IF#9 Landing_Page__c present -> STOP#10;
-#    TRY sheets search (be9b46dd) CATCH#13 (empty, max_retry 0) ->
-#    IF#14 'col_Please link the Landing Page' present -> update#15 + STOP#16.
-#  ELSE#17 -> IF#18 (Lead_Source__c contains 'Paid' OR trigger Campaign__c =
-#  7013l000001ZKOcAAO) gates the PAID families:
-#    IF#19 Contact__c present -> bizible person by contact (e9551436) ->
-#      IF#21 size>0 -> touchpoints by person (3a187aee) -> FOREACH accumulate
-#      'bizible touchpoint list' -> smart_list create(force)+query (SELECT 7
-#      cols ORDER BY touchpoint_date desc) -> logger = CA CreatedDate.to_date()
-#      -> FOREACH rows: IF#29 paid-row OR -> IF#30 3-arm date window (<= CA
-#      created + 86400s) -> update#31 + re-read -> IF#33 LP present -> STOP#34;
-#      TRY sheets (205363b2) -> IF#38 col present -> update#39 + STOP#40.
-#    IF#41 Lead__c present -> exact lead mirror (42..62).
-#    STOP#63 (UNCONDITIONAL) -> non-paid families 64..95 reachable ONLY when
-#    IF#18 is false: contact mirror (64..79) and lead mirror (80..95) with the
-#    paid-row IF inverted to AND(not_contains, not_equals) and NO sheets
-#    fallback.
-# All stops are stop_with_error=false.
-#
-# Backends: Salesforce LIVE (Campaign_Activity__c physical==logical;
-# bizible2__Bizible_Person__c / bizible2__Bizible_Touchpoint__c mapped to the
-# benchmark-owned Bizible_Person__c / Bizible_Touchpoint__c stand-ins via
-# SALESFORCE_SOBJECT_MAP / SALESFORCE_FIELD_MAP, deployed 2026-07-07).
-# Google Sheets LIVE (criteria-less page read; the raw spreadsheet/tab is
-# redirected to the configured benchmark sheet; the seed writes the literal
-# 'col_Please link the Landing Page' header per the 104417970 precedent).
-# workato_list / workato_smart_list / logger / clock are deterministic
-# Workato-internal mocks.
-#
-# DETERMINISM: the date-window IFs compare seeded touchpoint dates against the
-# LIVE CA CreatedDate (org-assigned wall clock). In-window variants seed
-# far-PAST touchpoint dates (arm 2 'less_than' always true); out-of-window
-# variants far-FUTURE dates (all 3 arms false). Never seed near-now dates.
-# Cleanup: every seeded Salesforce record is benchmark-owned and deleted after
-# verification (fail-fast on leftovers); the sheets seed fully overwrites the
-# benchmark tab per run, so no separate sheets cleanup is required.
 
 CAMPAIGN_IDS: tuple[str, ...] = (
     "7011N000000xp4nQAA",
@@ -81,7 +39,6 @@ CA_FIELD_LIST = (
     "Id\nOwnerId\nName\nCreatedDate\nCampaign__c\nLead__c\nContact__c\nEmail__c\n"
     "Landing_Page__c\nBizible_Touchpoint__c\nActivity_Created_At__c\nLead_Source__c\nRegion__c"
 )
-# Step 6 (touchpoint by Id) omits Touchpoint_Date; the per-person searches carry it.
 TP_FIELD_LIST_NO_DATE = (
     "Id\nName\nCreatedDate\nbizible2__Marketing_Channel_Path__c\nbizible2__Marketing_Channel__c\n"
     "bizible2__Landing_Page__c\nbizible2__Landing_Page_Raw__c\nbizible2__Form_URL_Raw__c\n"
@@ -131,7 +88,6 @@ QUERY_RESULT_SCHEMA_JSON = (
     '{"name":"referrerpage","type":"string","optional":true,"control_type":"text","label":"Referrerpage"}]'
 )
 
-# --- verbatim datapill templates (spacing/quoting exactly as in the raw JSON) ---
 
 
 def _trigger_pill(field: str) -> str:
@@ -335,10 +291,6 @@ TRIGGER_FILTER_EXPECTED: dict[str, Any] = _compound(
 )
 
 
-# The four mirrored person->touchpoint families, parametrized by their step
-# line ids and numbers so the mirrors are generated (triage: avoid
-# transcription drift). paid=True families use the OR paid-row IF and carry the
-# TRY/sheets fallback; paid=False families use the AND not-paid IF, no sheets.
 FAMILIES: dict[str, dict[str, Any]] = {
     "contact_paid": {
         "gate_number": 19, "gate_field": "Contact__c", "person_filter": "bizible2__Contact__c",
@@ -612,10 +564,6 @@ def validate_118427850(raw: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-# Every custom field the recipe (or its seeds) touches. ensure_custom_field
-# grants FLS on the already-deployed fields; schema is a constant so a variant
-# cannot silently drop a grant. Field names are PHYSICAL (the bizible2__
-# sobject names map via SALESFORCE_SOBJECT_MAP).
 REQUIRED_SCHEMA: list[dict[str, str]] = [
     {"sobject": CA_SOBJECT, "field": "Campaign__c", "sf_type": "Text"},
     {"sobject": CA_SOBJECT, "field": "Contact__c", "sf_type": "Text"},

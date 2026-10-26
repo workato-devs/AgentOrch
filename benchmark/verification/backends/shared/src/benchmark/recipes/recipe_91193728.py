@@ -26,48 +26,8 @@ TS_TOKEN = "$SLACK_MESSAGE_TS"
 TRIGGER_PARAM_KEYS = ("recipe_id", "job_id", "opportunity_id", "opportunity_name")
 FIREFIGHTER_LINE = ":firefighter_8: We will attempt to check this particular opportunity again."
 _TS_RE = re.compile(r"^\d+\.\d+$")
-# Values that interpolate into the Slack link markup <url|label>.
 _LINK_SAFE_RE = re.compile(r"^[^<>|\n]+$")
 
-# slack_bot.bot_command_v2 (as 80a598fe, domain firefighter, command 'rerun',
-# scope evaluate_deal, hide_from_help; declared parameters recipe_id/job_id/
-# opportunity_id/opportunity_name, all required strings). Dereferenced
-# trigger pills: ts (step 3 advanced.ts), context.channel (step 3 channel),
-# parameters.{recipe_id, job_id, opportunity_id, opportunity_name}.
-#   TRY 2:
-#     3  slack_bot.post_bot_message 096e3f40 (LIVE): advanced.ts = trigger ts
-#        -> the engine routes slack.post_message with a non-empty ts to LIVE
-#        chat.update — the seed must PRE-CREATE the target message via
-#        harness.slack.seed_message and thread its ts through trigger.ts.
-#        Rendered text = section_with_text ':salesforce: *<https://workato.
-#        lightning.force.com/lightning/r/Opportunity/<id>/view|<name>>*
-#        :salesforce:' + section_with_text FIREFIGHTER_LINE joined with \n
-#        (the divider block renders NO line — established slack_text
-#        convention, probed). channel = context.channel pill; a non-U
-#        channel routes to SLACK_CHANNEL_OVERRIDE by design.
-#     4  workato_app.rerun_jobs 4d356cc8 (MOCK ack — Workato-internal
-#        platform action): the engine extracts jobs.job_id + the top-level
-#        recipe_id pill into args {recipe_id, job_ids: [job_id]}; the
-#        controlled tool acks {ok, job_ids}.
-#   CATCH 5 (as 9ee228f3, max_retry_count 0):
-#     6  STOP 027c7dde (stop_with_error 'true', stop_reason = catch.message)
-#        — the engine traces {stopped: true} WITHOUT rendering stop_reason/
-#        stop_with_error (established batch02 stop convention, probed on the
-#        current tree); branch identity is fully observable from the trace
-#        shape + the recorded catch payload (step_outputs[9ee228f3]).
-#
-# Branch coverage: variant_00 = happy path (chat.update in place, ts
-# preserved, then the rerun ack); variant_01 = forced error on the FIRST
-# action (096e3f40) -> catch -> stop-with-error: ZERO actions, no live
-# traffic, so catch variants seed no Slack message (forcing the SECOND
-# action instead would live-update the message before stopping — probed,
-# not shipped). No other control flow exists.
-#
-# Backends: slack LIVE (the seed live-posts a bot-owned placeholder in the
-# override channel; the recipe chat.updates that exact ts; cleanup DELETES
-# the message in the runner's finally — the updated placeholder would
-# otherwise accumulate across reruns). workato_app.rerun_jobs is
-# Workato-internal -> deterministic mock ack.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "bot_command_v2", "as": "80a598fe", "skip": false, "input": {"allow_dialog": "false", "domain": "firefighter", "hide_from_help": "true", "name": "rerun", "parameters": "[\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Recipe ID\",\n    \"name\": \"recipe_id\",\n    \"type\": \"string\",\n    \"optional\": false\n  },\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Job ID\",\n    \"name\": \"job_id\",\n    \"type\": \"string\",\n    \"optional\": false\n  },\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Opportunity ID\",\n    \"name\": \"opportunity_id\",\n    \"type\": \"string\",\n    \"optional\": false\n  },\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Opportunity Name\",\n    \"name\": \"opportunity_name\",\n    \"type\": \"string\",\n    \"optional\": false\n  }\n]", "scope": "evaluate_deal"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "096e3f40", "skip": false, "input": {"advanced": {"ts": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"80a598fe\",\"path\":[\"ts\"]}')}"}, "blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": ":salesforce: *<https://workato.lightning.force.com/lightning/r/Opportunity/#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"80a598fe\",\"path\":[\"parameters\", \"opportunity_id\"]}')}/view|#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"80a598fe\",\"path\":[\"parameters\", \"opportunity_name\"]}')}>* :salesforce:"}, {"block_type": "divider", "button_type": "continue_flow"}, {"block_type": "section_with_text", "button_type": "continue_flow", "section_text": ":firefighter_8: We will attempt to check this particular opportunity again."}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"80a598fe\",\"path\":[\"context\", \"channel\"]}')}"}, "block": []}, {"number": 4, "keyword": "action", "provider": "workato_app", "name": "rerun_jobs", "as": "4d356cc8", "skip": false, "input": {"jobs": {"job_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"80a598fe\",\"path\":[\"parameters\", \"job_id\"]}')}"}, "recipe_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"80a598fe\",\"path\":[\"parameters\", \"recipe_id\"]}')}"}, "block": []}, {"number": 5, "keyword": "catch", "provider": "", "name": "", "as": "9ee228f3", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 6, "keyword": "stop", "provider": "", "name": "", "as": "027c7dde", "skip": false, "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"9ee228f3\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

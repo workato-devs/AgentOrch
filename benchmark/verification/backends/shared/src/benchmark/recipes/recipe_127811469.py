@@ -21,53 +21,7 @@ LOOKUP_TABLE_ID = "1492777"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# Callable recipe function (trigger as 74feff40; parameters.unmatched_list rows
-# {domain, record_id, user_id, email, data_center, account, oem_id,
-# federated_account_id, workspace_id}):
-#   declare_list Input_list from unmatched_list (step 2, 8264cace)
-#   smart_list create 'input' (primary_index record_id) (step 3, 70054386)
-#   declare_list Contact_List (empty; step 4, 598dc941)
-#   lookup_table.get_entries 1492777 'Freemail providers' (step 5, 089cd342)
-#   declare_list free_email_domain from entries col1 (step 6, ef2514c0)
-#   smart_list create 'Free_domains' (step 7, 008ce4d7)
-#   query_list SELECT DISTINCT domain FROM input WHERE domain NOT IN
-#     (SELECT Domain from Free_domains) (step 8, 3ea250c1)
-#   FOREACH rows (batch mode, batch_size 15; step 9, 9b27509b):
-#     declare_variable Syntax = batch.where(domain regex).pluck.compact.uniq
-#       .format_map("Email LIKE '?%s?'").smart_join(' or ').gsub(?->%)
-#       (step 10, efefd811)
-#     salesforce.search_sobjects_soql Contact (query = Syntax; relationship
-#       fields Account.{Name,Current_ARR__c,Current_Plan__c,
-#       Active_Subscription__c}; step 11, a363938d) -- LIVE
-#     IF list_size != 0 -> insert_to_list_batch into Contact_List
-#       (Domain = Email.split('@').last; step 13, e5047fa7)
-#   IF Contact_List size == 0 -> STOP graceful (step 15; comment: no contacts
-#     found with the same domain)
-#   smart_list create 'contact_list' (primary_index Account_id; step 16)
-#   query_list GROUP BY visibility query (step 17, a185c2d5; output unused
-#     downstream but must execute)
-#   query_list WITH contact_counts/max_counts CTE JOIN input -- matched
-#     contacts prioritizing active subscription (step 18, 7919520c)
-#   return_result result.matched_list from step-18 rows (step 19, c9df84a1;
-#     active_subscription via multi-line =if pill.present? / (pill > 0)
-#     .is_true? / else false / end)
-#
-# Backends: salesforce LIVE (read-only SOQL search over benchmark-owned
-# Contact/Account records; seed.salesforce.relationship_expansion serves the
-# nested Account fields; seed.salesforce.strict_soql_conditions keeps the SOQL
-# matcher fail-fast); lookup_table 1492777 + smart lists + variables +
-# recipe-function return are deterministic Workato-internal mocks.
-#
-# Cleanup: the recipe performs NO live writes; the only live objects are the
-# seeded Contact/Account records, deleted by harness.salesforce.cleanup in
-# run_127811469's finally block. Lookup/smart-list state is per-run in-memory
-# mock state, fully overwritten by every seed (cleanup principle satisfied).
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip +
-# verbatim raw input per node, incl. the step-8/17/18 SQL, the step-10 Syntax
-# regex/format_map formula and the step-19 multi-line active_subscription
-# formula). Any upstream drift fails validation instead of silently changing
-# ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {
@@ -407,15 +361,6 @@ UNMATCHED_ROW_KEYS = [
     "federated_account_id",
     "workspace_id",
 ]
-# Account custom fields the SOQL relationship walk reads (schema-in-seed via
-# ensure_custom_field). Active_Subscription__c is a checkbox in the raw
-# recipe, NOT a number. Current_ARR__c: the raw extended_output_schema types
-# it number, but the benchmark org's field PRE-EXISTS as Text (provisioned by
-# recipe 57440067's schema-in-seed; ensure_custom_field is create-once, so a
-# Number declaration would be a silent no-op on the live org). The live
-# read-back therefore renders ARR values as strings ("48000") -- pinned as
-# such in the variant expects -- and declaring Text here keeps a fresh-org
-# provisioning byte-identical to the current live groundtruth.
 REQUIRED_ACCOUNT_SCHEMA: dict[str, str] = {
     "Current_ARR__c": "Text",
     "Current_Plan__c": "Text",

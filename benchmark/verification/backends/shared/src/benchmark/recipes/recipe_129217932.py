@@ -23,58 +23,6 @@ DECLARE_AS = "4e603d35"
 COPY_AS = "ea11a3ca"
 DELETE_AS = "2f2a548f"
 
-# clock.scheduled_event (as a19e917d, daily 00:00 Etc/UTC) -- payload-less
-# (trigger_input must be exactly {}); job_context.job_created_at is the only
-# trigger-adjacent deref.
-#   2  workato_variable.declare_variable 4e603d35: Schema='SALESFORCE',
-#      Table='EVENT_LOGS', file_format='SALESFORCECSVFORMAT',
-#      s_3_stage='ACTIVITY_EVENT_LOGS', retention_period_months='3',
-#      year_month = =_dp(job_created_at).utc.strftime("%Y/%m") (the .utc chain
-#      method is a batch-08 engine fix -- an offset instant converts to UTC
-#      BEFORE the month renders, e.g. 2026-08-01T05:30+09:00 -> '2026/07').
-#   3  snowflake.run_custom_sql ea11a3ca (LIVE, FORMULA-MODE sql '="..."'):
-#      COPY INTO SALESFORCE.EVENT_LOGS FROM (SELECT METADATA$FILENAME,
-#      T.$1..T.$5 FROM @SALESFORCE.ACTIVITY_EVENT_LOGS (FILE_FORMAT =>
-#      'SALESFORCE.SALESFORCECSVFORMAT') AS T)
-#      PATTERN = 'Daily/.*/<year_month>/.*/.*\.csv'
-#      -- table ref rewrites to the seeded BENCH table; the STAGE and FILE
-#      FORMAT refs stay verbatim 2-part names resolved via the session
-#      database (seeded by _replace_stage under the same 2-part rule,
-#      registered 82302802 precedent). COPY dedupe is a non-issue per run:
-#      create-or-replace table resets Snowflake load history every seed.
-#   4  snowflake.run_custom_sql 2f2a548f (LIVE): DELETE FROM
-#      SALESFORCE.EVENT_LOGS WHERE TO_TIMESTAMP(timestamp,
-#      'YYYYMMDDHH24MISS.FF3') < (convert_timezone('UTC',
-#      current_timestamp()) - INTERVAL '3 MONTHS')::timestamp_ntz --
-#      current_timestamp() pins to seed.snowflake_live.current_time
-#      (_rewrite_time); DELETE runs AFTER COPY, so an old-timestamped row
-#      inside a loaded file is deleted in the same job (variant 02 pins that).
-#
-# Linear recipe, no block-level branching. Observable dimensions covered by
-# variants: PATTERN subset selection (month path arms + extension arm +
-# multi-segment wildcards), COPY zero/N files, DELETE zero/N rows (preseeded
-# AND just-loaded carriers), and the year_month UTC rollover.
-#
-# Backends: Snowflake LIVE only (backend policy). The stage, its named file
-# format, the staged CSVs and the EVENT_LOGS table are benchmark-owned
-# objects provisioned by seed.snowflake_live (harness.snowflake_live
-# .seed_tables) and dropped by cleanup in the runner's finally.
-#
-# DETERMINISM GUARDS (enforced at seed time):
-# - seed.snowflake_live.current_time must equal job_context.job_created_at
-#   byte-for-byte (one pinned instant drives BOTH year_month and the DELETE
-#   cutoff).
-# - every timestamp value (preseeded rows and staged CSV rows) must sit more
-#   than RETENTION_MARGIN (2 days) away from the derived 3-month cutoff:
-#   convert_timezone('UTC', <ntz literal>) interprets its source in the LIVE
-#   SESSION timezone, so the cutoff may drift by up to ~8h from the UTC
-#   reading -- the margin makes every variant's delete set identical under
-#   any session timezone.
-# - event_id values are globally unique across preseeded rows and ALL staged
-#   CSV rows (loaded or not): final-state row matching is keyed on event_id,
-#   and METADATA$FILENAME's stage-prefix form is matched by SUFFIX (the
-#   relative-path form is asserted by the live lane, same suffix convention
-#   as registered 82302802's staged_file_suffixes).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "a19e917d", "skip": false, "input": {"time_unit": "days", "timezone": "Etc/UTC", "trigger_at": "00:00:00.000", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "4e603d35", "skip": false, "input": {"variables": {"data": {"Schema": "SALESFORCE", "Table": "EVENT_LOGS", "file_format": "SALESFORCECSVFORMAT", "retention_period_months": "3", "s_3_stage": "ACTIVITY_EVENT_LOGS", "year_month": "=_dp('{\"pill_type\":\"job_context\",\"path\":[\"job_created_at\"]}').utc.strftime(\"%Y/%m\")"}, "schema": "[{\"control_type\":\"text\",\"label\":\"Table\",\"name\":\"Table\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Table\"},\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true,\"parent\":[\"variables\",\"data\"]},{\"control_type\":\"text\",\"label\":\"S3 Stage\",\"name\":\"s_3_stage\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"S3 Stage\"},\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true,\"parent\":[\"variables\",\"data\"]},{\"control_type\":\"text\",\"label\":\"File Format\",\"name\":\"file_format\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"File Format\"},\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true,\"parent\":[\"variables\",\"data\"]},{\"control_type\":\"text\",\"label\":\"Year Month\",\"name\":\"year_month\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Year Month\"},\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true,\"parent\":[\"variables\",\"data\"]},{\"control_type\":\"text\",\"label\":\"Schema\",\"name\":\"Schema\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Schema\"},\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true,\"parent\":[\"variables\",\"data\"]},{\"control_type\":\"text\",\"label\":\"Retention Period (Months)\",\"name\":\"retention_period_months\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Retention Period (Months)\"},\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true,\"parent\":[\"variables\",\"data\"]}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "ea11a3ca", "skip": false, "input": {"output_schema": "[{\"name\":\"status\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Status\"},{\"name\":\"rows_loaded\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Rows loaded\"}]", "sql": "=\"\nCOPY INTO #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"Schema\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"Table\"]}')} FROM (\n  SELECT\n  METADATA$FILENAME,\n  T.$1,\n  T.$2,\n  T.$3,\n  T.$4,\n  T.$5\n  \n  FROM @#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"Schema\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"s_3_stage\"]}')}\n  (FILE_FORMAT => '#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"Schema\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"file_format\"]}')}') AS T\n)\n-- Load all files for all dates for a given Year Month. If a file has already been loaded, Snowflake will know to skip it\nPATTERN = 'Daily/.*/#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"year_month\"]}')}/.*/.*\\.csv'\n\"", "update_only": "false"}, "block": []}, {"number": 4, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "2f2a548f", "skip": false, "input": {"sql": "DELETE FROM #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"Schema\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"Table\"]}')}\nWHERE\nTO_TIMESTAMP(timestamp, 'YYYYMMDDHH24MISS.FF3') < (convert_timezone('UTC', current_timestamp()) - INTERVAL '#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"4e603d35\",\"path\":[\"retention_period_months\"]}')} MONTHS')::timestamp_ntz", "update_only": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -91,8 +39,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
 ALLOWED_TOOLS: list[str] = [
     "snowflake.run_custom_sql",
 ]
-# Semantic constants derived FROM the byte-pinned tree (no transcription
-# drift): the five static declare values and the two SQL bodies.
 _DECLARE_DATA = _EXPECTED_TREE["block"][0]["input"]["variables"]["data"]
 STATIC_VARIABLES = {
     key: value for key, value in _DECLARE_DATA.items() if key != "year_month"
@@ -102,10 +48,6 @@ _DELETE_SQL_TEMPLATE = _EXPECTED_TREE["block"][2]["input"]["sql"]
 EVENT_LOGS_TABLE = f"{STATIC_VARIABLES['Schema']}.{STATIC_VARIABLES['Table']}"
 STAGE_NAME = f"{STATIC_VARIABLES['Schema']}.{STATIC_VARIABLES['s_3_stage']}"
 FILE_FORMAT_NAME = f"{STATIC_VARIABLES['Schema']}.{STATIC_VARIABLES['file_format']}"
-# Table shape: COPY INTO ... FROM (SELECT METADATA$FILENAME, T.$1..T.$5)
-# inserts POSITIONALLY -- the seeded column ORDER is load-bearing and must be
-# exactly this (filename first, then the five CSV columns; 'timestamp' is the
-# retention column the DELETE parses with YYYYMMDDHH24MISS.FF3).
 EVENT_LOGS_COLUMNS: dict[str, str] = {
     "filename": "string",
     "event_id": "string",
@@ -131,7 +73,6 @@ REQUIRED_EXPECT_KEYS = (
     "tools",
     "tool_expectations",
 )
-# Corpus lint: allowed tool_expectations keys.
 _EXPECTATION_TARGET_KEYS = {"tool"}
 _EXPECTATION_VALUE_KEYS = {
     "args_contains", "result_count", "argument_equivalence"

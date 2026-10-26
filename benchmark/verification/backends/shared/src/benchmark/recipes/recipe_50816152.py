@@ -15,18 +15,6 @@ SEED_TYPE = "officebot_locker_extend_variant"
 TRACK = "lookup_table_slack_locker_extend"
 TRIGGER_PROVIDER = "slack_bot"
 TRIGGER_NAME = "bot_command_v2"
-# 'officebot extend locker_booking' bot command (required parameter entry_id):
-# linear flow — lookup_table.update_entry marks booking entry_id as
-# col8='Renewed' (LT 1889452 'Lockers Booking', ignore_not_found=false) ->
-# lookup_table.search_entries on LT 1889451 'Lockers Database' by
-# col1=<booking office col3> to read the office timezone (col8) ->
-# logger.log_message used as a date compute: (job_created_at + 1.months)
-# .in_time_zone(<timezone pill>).strftime("%B %Y") -> lookup_table.add_entry
-# books the next month (col5=<logger message>, col6='Approved',
-# col9=job_created_at.strftime("%d/%m/%Y")) -> slack_bot.post_bot_reply_v2
-# (replace_original=true, live Slack) confirming the extension.
-# Lookup tables are Workato-internal deterministic seeded state; job_context
-# must be pinned per variant (both date formulas read job_created_at).
 BOOKING_TABLE_ID = "1889452"
 DATABASE_TABLE_ID = "1889451"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [

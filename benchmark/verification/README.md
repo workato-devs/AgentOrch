@@ -1,9 +1,7 @@
 # Verification runtimes
 
-This directory contains evaluator-private state plus two execution layers:
+This directory contains evaluator-private state and the execution runtime:
 
-- `smoke/` is a dependency-light protocol runtime for two recipes. It keeps
-  unit tests and model-adapter smoke checks fast.
 - `backends/` is the full connector runtime, vendored from the repository's
   shared, simulated, and real benchmark source roots.
 
@@ -33,6 +31,5 @@ verification, and cleanup guards remain active.
 ## Runtime layout
 
 The shared recipe executor, simulated connectors, and optional live
-connectors are included under `backends/`. Their source layout is recorded
-in `backends/manifest.json`. Dataset and reference fixtures are downloaded
+connectors are included under `backends/`. Dataset and reference fixtures are downloaded
 with `python scripts/download_data.py --only benchmark`.

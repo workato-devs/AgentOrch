@@ -11,19 +11,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_90660067
 
 
-# X-Ray access-request approval bot command. A slack_bot.bot_command_v2 trigger
-# carries the approver's decision (status = approve|reject) plus the requestor's
-# email and the originating conversation. The recipe first looks up the
-# requestor's access-control lookup-table entry and declares the viewer_all
-# role. On APPROVE it derives the exact set of core customer accounts the
-# requestor may see from the live Snowflake customer warehouse (a CTE over
-# salesforce.account_team_member / salesforce_snapshot.account / salesforce.user
-# with a listagg), grants access by updating the lookup entry (granted flag +
-# role + account list), edits the original approval message to show "Approved",
-# and DMs the requestor. A dedicated john.smith branch runs a hardcoded probe
-# query, and the size==0 else-branch logs "No customers associated" before still
-# updating the entry. On REJECT it edits the original message to show "Rejected",
-# DMs the requestor, and deletes the lookup entry so they can request again.
 RECIPE_ID = "90660067"
 SEED_TYPE = "xray_access_request_approval_variant"
 TRACK = "live_snowflake_lookup_slack_block_update"

@@ -482,7 +482,7 @@ def _trust_remote_code() -> bool:
 
     Set per model in the launcher (``HF_TRUST_REMOTE_CODE=1``) for the few
     checkpoints whose tokenizer/config ships as repository code (e.g. GLM-4
-    chat, Phi-3-small). Off by default."""
+    chat models with custom architectures). Off by default."""
     return (_setting("HF_TRUST_REMOTE_CODE") or "0").lower() in {"1", "true", "yes"}
 
 
@@ -926,7 +926,7 @@ class CodexCLIClient:
 
 def _native_context_tokens(config) -> int:
     """Context length from a model config, including composite multimodal
-    configs (e.g. Muse Glimmer) whose window lives on ``text_config``."""
+    configs whose window lives on ``text_config``."""
     value = getattr(config, "max_position_embeddings", None)
     if not value:
         text_config = getattr(config, "text_config", None)
@@ -1122,7 +1122,7 @@ class TransformersClient:
                     if system.startswith("You are an automation agent.")
                     else self.max_new_tokens
                 )
-                # Harmony-style channel formats (Muse Glimmer) interleave
+                # Harmony-style channel formats interleave
                 # brace-laden analysis text before the surfaced answer, and
                 # their channel markers are special tokens invisible to the
                 # decoded-text scanner — the balanced-JSON early stop would

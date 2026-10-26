@@ -15,11 +15,6 @@ SEED_TYPE = "lookup_table_limit_refresh_variant"
 TRACK = "workato_lookup_table_limit_refresh"
 TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
-# Scheduled recipe: read category rows from lookup table 1889420, and for each
-# category iterate the country/currency/limit rows in lookup table 1889418. A
-# cascade of independent IF blocks keyed on the category entry.col1 (and col10)
-# rebuilds a per-category limit list and writes it back to col9 of the category
-# row (or resets col9 to "[]" for the Expenses / col10=Yes reset branch).
 OUTER_TABLE_ID = "1889420"
 INNER_TABLE_ID = "1889418"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
@@ -55,9 +50,6 @@ EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("logger", "log_message"),
     ("lookup_table", "update_entry"),
 ]
-# Runtime tool names produced by the executor adapters (workato_variable and
-# logger actions surface as workato_runtime.* controlled tools). The replay
-# verifier checks that every executed trace tool is in this allow-set.
 EXPECTED_RAW_TOOLS: list[str] = [
     "lookup_table.get_entries",
     "lookup_table.update_entry",

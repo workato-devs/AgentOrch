@@ -18,62 +18,6 @@ TRACK = "live_salesforce_domain_account_matcher"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "500fcde0"
-# Recipe function "execute(parameters.emails[])" -> match email domains to live
-# Salesforce Domain__c rows and return the owning Account per email:
-#   #2  declare_list 'domains' (50b34065): one row per email
-#       {email, domain: email.split("@").last.strip, account: ""}
-#   IF#3 emails.size > 0:
-#     #4 workato_smart_list.create_list 'domains' (6fed7cb3, primary_index email)
-#   #5  declare_variable formatted_domains (1e14f05d):
-#       list_items&.where('domain': /<FQDN regex>/)&.pluck('domain')&.compact
-#       &.uniq&.smart_join("','")  (regex-invalid domains filtered out)
-#   IF#6 formatted_domains.presence present:
-#     #7 salesforce.search_sobjects_soql (1eb1d81a): Domain__c IN ('<joined>'),
-#        field_list Account__c/Domain__c/Account__r$Account.{Name,
-#        Active_Subscription__c,CreatedDate,Subscription_Start_Date__c,
-#        Current_Plan__c}, limit 2000
-#   IF#8 Domain__c size > 0 (#{pill} interpolation; renders "" when step 7
-#        never ran -> string compare "" > '0' -> false, never a job error):
-#     #9  declare_variable case_statement (bc4e7d4e):
-#         Domain__c.format_map("WHEN '%{Domain__c}' THEN '%{Account__c}'").join("\n")
-#     #10 query_list (9efe4d51): UPDATE domains SET account = CASE domain
-#         <case_statement> END  (CASE without ELSE -> unmatched rows get NULL)
-#     #11 declare_list 'Domain _list' (ca2cc2ef) from the SF rows incl.
-#         Account__r pills + the multi-line isembedded if-formula
-#     #12 create_list 'domain_list' (ed56c48d, primary_index account_id)
-#     #13 query_list (ba2c37f4): WITH duplicate_domain AS (... ROW_NUMBER()
-#         OVER (PARTITION BY domain ORDER BY active_subscription DESC,
-#         isembedded DESC, subscription_start_date DESC)) SELECT d.email,
-#         d.domain, dl.domain_account_id, dl.row_num FROM domains d LEFT JOIN
-#         duplicate_domain dl ON dl.domain = d.domain WHERE dl.row_num = 1
-#         (the LEFT JOIN + WHERE row_num=1 filters unmatched-domain emails)
-#   #14 query_list 0eea15a1  -- "skip": true (DEACTIVATED in the raw recipe)
-#   #15 return_result 2534a57a -- "skip": true (DEACTIVATED; the author's
-#       original single-domain return path, superseded by #16)
-#   #16 return_result 537c1278 [ACTIVE TERMINAL]: accounts from ba2c37f4 rows
-#       {email, id: account_id}; when IF#8 never ran the ____source pill is
-#       absent and the mapping renders accounts: [] (Workato nil semantics).
-#
-# DEAD-CODE PROOF (corrects the batch_C triage, which had it inverted): raw
-# steps 14 and 15 carry "skip": true, step 16 carries "skip": false. Workato
-# never executes deactivated steps and the executor mirrors that exactly
-# (raw_executor.execute_node appends a {"skipped": true} trace marker and
-# returns). So step 13's ba2c37f4 output is LIVE (it feeds the active return
-# #16) and the dead code is steps 14+15, proven reached-but-skipped in every
-# variant via the pinned trace markers (expect.skipped_steps == [14, 15]).
-#
-# Backends: Salesforce LIVE (custom object Domain__c with Domain__c text +
-# Account__c lookup -> Account, mdapi-deployed org fact; Account custom fields
-# Active_Subscription__c/Subscription_Start_Date__c/Current_Plan__c ensured via
-# schema-in-seed ensure_custom_field grants). Seed flags REQUIRED on every
-# variant: salesforce.relationship_expansion (Account__c -> nested Account__r
-# for the five parent pills) and salesforce.strict_soql_conditions (the bare
-# "Domain__c IN ('a','b')" condition is evaluated exactly, never dropped).
-# workato_smart_list / workato_variable are Workato-internal (runtime-mocked).
-#
-# Cleanup: every seeded record (Accounts + Domain__c rows) is benchmark-owned;
-# run_128165934 snapshots first, then harness.salesforce.cleanup in finally and
-# fails on leftovers.
 FQDN_RE = re.compile(
     r"^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$"
 )
@@ -84,14 +28,6 @@ ACCOUNT_REQUIRED_FIELDS = ("Name", "Active_Subscription__c")
 ACCOUNT_OPTIONAL_FIELDS = ("Subscription_Start_Date__c", "Current_Plan__c")
 DOMAIN_SOBJECT = "Domain__c"
 
-# Every custom field the recipe (or its seeds) touches. ensure_custom_field
-# creates-or-grants-FLS on each; the Domain__c object itself plus its lookup
-# field are mdapi-deployed org facts (Lookup cannot be created via the Tooling
-# path -- a missing lookup fails fast instead of being silently skipped).
-# NOTE (org fact): Account fields created earlier by other recipes may
-# pre-exist with different physical types; ensure_custom_field then only
-# grants FLS. Nothing in the variant expects pins those field VALUES' rendered
-# type, so both renderings stay verifiable.
 REQUIRED_SCHEMA: list[dict[str, str]] = [
     {"sobject": "Account", "field": "Active_Subscription__c", "sf_type": "Checkbox"},
     {"sobject": "Account", "field": "Subscription_Start_Date__c", "sf_type": "Date"},
@@ -125,9 +61,6 @@ ALLOWED_TOOLS: list[str] = [
 ]
 SKIPPED_STEP_NUMBERS = [14, 15]
 
-# Full verbatim structure pins (keyword/number/as/provider/name/skip/input per
-# node, depth-first) -- any drift in the raw recipe, including un-skipping the
-# deactivated steps 14/15 or editing a formula/SQL, fails validation loudly.
 _STRUCTURE_PINS_JSON = r'''
 [
  {

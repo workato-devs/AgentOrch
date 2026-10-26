@@ -15,13 +15,6 @@ SEED_TYPE = "workato_service_timer_reply_variant"
 TRACK = "workato_service_reply"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# "Base Timer Unit" callable service. The trigger receives request.secs (an
-# integer). Root block: `if secs == N` (N=1..10) each wraps a `try { stop
-# with_error }` (so those inputs stop the job early with zero replies); then
-# `if secs > 10` runs send_reply #43 (reply.success=false) followed by a stop;
-# finally an unconditional send_reply #45 (reply.success=true) for any input
-# that matched none of the above (e.g. secs <= 0). The two send_reply actions
-# live on mutually exclusive paths -- at most one executes per run.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

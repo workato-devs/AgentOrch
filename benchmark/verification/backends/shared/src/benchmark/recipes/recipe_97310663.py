@@ -10,17 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_97310663
 
 
-# Weekly clock trigger runs a Snowflake custom SQL aggregate -- an UNALIASED
-# SPACED count over accounts_dim/workspace_dim/users joins filtered by
-# array_contains('enterprise_key_management'::variant, wd.plan_addons) AND
-# users.cmk_storage_type in (2,3), ORDER BY ad.current_arr_usd -- then loops
-# the single result row and appends Count/LastRunAt to the live Google Sheet
-# (sheet EKM). plan_addons is a live VARIANT column: seeding relies on the
-# PARSE_JSON INSERT..SELECT path in snowflake_live._insert_row (batch-08 gap
-# fix; list-valued seed rows serialize to JSON).
-# Derived mechanically from REGISTERED recipe_97310640.py (same skeleton and
-# as-ids f71a8fa2/a41835e7/08e8617f/f28be309; deltas = SQL text, spaced count
-# column, sheet name, repeat_mode omitted).
 RECIPE_ID = "97310663"
 SEED_TYPE = "clock_snowflake_sql_to_sheet_ekm_addon_variant"
 TRACK = "live_snowflake_read_sheet_append"

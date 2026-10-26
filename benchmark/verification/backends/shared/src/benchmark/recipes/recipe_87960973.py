@@ -21,56 +21,6 @@ TRIGGER_AS = "62aa61de"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# Salesforce new_custom_object trigger on OpportunityContactRole with a RUNTIME
-# compound trigger filter (all three must hold or the body never runs):
-#   [1] trigger Contact.AccountId not_equals_to trigger Opportunity.AccountId
-#   [2] Role.blank? or (Role.include?("Partner") ? false : true) is_true
-#   [3] trigger Contact.Email present
-# Body (11 actions):
-#   2  declare_variable (c6f09d95): contact_domain = Contact.Email.split("@")
-#      .last.split(".").first, plus account/contact/opportunity id echoes
-#   3  search_sobjects_soql (771169ef): Contact WHERE AccountId = trigger
-#      Opportunity.AccountId, limit 150, field_list Email + Account.Website --
-#      the nested Account.Website read-back REQUIRES seed.salesforce.
-#      relationship_expansion: true with an OWNED parent Account
-#   4  smart_list create_list 'contact_emails' (primary_index Email) from the
-#      step-3 Contact rows; declared schema columns keep the SQLite table
-#      creatable even for an EMPTY result (zero-contacts variant)
-#   5  query_list: SELECT COUNT(Email) ... WHERE Email LIKE '%<domain>%'
-#   6  query_list: SELECT COUNT(Email) ... WHERE Email NOT LIKE '%<domain>%'
-#      (COUNT aggregate + NOT LIKE on the SQLite engine -- the batch-02 gaps,
-#      fixed and probe-verified)
-#   7  update_variables (0b31ab84) MULTI-TARGET (newline-joined name; engine
-#      fix edd3ccc8, probe-verified with this exact node): sames/different
-#      counts ('.presence or 0') + account_website = step-3 Contact
-#      current_item Account.Website (current_item OUTSIDE foreach = first row;
-#      empty result -> MISSING -> None)
-#   8  IF sames > different (ternary formula) -> 9 set
-#      contact_matched_account_contacts = "true"
-#   10 IF step-3 Contact current_item Account.Website contains contact_domain
-#      -> 11 set contact_matched_account_website = "true"
-#   12 IF both flags is_true (either missing flag renders "" -> false) ->
-#      13 salesforce.update_sobject Contact id=contact_id set AccountId =
-#         opportunity account (live update of the benchmark-owned trigger
-#         Contact)
-#      14 lookup_table.add_entry 3236786 audit row col1..col9 (col9 =
-#         now.strftime("%Y-%m-%dT%H:%M:%S%:z") -- variant MUST pin data.now)
-#      15 google_sheets.add_spreadsheet_row_v4 -- DISABLED IN THE RAW RECIPE
-#         ("skip": true on the deployed step): Workato never executes it, so
-#         the benchmark involves NO Google Sheets backend. The executor
-#         faithfully records a reached-but-skipped trace marker when the
-#         write branch runs; the verifier pins that marker so the dead step
-#         is proven reached, never silently dropped.
-#
-# Trigger ids thread $REF tokens: OpportunityId/$OPP, ContactId/$CON_TRIG,
-# Contact.AccountId/$ACC_PREV, Opportunity.AccountId/$ACC_OPP resolve to the
-# live seeded record ids at seed time (and inside expect), so the step-3 SOQL,
-# the step-13 update target and every audit column are real live identifiers.
-#
-# Cleanup: every live Salesforce object is benchmark-owned (seeded);
-# run_87960973 calls harness.salesforce.cleanup in finally and fails on
-# leftovers. The lookup table is a seeded Workato-internal mock. now is pinned
-# via variant data.now (fail-fast in the engine when read without a seed).
 
 _STRUCTURE_PINS_JSON = r'''
 [
@@ -368,9 +318,6 @@ ALLOWED_TOOLS: list[str] = [
     "lookup_table.add_entry",
 ]
 LOOKUP_TABLE_ID = "3236786"
-# Step 15 (google_sheets.add_spreadsheet_row_v4) is DISABLED in the raw recipe
-# ("skip": true); it is pinned in STRUCTURE_PINS and proven reached-but-skipped
-# via the trace marker, but no sheets backend/seed/tool is ever involved.
 SKIPPED_SHEETS_STEP_NUMBER = 15
 SEED_SECTIONS = {"salesforce", "lookup_table"}
 EXPECT_KEYS = (

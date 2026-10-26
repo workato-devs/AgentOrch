@@ -15,9 +15,6 @@ SEED_TYPE = "referral_lookup_api_variant"
 TRACK = "referral_lookup_api"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API lookup of a referral row (lookup table 1889445) by request.email.
-# try: search; if size==1 { if col4 present -> parse_json; return_response 200 }
-# else { stop }. catch: return_response 400 {error}.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "search_entries"),
     ("json_parser", "parse_json"),

@@ -16,7 +16,7 @@ def public_record_id(record: dict[str, Any]) -> Any:
 
     Public data-table resource cards expose both the connector-independent
     ``record_id`` name and the table's physical Record ID field.  Persisted
-    WorkflowBench seeds predate that alias and usually contain only the
+    Reference seeds predate that alias and usually contain only the
     physical UUID column (or the mock's internal row id).  Keep storage byte
     compatible while making reads honor the published connector contract.
     """

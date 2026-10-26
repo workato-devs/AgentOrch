@@ -10,18 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_124796779
 
 
-# Weekly clock trigger runs a Snowflake custom SQL aggregate -- an UNALIASED
-# SPACED count ('count (distinct ad.account_id)') over accounts_dim/
-# workspace_dim/users where EVERY condition lives in the second JOIN's
-# ON-clause chain (users.data_center = wd.data_center, cmk_storage_type in
-# (2,3), wd.is_paid_workspace, latest/internal/paying guards -- NO WHERE
-# clause, and NO ad.current_arr filter), ORDER BY ad.current_arr_usd -- then
-# loops the single result row and appends Count/LastRunAt to the live Google
-# Sheet (sheet EKM). EKM-v2 twin of in-batch 97310663 whose newer SQL drops
-# array_contains for a plain users.cmk_storage_type join.
-# Derived mechanically from REGISTERED recipe_97310640.py (same skeleton and
-# as-ids f71a8fa2/a41835e7/08e8617f/f28be309; deltas = SQL text, spaced count
-# column, sheet name; this raw keeps repeat_mode 'simple' like the twin).
 RECIPE_ID = "124796779"
 SEED_TYPE = "clock_snowflake_sql_to_sheet_ekm_cmk_variant"
 TRACK = "live_snowflake_read_sheet_append"

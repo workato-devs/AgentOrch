@@ -54,4 +54,5 @@ def test_smoke_preserves_existing_outputs_and_caches(tmp_path, monkeypatch):
     assert not checker.FAILS
     assert all(path.read_bytes() == b"keep" for path in existing)
     assert sorted(p.name for p in (tmp_path / "outputs").iterdir()) == [
-        "connector-runtime", "existing-smoke"]
+        "connector-runtime", "existing-smoke", "full_eval"]
+    assert not list((tmp_path / "outputs/full_eval").iterdir())

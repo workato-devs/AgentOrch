@@ -25,11 +25,6 @@ SKIPPED_JOIN_AS = "e0c752d5"
 CATCH_AS = "47d16f19"
 STOP_AS = "3b83e78e"
 STOP_NUMBER = 10
-# Schema-in-seed contract (ensure_custom_field): Workato_User__c exists live
-# (64106452 / 103986939 precedent; Account__c is a live Lookup(Account) and is
-# NEVER re-created here -- lookups are deploy-time-only, 106603524 precedent).
-# The five scalar columns the recipe reads are (re-)ensured + FLS-granted
-# every run.
 REQUIRED_SCHEMA = [
     {"sobject": WU_SOBJECT, "field": "Active_Recipes__c", "sf_type": "Number"},
     {"sobject": WU_SOBJECT, "field": "In_trial__c", "sf_type": "Checkbox"},
@@ -41,61 +36,6 @@ TRIGGER_ROW_KEYS = {"AccountID", "AccountName"}
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
-# workato_recipe_function.execute (as c70dbd3b; parameters.AccountList[]
-# {AccountID, AccountName}).
-#   2  workato_variable.declare_variable a6142023:
-#      account_ids_string = AccountList&.pluck("AccountID").join("','")
-#      (probe-verified: 2 accounts -> "idA','idB"; [] -> ""; &. short-circuit)
-#   TRY 3:
-#     4  salesforce.search_sobjects_soql_v2 568d7149 (LIVE, limit 2000):
-#        SELECT Account__c, SUM(Active_Recipes__c) active_recipes
-#        FROM Workato_User__c WHERE IsDeleted = FALSE AND In_trial__c = FALSE
-#        AND Workato_Plan__c != 'free' AND User_Account_Type__c LIKE
-#        '%Production%' AND Account__c IN ('<ids>') GROUP BY Account__c
-#        (strict SOQL: every seeded user declares read_fields ['IsDeleted'];
-#        the Checkbox reads back a live boolean; LIKE '%Production%' is the
-#        anchored engine's contains form)
-#     5  workato_smart_list.create_list ed4a7726 'ActiveRecipes' from the
-#        aggregate records (Workato-internal; trace-only observable -- the
-#        list is created then never read because step 8 is skipped)
-#     6  salesforce.search_sobjects_soql_v2 8beef537 (LIVE):
-#        SELECT Account__c, MAX(Last_Login_Date__c) last_login_date ...
-#        GROUP BY Account__c -- MAX over ISO dates compares lexicographically
-#        (engine f9d83a51). SEMANTIC TRAP: this WHERE has NO
-#        User_Account_Type__c leaf, so a non-Production user's later login
-#        date CAN win MAX while the same user is excluded from the SUM.
-#     7  workato_smart_list.create_list b5999f78 'LastLogin'
-#     8  workato_smart_list.query_list e0c752d5 FULL OUTER JOIN -- skip:true,
-#        traces as {skipped: true}, never executes
-#     CATCH 9 (as 47d16f19, max_retry_count 3): the executor runs a SINGLE
-#       attempt (no retry semantics -- execute_try catches once and runs the
-#       catch block; documented engine behavior, trace is not tripled)
-#       10 STOP 3b83e78e stop_with_error=true, stop_reason
-#          '#{catch.type} : #{catch.message}' (engine-canonical type
-#          'RawRecipeExecutionError'; trace stop rows carry no stop_reason --
-#          the catch payload is pinned via step_outputs)
-#   11 workato_recipe_function.return_result 61871b37:
-#      result.WorkatoUsers ____source = 568d7149.records
-#      {AccountID=Account__c, ProductionActiveRecipes=active_recipes};
-#      LastLoginDate is declared in the result schema but NEVER mapped (the
-#      MAX search feeds only the skipped join) -- rows carry exactly the two
-#      mapped keys.
-#
-# Branch mapping (per benmark_rules -- control flow is try/catch + skip):
-# - variant_00 two_accounts_summed_maxed: 2 on-list accounts; duplicate-
-#   account users prove SUM; the Sandbox-type user proves the SUM/MAX WHERE
-#   divergence (excluded from SUM, wins MAX); free-plan / in-trial /
-#   off-list-account users prove each WHERE leaf.
-# - variant_01 empty_account_list: AccountList [] -> IN ('') matches nothing
-#   -> 0 aggregate rows -> row_count-0 lists -> WorkatoUsers [] (a seeded
-#   decoy user proves the emptiness is the filter).
-# - variant_02 catch_stop: sanctioned fault injection on 568d7149 -> catch ->
-#   stop_with_error after 1 executed action.
-#
-# GROUP BY output order = owned-record iteration order (insertion-ordered).
-# Backends: salesforce LIVE (cleanup deletes owned users + accounts in a
-# finally block); workato_smart_list / workato_variable / recipe_function
-# are Workato-internal in-process.
 
 _STRUCTURE_PINS_JSON = r"""[{"as": "c70dbd3b", "input": {"parameters_schema_json": "[{\"name\":\"AccountList\",\"type\":\"array\",\"optional\":false,\"properties\":[{\"name\":\"AccountID\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Account ID\"},{\"name\":\"AccountName\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Account name\"}],\"of\":\"object\",\"label\":\"Account list\"}]", "result_schema_json": "[{\"name\":\"WorkatoUsers\",\"type\":\"array\",\"optional\":false,\"properties\":[{\"control_type\":\"text\",\"label\":\"Account ID\",\"name\":\"AccountID\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"integer\",\"label\":\"Production active recipes\",\"parse_output\":\"integer_conversion\",\"name\":\"ProductionActiveRecipes\",\"type\":\"integer\",\"optional\":false},{\"name\":\"LastLoginDate\",\"type\":\"date_time\",\"optional\":true,\"label\":\"LastLoginDate\",\"control_type\":\"date\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\"}],\"of\":\"object\",\"label\":\"Workato users\"}]"}, "keyword": "trigger", "name": "execute", "number": 1, "provider": "workato_recipe_function", "skip": false}, {"as": "a6142023", "input": {"variables": {"data": {"account_ids_string": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"c70dbd3b\",\"path\":[\"parameters\",\"AccountList\"]}')&.pluck(\"AccountID\").join(\"','\")"}, "schema": "[{\"control_type\":\"text\",\"label\":\"account_ids_string\",\"name\":\"account_ids_string\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"account_ids_string\"}}]"}}, "keyword": "action", "name": "declare_variable", "number": 2, "provider": "workato_variable", "skip": false}, {"as": null, "input": {}, "keyword": "try", "name": null, "number": 3, "provider": null, "skip": false}, {"as": "568d7149", "input": {"limit": "2000", "output_schema": "[{\"control_type\":\"text\",\"label\":\"Account ID\",\"name\":\"Account__c\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"integer\",\"label\":\"active_recipes\",\"parse_output\":\"integer_conversion\",\"name\":\"active_recipes\",\"type\":\"integer\",\"optional\":false}]", "query": "SELECT Account__c,\n       SUM(Active_Recipes__c) active_recipes\n  FROM Workato_User__c\n WHERE IsDeleted = FALSE\n   AND In_trial__c = FALSE \n   AND Workato_Plan__c != 'free'\n   AND User_Account_Type__c LIKE '%Production%'\n   AND Account__c IN ('#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a6142023\",\"path\":[\"account_ids_string\"]}')}')\n GROUP BY Account__c   "}, "keyword": "action", "name": "search_sobjects_soql_v2", "number": 4, "provider": "salesforce", "skip": false}, {"as": "ed4a7726", "input": {"force": "true", "list_name": "ActiveRecipes", "list_source": "=_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"568d7149\",\"path\":[\"records\"]}')", "primary_index": "Account__c"}, "keyword": "action", "name": "create_list", "number": 5, "provider": "workato_smart_list", "skip": false}, {"as": "8beef537", "input": {"limit": "2000", "output_schema": "[{\"control_type\":\"text\",\"label\":\"Account ID\",\"name\":\"Account__c\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"date\",\"label\":\"last_login_date\",\"name\":\"last_login_date\",\"type\":\"date_time\",\"optional\":false,\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\"}]", "query": "SELECT Account__c,\n\tMAX(Last_Login_Date__c) last_login_date\n  FROM Workato_User__c\n WHERE IsDeleted = FALSE\n   AND In_trial__c = FALSE \n   AND Workato_Plan__c != 'free'\n   AND Account__c IN ('#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a6142023\",\"path\":[\"account_ids_string\"]}')}')\n GROUP BY Account__c"}, "keyword": "action", "name": "search_sobjects_soql_v2", "number": 6, "provider": "salesforce", "skip": false}, {"as": "b5999f78", "input": {"force": "true", "list_name": "LastLogin", "list_source": "=_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"8beef537\",\"path\":[\"records\"]}')", "primary_index": "Account__c"}, "keyword": "action", "name": "create_list", "number": 7, "provider": "workato_smart_list", "skip": false}, {"as": "e0c752d5", "input": {"col_sep": "comma", "csv": "false", "headers": "false", "output_schema_by": "index", "result_schema_json": "[{\"name\":\"AccountID\",\"type\":\"string\",\"optional\":false,\"label\":\"AccountID\",\"control_type\":\"text\"},{\"name\":\"ActiveRecipes\",\"type\":\"integer\",\"optional\":false,\"label\":\"ActiveRecipes\",\"control_type\":\"integer\",\"parse_output\":\"integer_conversion\"},{\"name\":\"LastLoginDate\",\"type\":\"date_time\",\"optional\":false,\"label\":\"LastLoginDate\",\"control_type\":\"date\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\"}]", "sql": "SELECT #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"ed4a7726\",\"path\":[\"list_name\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"ed4a7726\",\"path\":[\"columns\", \"Account__c\"]}')},\n\t\t#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"ed4a7726\",\"path\":[\"list_name\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"ed4a7726\",\"path\":[\"columns\", \"active_recipes\"]}')},\n        #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"b5999f78\",\"path\":[\"list_name\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"b5999f78\",\"path\":[\"columns\", \"last_login_date\"]}')}\nFULL OUTER JOIN #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"b5999f78\",\"path\":[\"list_name\"]}')}\n\t\tON #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"ed4a7726\",\"path\":[\"list_name\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"ed4a7726\",\"path\":[\"columns\", \"Account__c\"]}')} = #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"b5999f78\",\"path\":[\"list_name\"]}')}.#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"b5999f78\",\"path\":[\"columns\", \"Account__c\"]}')}"}, "keyword": "action", "name": "query_list", "number": 8, "provider": "workato_smart_list", "skip": true}, {"as": "47d16f19", "input": {"max_retry_count": "3", "retry_interval": "10"}, "keyword": "catch", "name": null, "number": 9, "provider": null, "skip": false}, {"as": "3b83e78e", "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"47d16f19\",\"path\":[\"type\"]}')} : #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"47d16f19\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "keyword": "stop", "name": null, "number": 10, "provider": null, "skip": false}, {"as": "61871b37", "input": {"result": {"WorkatoUsers": {"AccountID": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"568d7149\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Account__c\"]}')}", "ProductionActiveRecipes": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"568d7149\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"active_recipes\"]}')}", "____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"568d7149\",\"path\":[\"records\"]}')}"}}}, "keyword": "action", "name": "return_result", "number": 11, "provider": "workato_recipe_function", "skip": false}]"""
 

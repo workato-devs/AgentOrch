@@ -1,14 +1,8 @@
 # Reproduction utilities
 
-This directory is deliberately separate from the benchmark execution path.
+`offline/` recomputes aggregate scores from existing evaluation records or
+re-executes cached Global plans without model inference. `cluster/` provides
+a Slurm entry point for the canonical evaluator.
 
-- `offline/` contains score-audit tools for `results.jsonl` and cached plans
-  that already exist. They do not call a model.
-- `cluster/` contains optional Slurm launchers and the exact campaign settings
-  used for published runs. Direct `python -m evaluation.full_eval` execution
-  does not depend on them.
-
-The canonical evaluator always writes `results.jsonl`, `trajectories.jsonl`,
-and `leaderboard.json` itself. Cross-model paper table construction is not
-part of scoring and is intentionally omitted from the community release.
-
+Run outputs are created by `evaluation.full_eval`. The
+[evaluation guide](../README.md) describes setup, protocols, and output files.

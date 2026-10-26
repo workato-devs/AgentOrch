@@ -22,9 +22,6 @@ SUCCESS_RETURN_AS = "83954e0e"
 CATCH_AS = "2da14745"
 CATCH_RETURN_AS = "57671952"
 STOP_STEP_AS = "8ce124ba"
-# The literal 2-part name the SQL references; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.AUTOMATION_COMPASS.HISTORICAL_METRICS).
 METRICS_TABLE = "AUTOMATION_COMPASS.HISTORICAL_METRICS"
 RAW_SQL = (
     "SELECT \n  MONTHNAME(MONTH_DATE) AS MONTH,\n"
@@ -38,48 +35,11 @@ EXPECTED_COLUMNS = {
     "AUTOMATION_SCORE": "number",
     "AI_READINESS_SCORE": "number",
 }
-# Snowflake MONTHNAME returns 3-letter abbreviations.
 MONTH_ABBREVIATIONS = (
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 )
 
-# workato_api_platform.receive_request (as 751ec271, request schema [] — NO
-# request field is ever dereferenced). Byte-identical BODY twin of 117566662
-# (raw_recipe.md differs only in header lines 1 + 11-14); structural sibling
-# of registered 118162478. Body = one TRY (step 2):
-#   3  snowflake.search_rows_sql d8a6f6bf (LIVE): RAW_SQL, connector limit
-#      input '6' — the recipe SQL has NO LIMIT clause, so the engine appends
-#      ' limit 6' (_append_limit_offset). FAITHFUL QUIRK: `ORDER BY MONTH`
-#      sorts the MONTHNAME() 3-letter STRING alphabetically (Apr < Aug < Dec
-#      < Feb < Jan < Jul < Jun < Mar < May < Nov < Oct < Sep), NOT
-#      chronologically — the 'last 6 months' intent is NOT what executes.
-#      LIMIT truncates AFTER the alphabetical sort (live-probed 2026-07-08
-#      on byte-twin 117566662: Jan..Aug seed -> Apr,Aug,Feb,Jan,Jul,Jun).
-#   4  workato_api_platform.return_response 83954e0e (mock, TERMINAL): 200,
-#      response.trendData = ____source over rows, one {month,
-#      automationScore, aiReadiness} per row. Full-pill fields resolve
-#      NATIVELY: NUMBER scores arrive Decimal -> int (_json_value), so the
-#      scores are INTS in the response (probe-verified 2026-07-08).
-#   CATCH 2da14745 (max_retry_count 0):
-#   6  return_response 57671952 (TERMINAL): 400 {error: catch.message}
-#   7  stop 8ce124ba: DEAD CODE — return_response is terminal (probed; the
-#      catch trace is exactly 1 action).
-#
-# Branch mapping:
-# - trend_200: seeded month rows with DISTINCT month names; the pinned
-#   trendData order is the alphabetical-name order truncated to 6, and the
-#   seeder requires it to DIFFER from chronological order so the quirk stays
-#   proven. 2 actions.
-# - empty_trend_200: EMPTY table (columns only) -> 200 {trendData: []}.
-#   2 actions. (No IF in the recipe — zero rows still return 200.)
-# - catch_400: seed.force_action_error on d8a6f6bf -> 400 {error} after 1
-#   action; NO snowflake state is seeded.
-#
-# Backends: Snowflake runs LIVE (create-or-replace seed; dropped in the
-# runner's finally). API platform trigger/responses are mocks. READ-ONLY on
-# Snowflake. The physical AUTOMATION_COMPASS.HISTORICAL_METRICS table is
-# SHARED with 117566662 — never run family lanes concurrently.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

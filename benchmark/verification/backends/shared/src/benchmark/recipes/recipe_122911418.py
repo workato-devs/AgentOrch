@@ -25,9 +25,6 @@ SEARCH_STEP_AS = "ac90f493"
 UPDATE_SOBJECT_STEP_AS = "84251964"
 UPDATE_ENTRY_STEP_AS = "a1dfb382"
 ADD_ENTRY_STEP_AS = "f49793bf"
-# Schema-in-seed contract (ensure_custom_field): the two Account custom
-# fields the recipe writes/reads. Schema persists across runs (cleanup only
-# removes records).
 REQUIRED_SCHEMA = [
     {"sobject": "Account", "field": "Kickoff_Date__c", "sf_type": "Date"},
     {"sobject": "Account", "field": "Onboarding_Stage__c", "sf_type": "Text"},
@@ -35,49 +32,6 @@ REQUIRED_SCHEMA = [
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SYNTHETIC_ACCOUNT_RE = re.compile(r"001[0-9A-Za-z]{12,15}")
 
-# salesforce.updated_custom_object on SBQQ__Quote__c (as acd8d0f0,
-# since_offset -3600). SBQQ__Quote__c is a Salesforce CPQ MANAGED-PACKAGE
-# object that cannot exist in the benchmark org: the trigger is replayed
-# from the seeded payload verbatim and is never re-read live. Only the
-# step-4 Account update runs live.
-#
-# TRIGGER FILTER (4 AND conditions, short-circuit left to right):
-#   1. SBQQ__Opportunity2__r.Type equals_to 'New Logo'
-#   2. SBQQ__StartDate__c greater_than =14.days.ago   (pinned seed now)
-#   3. (Kickoff_Date__c.present? ? Kickoff_Date__c-14 : '1970-01-01')
-#      not_equals_to StartDate   (Ruby Date - int = DAYS)
-#   4. lookup('[GTM] Quote Effective Date', 'Quote Id': Id)['Effective
-#      Date'].presence or '1970-01-01'  not_equals_to  StartDate.to_s
-#      (formula-level lookup() against the seeded mock table -- reads the
-#      LABEL-keyed duplicates, see the dual-key note below)
-# Body:
-#   2  lookup_table.search_entries ac90f493 table 4308327 col1 = Id
-#   IF 3 (compound AND): '=col4.present? ? (col4.to_date+14) :
-#      Kickoff_Date__c' equals_to '#{Kickoff_Date__c}'  AND  literal
-#      'Completed | Canceled' not_contains '#{Onboarding_Stage__c}':
-#     4  salesforce.update_sobject 84251964 (LIVE): Account
-#        id = SBQQ__Account__c, Kickoff_Date__c = =StartDate+14 (DAYS)
-#   IF 5 (1 == 1, always true; it has NO else -- dead-branch note):
-#     IF 6 (ac90f493 entries current_item id present):
-#       7  lookup_table.update_entry a1dfb382 (id = current_item.id,
-#          ignore_not_found false, col10==today, col2=Name,
-#          col3=SBCF_AccountName__c, col4=StartDate)
-#     ELSE 8:
-#       9  lookup_table.add_entry f49793bf (col1=Id + same columns)
-#
-# DUAL-KEY LOOKUP ROWS: table 4308327 is read through TWO paths -- the
-# filter's formula lookup() matches/reads by column LABEL ('Quote Id' /
-# 'Effective Date') while search/update/add use colN keys. Every seeded row
-# must therefore carry BOTH key sets with EQUAL values (col1 == 'Quote Id',
-# col4 == 'Effective Date'); the recipe's writes only maintain the colN
-# keys, so after an update the label keys keep their SEEDED values (the
-# filter already consumed them at trigger time) -- pinned verbatim in
-# expect.final_lookup_rows.
-#
-# 'not_contains' nil semantics: a blank Onboarding_Stage__c renders '' and
-# 'Completed | Canceled' contains '' -> not_contains FALSE -> the Account
-# update is SKIPPED. Update-path variants must seed a non-empty stage that
-# is not a substring of 'Completed | Canceled'.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "salesforce", "name": "updated_custom_object", "as": "acd8d0f0", "skip": false, "input": {"field_list": "Id\nName\nSBQQ__Account__c\nSBCF_AccountName__c\nSBQQ__Opportunity2__r$Opportunity.Type\nSBQQ__Primary__c\nSBQQ__StartDate__c\nSBQQ__Account__r$Account.Kickoff_Date__c\nSBQQ__Account__r$Account.Onboarding_Stage__c", "since_offset": "-3600", "sobject_name": "SBQQ__Quote__c", "table_list": "Account\nOpportunity"}, "filter": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Opportunity2__r\", \"Type\"]}')}", "operand": "equals_to", "rhs": "New Logo"}, {"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__StartDate__c\"]}')}", "operand": "greater_than", "rhs": "=14.days.ago"}, {"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Account__r\",\"Kickoff_Date__c\"]}').present? ? (_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Account__r\",\"Kickoff_Date__c\"]}')-14) : '1970-01-01'", "operand": "not_equals_to", "rhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__StartDate__c\"]}')}"}, {"lhs": "=lookup('[GTM] Quote Effective Date', 'Quote Id': _dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"Id\"]}'))['Effective Date'].presence or '1970-01-01'", "operand": "not_equals_to", "rhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__StartDate__c\"]}').to_s"}], "operand": "and", "type": "compound"}, "block": [{"number": 2, "keyword": "action", "provider": "lookup_table", "name": "search_entries", "as": "ac90f493", "skip": false, "input": {"lookup_table_id": "4308327", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"Id\"]}')}"}}, "block": []}, {"number": 3, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"ac90f493\",\"path\":[\"entries\",{\"path_element_type\":\"current_item\"},\"entry\",\"col4\"]}').present? ? (_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"ac90f493\",\"path\":[\"entries\",{\"path_element_type\":\"current_item\"},\"entry\",\"col4\"]}').to_date+14) : _dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Account__r\",\"Kickoff_Date__c\"]}')", "operand": "equals_to", "rhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Account__r\", \"Kickoff_Date__c\"]}')}"}, {"lhs": "Completed | Canceled", "operand": "not_contains", "rhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Account__r\", \"Onboarding_Stage__c\"]}')}"}], "operand": "and", "type": "compound"}, "block": [{"number": 4, "keyword": "action", "provider": "salesforce", "name": "update_sobject", "as": "84251964", "skip": false, "input": {"Kickoff_Date__c": "=_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__StartDate__c\"]}')+14", "id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__Account__c\"]}')}", "sobject_name": "Account"}, "block": []}]}, {"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "1", "operand": "equals_to", "rhs": "1"}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"ac90f493\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "operand": "present", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 7, "keyword": "action", "provider": "lookup_table", "name": "update_entry", "as": "a1dfb382", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"ac90f493\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "4308327", "parameters": {"col10": "=today", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"Name\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBCF_AccountName__c\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__StartDate__c\"]}')}"}}, "block": []}, {"number": 8, "keyword": "else", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 9, "keyword": "action", "provider": "lookup_table", "name": "add_entry", "as": "f49793bf", "skip": false, "input": {"lookup_table_id": "4308327", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"Id\"]}')}", "col10": "=today", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"Name\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBCF_AccountName__c\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"acd8d0f0\",\"path\":[\"SBQQ__StartDate__c\"]}')}"}}, "block": []}]}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

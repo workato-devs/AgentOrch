@@ -1,23 +1,8 @@
-# Optional experiment drivers
+# AgentOrch experiment drivers
 
-These modules implement research ablations built on top of the canonical
-evaluator. They are not required for a standard Global View or ReAct model
-evaluation.
+- `replan_iter.py`: three rounds of complete-workflow revision using execution feedback (Figure 4 and Table 7).
+- `replan_iter_heldout.py`: revision with two feedback variants and separate held-out scoring (Table 7 and Appendix B.2).
+- `global_input_selfcheck.py`: CPU check of the Input-Conditioned Global implementation (Table 4).
+- `merge_local_view_shards.py`: combines independently evaluated Local shards using the canonical aggregator (Table 5).
 
-- `replan_iter.py`: repeated offline plan revision using execution feedback.
-- `replan_iter_heldout.py`: the same procedure with separate feedback and
-  held-out variants.
-- `global_input_selfcheck.py`: CPU integrity check for the Global+Input mode.
-- `global_input_status.py`: Slurm campaign progress reporting.
-- `compare_replan_v2_smoke.py`, `select_replan_v2_smoke_ids.py`, and the
-  fixture directories: smoke-selection and comparison utilities.
-- `merge_local_view_shards.py`: merges Local View campaign shards.
-
-For ordinary evaluation, run:
-
-```bash
-PYTHONPATH=benchmark python -m evaluation.full_eval \
-  --run-name my-run --backend simulated --model <model> \
-  --modes plan_execute,react --variants all --resume
-```
-
+Run instructions are in the [evaluation guide](../README.md).

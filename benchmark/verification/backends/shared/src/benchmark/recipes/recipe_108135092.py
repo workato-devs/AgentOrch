@@ -34,60 +34,6 @@ CATCH_POST_AS = "994cd4cf"
 CATCH_DM_CHANNEL = "U07GCQL582H"
 SEED_SECTIONS = {"workato_db_table", "slack_channel_map"}
 
-# dbt Cloud job.run webhook -> 'Jobs List' status tracker (trigger as
-# 67ba14e5, webhook_type rawdatatxt, suffix 'RT Update'; the trigger exposes
-# the raw JSON STRING under trigger['payload'] - the only pill the body reads):
-#   2  json_parser.parse_json ff725bd6 over the payload string (in-executor,
-#      fail-fast on empty/invalid JSON; never appears in tool_calls)
-#   TRY 3:
-#     4  workato_db_table.get_records 546ada32 (table 16426 'Jobs List',
-#        filter Job ID 63c5b60c op_integer eq document.data.jobId, limit 1 +
-#        'Created at' asc ordering are UI-only inputs the executor does not
-#        forward - the seeded filter must therefore match exactly one row)
-#     IF 5 (document.eventType contains 'start'):
-#       6  workato_db_table.update_record 39d55120: record_id =
-#          546ada32.records.current_item.<record id> (current_item OUTSIDE any
-#          foreach = FIRST record); sets Latest Run ID = data.runId,
-#          is running = 'true', last run start time = data.runStartedAt
-#       7  slack_bot.post_bot_message e15639c0 -> channel '#dbt-notifications'
-#          (non-'U' literal -> auto-redirected to SLACK_CHANNEL_OVERRIDE).
-#          Rendered text = section 'Job: #{jobName} started' + top-level text
-#          '#{jobName} started'. The actions/url_button block ('Go to Run
-#          #{runId}' -> cloud.getdbt.com deep link) is metadata: slack_text
-#          NEVER renders button titles/urls (engine-canonical block rendering;
-#          the block structure itself is pinned verbatim in STRUCTURE_PINS).
-#     ELSIF 8 (document.eventType contains 'completed'):
-#       9  workato_db_table.update_record 3349789a: same current_item record;
-#          sets is running = 'false', last success run end time =
-#          data.runFinishedAt. NO Slack post on this arm.
-#     (no else: any other eventType -> get_records only)
-#   CATCH 10 (as 970ae84f, max_retry_count 0):
-#     11 slack_bot.post_bot_message 994cd4cf -> literal DM channel
-#        'U07GCQL582H' (must be routed via seed.slack_channel_map
-#        {'U07GCQL582H': '__override__'}; the live workspace has no such
-#        user). Text = section ':almighty_loaf: #{job_context.recipe_name}
-#        broken, please fix! :almighty_loaf:' - catch variants must pin
-#        seed job_context.recipe_name.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 start    : eventType 'job.run.started' contains 'start' ->
-#   update (Latest Run ID / is running true / runStartedAt) + live Slack post.
-# - variant_01 completed: eventType 'job.run.completed' -> IF 5 false ('completed'
-#   does not contain 'start'), ELSIF 8 true -> update (is running false /
-#   runFinishedAt); no post.
-# - variant_02 other    : eventType 'job.run.errored' contains neither ->
-#   get_records only (the seeded row proves the no-op is the branch, not a
-#   missing row).
-# - variant_03 catch    : force_action_error on 546ada32 (the catch is NOT
-#   naturally reachable: an empty get_records yields update ok:false, not an
-#   exception; sanctioned fault injection per 100191291/106478365 precedent)
-#   -> catch DM post; the db table stays untouched.
-#
-# Backends: workato_db_table 16426 is a Workato-internal per-variant mock
-# (the seed fully overwrites it every run -> deterministic reruns; the
-# variant pins the exact final table). Slack runs LIVE; posts are ordinary
-# observable messages never re-read/deleted -> no Slack cleanup obligation
-# (cleanup principle). json_parser is in-executor.
 
 _STRUCTURE_PINS_JSON = r'''[
  {

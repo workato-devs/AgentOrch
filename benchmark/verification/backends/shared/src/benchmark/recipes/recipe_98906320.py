@@ -20,49 +20,6 @@ TRIGGER_NAME = "scheduled_event"
 TRIGGER_AS = "a0b7f806"
 TABLE_ID = "12253"
 
-# clock.scheduled_event (as a0b7f806, daily 08:00 Asia/Singapore -- payload-less;
-# the recipe reads only `today`, so every variant pins seed `now` and mirrors it
-# in trigger_input.scheduled_time):
-#   2  declare_variable 424312ba page_limit = "200" (integer_conversion -> 200),
-#      next_page_token nil
-#   REPEAT 3 (do-while over data-table pages):
-#     4  workato_db_table.get_records 9f52e0da table 12253
-#        '[WRKSM] Platform Requests & Responses', filter Status(cf556506...)
-#        ne 'new', order Created-at asc (mock serves seeded order; seeds MUST
-#        be ascending), limit = page_limit pill (mock ignores limit),
-#        continuation_token = '=next_page_token.presence or skip' (SKIP omits
-#        the arg on the first page)
-#     FOREACH 5 (as 50356e1e) over records:
-#       IF 6: '=(created_at.to_date - today).to_i + 1' greater_than '90'
-#         -- AUTHOR-INVERTED LOGIC replayed faithfully: the comment says "more
-#         than 90 days since request was made" but created-minus-today is only
-#         > 90 when Created at is >= 90 days IN THE FUTURE of seed today
-#         (boundary: today+90d -> 91 -> true; today+89d -> 90 -> false).
-#         Past-dated rows are NEVER deleted.
-#         7  workato_db_table.delete_record d9f0502a record_id = foreach
-#            Record ID (11fbe9a6...)
-#         8  logger.log_message 2b814176 INFO '="[WRKSM] DELETED REQUEST
-#            RECORD\n\n" + item.to_s' -- engine-canonical rendering: the \n
-#            escapes DECODE to real newlines (interpolation-aware double-quoted
-#            literal in arithmetic) and the whole foreach item renders as a
-#            Python dict repr including the mock bookkeeping keys (_row_id,
-#            _created_by); expects pin the exact string
-#         9  workato_list.accumulate_list_items a8da182e 'Jobs Report'
-#            {request_id, secondary_id, workspace_id, datacenter_alpha_2_code}
-#     10 update_variables 6608ff7f next_page_token = '=step-4
-#        continuation_token.presence or clear' (clear -> "")
-#     WHILE 11: step-4 continuation_token present
-#
-# Backends: workato_db_table 12254 is a Workato-internal mock seeded per
-# variant (deletes are mock-state only -> per-variant isolation IS the
-# cleanup); logger / workato_list / workato_variable are in-executor mocks.
-# Pagination is the deterministic seeded mock: continuation_tokens mapping
-# {"": "<tok>"} serves a token on the first page only, and the mock re-serves
-# the full remaining (filtered) table on every page -- the two-page variant
-# keeps per-page work disjoint because page 1 DELETES its matched row.
-#
-# TWIN: 98906732 is byte-identical except table_id 12254 (diff-verified);
-# both modules keep the same table schema/column ids.
 
 _RAW_PIN_JSON = r"""{"as": "a0b7f806", "block": [{"as": "424312ba", "block": [], "input": {"variables": {"data": {"page_limit": "200"}, "schema": "[{\"name\":\"page_limit\",\"type\":\"integer\",\"optional\":true,\"label\":\"Page Limit\",\"details\":{\"real_name\":\"Page Limit\"},\"control_type\":\"integer\"},{\"name\":\"next_page_token\",\"type\":\"string\",\"optional\":true,\"label\":\"Next Page Token\",\"details\":{\"real_name\":\"Next Page Token\"},\"control_type\":\"text\"}]"}}, "keyword": "action", "name": "declare_variable", "number": 2, "provider": "workato_variable", "skip": false}, {"as": "a66ab964", "block": [{"as": "9f52e0da", "block": [], "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "1c6304b6-b7ed-476b-8850-947626a2ccae": "string", "45fc828d-eb7d-40c1-a620-15b8c087b897": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "6491892d-d0c8-43e1-ae0e-ec83a7957676": "string", "8fbb1114-497b-4609-a2f4-e976909b3eac": "string", "917e9b64-6352-445a-90e6-fac398123f0f": "string", "9d257319-36bb-47e2-9854-bfc144638f67": "string", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "c8d2d496-4303-461b-90a6-25e3e760e7ed": "string", "cf556506-9231-4779-88eb-2a1d6471fa93": "string", "continuation_token": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"424312ba\",\"path\":[\"next_page_token\"]}').presence or skip", "d2f98611-d720-4ecc-9e2e-9ab0b19a6613": "integer", "filters": [{"field_id": "cf556506-9231-4779-88eb-2a1d6471fa93", "op_default": "ne", "value_default": "new"}], "limit": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"424312ba\",\"path\":[\"page_limit\"]}')}", "order_by_field_id": "a5612739-5401-4ae7-bd07-782c1a6fb2d1", "order_direction": "asc", "table_id": "12253"}, "keyword": "action", "name": "get_records", "number": 4, "provider": "workato_db_table", "skip": false}, {"as": "50356e1e", "block": [{"as": "", "block": [{"as": "d9f0502a", "block": [], "input": {"record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}", "table_id": "12253"}, "keyword": "action", "name": "delete_record", "number": 7, "provider": "workato_db_table", "skip": false}, {"as": "2b814176", "block": [], "input": {"log_level": "INFO", "message": "=\"[WRKSM] DELETED REQUEST RECORD\\n\\n\" + _dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[]}').to_s", "user_logs_enabled": true}, "keyword": "action", "name": "log_message", "number": 8, "provider": "logger", "skip": false}, {"as": "a8da182e", "block": [], "input": {"list_item": {"data": {"datacenter_alpha_2_code": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[\"9d257319_36bb_47e2_9854_bfc144638f67\"]}')}", "request_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[\"1c6304b6_b7ed_476b_8850_947626a2ccae\"]}')}", "secondary_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[\"8fbb1114_497b_4609_a2f4_e976909b3eac\"]}')}", "workspace_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[\"d2f98611_d720_4ecc_9e2e_9ab0b19a6613\"]}')}"}, "schema": "[{\"control_type\":\"text\",\"label\":\"Request Id\",\"name\":\"request_id\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Request Id\"}},{\"control_type\":\"text\",\"label\":\"Secondary Id\",\"name\":\"secondary_id\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Secondary Id\"}},{\"control_type\":\"integer\",\"label\":\"Workspace Id\",\"parse_output\":\"integer_conversion\",\"name\":\"workspace_id\",\"type\":\"integer\",\"optional\":true,\"details\":{\"real_name\":\"Workspace Id\"}},{\"control_type\":\"text\",\"label\":\"Datacenter Alpha2Code\",\"name\":\"datacenter_alpha_2_code\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"Datacenter Alpha2Code\"}}]"}, "name": "Jobs Report"}, "keyword": "action", "name": "accumulate_list_items", "number": 9, "provider": "workato_list", "skip": false}], "input": {"conditions": [{"lhs": "=(_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"50356e1e\",\"path\":[\"a5612739_5401_4ae7_bd07_782c1a6fb2d1\"]}').to_date - today).to_i + 1", "operand": "greater_than", "rhs": "90"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 6, "provider": "", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"9f52e0da\",\"path\":[\"records\"]}')}"}, "keyword": "foreach", "name": "", "number": 5, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"9f52e0da\",\"path\":[\"records\"]}')}"}, {"as": "6608ff7f", "block": [], "input": {"name": "28ff1af7-874c-49fc-b252-b9c7eccc198c:424312ba:next_page_token", "next_page_token": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"9f52e0da\",\"path\":[\"continuation_token\"]}').presence or clear"}, "keyword": "action", "name": "update_variables", "number": 10, "provider": "workato_variable", "skip": false}, {"as": "", "block": [], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"9f52e0da\",\"path\":[\"continuation_token\"]}')}", "operand": "present", "rhs": ""}], "operand": "and", "type": "compound"}, "keyword": "while_condition", "name": "", "number": 11, "provider": "", "skip": false}], "input": {}, "keyword": "repeat", "name": "", "number": 3, "provider": "", "skip": false}], "input": {"time_unit": "days", "timezone": "Asia/Singapore", "trigger_at": "08:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

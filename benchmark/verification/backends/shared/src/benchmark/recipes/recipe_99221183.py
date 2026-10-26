@@ -15,15 +15,6 @@ SEED_TYPE = "package_type_unregister_variant"
 TRACK = "package_type_unregister"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API endpoint that unregisters a Package Type for an authenticated workspace.
-# 1. get_records Workspaces (WORKSPACES_TABLE) filtered by access_profile_id +
-#    workspace user_id + enabled=true.
-# 2. if that set is empty -> return_response 401 (Unauthorized), terminal.
-# 3. else, inside try: get_records Package Types (PACKAGE_TYPES_TABLE) filtered
-#    by the requested Record ID.
-#    - if that set is empty -> return_response 404 (Not found), terminal.
-#    - else delete that Package Types record and return_response 200, terminal.
-#    - catch -> return_response 400 {error: "Unexpected Error"}.
 WORKSPACES_TABLE = "8057"
 PACKAGE_TYPES_TABLE = "8052"
 DELETE_STEP_AS = "628b2484"

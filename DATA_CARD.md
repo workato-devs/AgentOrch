@@ -1,58 +1,55 @@
-# AgentOrch data card
+# AgentOrch datasets
 
-## Dataset
+AgentOrch contains 650 enterprise SOPs and 3,220 runtime variants. A separate
+training set contains 3,000 source recipes, disjoint from the benchmark by
+recipe ID. Both sets come from the same enterprise automation environment.
 
-AgentOrch contains 650 benchmark SOPs with 3,220 runtime variants and a
-separate 3,000-recipe training set. The datasets provide model-visible task
-specifications, reference workflows and executions, simulator state, and
-prepared SFT / GRPO examples.
+## Benchmark construction
 
-The corpus is derived from sanitized enterprise workflow recipes. Task
-descriptions and runtime variants were produced through generation and
-validation pipelines. Automated critic acceptance does not itself establish
-human review.
+Sanitized executable Workato recipes define reference workflows. Task
+specifications describe their business requirements, public schemas, workspace
+resources, templates, and 64 available tool interfaces. Runtime variants
+exercise different control-flow paths, loop cardinalities, and error conditions.
+Real-connector reference executions provide traces, intermediate results,
+and terminal outputs; model-generated workflows are evaluated in simulation.
 
-## Intended use
+Four authors reviewed task descriptions through five review/regeneration
+rounds. Runtime variants underwent reference execution and human inspection
+of outputs, state changes, control flow, and terminal responses, as described
+in Appendix G.
 
-The data supports research on workflow planning, tool use, orchestration,
-execution-based evaluation, and training on complete symbolic workflows.
-Reported model results use the deterministic simulated backend.
+## Training data
 
-## Splits and information boundaries
+Each recipe provides one task-specification/complete-workflow pair. Targets
+preserve branches, loops, exception handling, tool calls, data dependencies,
+and termination behavior. Each example exposes 64 tool cards. Targets use
+1,033 tool operations across 305 namespaces; the tool-card pool contains
+1,036 cards across 306 namespaces.
 
-Training and benchmark recipe IDs do not overlap. The tool ecosystem is
-shared across splits; recipe separation does not imply unseen tools or
-absence of structurally similar workflows.
+Training targets undergo structural and interface validation. Their inclusion
+does not require execution of the serialized target. The recipe-disjoint
+split evaluates new workflows within a shared tool ecosystem.
 
-Ground truth is available to the local evaluator. Model prompts use public
-task specifications and permitted runtime observations, while reference plans,
-expected outcomes, and private simulator state remain evaluator inputs. This
-is an open local benchmark rather than a hosted blind test.
+## Information boundaries
 
-## Runtime data
+Public task specifications exclude reference workflows, reference traces,
+hidden connector state, fault settings, and concrete runtime inputs. Step-by-Step
+receives runtime input and execution observations. Input-Conditioned Global
+receives runtime input before planning. Replan receives feedback from its own
+executions, without reference behavior or evaluation scores.
 
-Examples use synthetic identifiers consistently across task inputs, simulator
-seeds, and expected outputs. The simulator executes reads, writes,
-notifications, and deletions against local state. The optional live connector
-backend requires separate service configuration and credentials.
+## Download and use
 
-## Reproduction
+[Benchmark data](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark)
+and [training data](https://huggingface.co/datasets/JesseLiu/agentorch-training)
+are available on Hugging Face:
 
-[Benchmark data](https://huggingface.co/datasets/JesseLiu/agentorch-benchmark),
-[training data](https://huggingface.co/datasets/JesseLiu/agentorch-training),
-and the model checkpoints linked in [README.md](README.md#models) are available
-on Hugging Face. Dataset manifests describe membership and prepared-data
-lineage. The repository includes the evaluator and published aggregate scores;
-the maintainers' per-variant model-run archive is not distributed.
+```bash
+python -m pip install huggingface_hub
+python scripts/download_data.py --only benchmark
+python scripts/download_data.py --only training --prepared
+```
 
-Exact model reruns can vary with provider versions, GPU kernels, and
-hardware. The benchmark characterizes the included workflows and connector
-interfaces; it does not establish general production readiness.
-
-## Interpretation
-
-See [evaluation notes](benchmark/doc/evaluation_notes.md) for exact-order
-scoring, protocol differences, checkpoint selection, and reference-control
-limitations. Dataset and model cards provide artifact-specific license
-metadata; included third-party notices are in
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+See the [evaluation guide](benchmark/README.md) and
+[training guide](training/README.md) for execution commands.
+Included third-party attribution is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

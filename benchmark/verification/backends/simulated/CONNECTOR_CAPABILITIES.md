@@ -18,24 +18,3 @@
 | Clock trigger | scheduled_event_payload, wait_for_interval | mock | yes | yes | n/a | Scheduled trigger payload and wait interval replay only; no scheduler service or real sleep is invoked. |
 | Skilljar | new_object_payload | mock | yes | yes | n/a | Trigger payload support only; downstream effects run through table tools. |
 | Namely | new_job_title_payload | mock | yes | yes | n/a | Trigger payload support only; downstream effects run through lookup table tools. |
-
-## Gmail (gap note)
-
-The benchmark safety policy defines an outbound-side-effect exception for Gmail: send
-actions must execute as live DRAFT creation, verified by reading the draft
-back, then cleaned up. The live-draft adapter is NOT implemented — no
-registered recipe currently exercises a live send path (129988557's send
-steps are skip:true dead steps). If a Gmail live-send recipe is ever
-admitted, the draft adapter must be built first; do not map sends to a mock.
-
-
-## Salesforce SOQL ORDER BY (supported subset note)
-
-The harness evaluates the SOQL ORDER BY subset the current corpus uses:
-multi-key ASC/DESC with SOQL null placement, typed comparison (numeric,
-chronological, casefolded strings, case-sensitive binary order for
-ID-shaped columns), and relationship-path keys. Locale-aware collation and
-exact per-type Salesforce ordering beyond these classes are DOCUMENTED
-APPROXIMATIONS, not full SOQL equivalence; unsupported constructs fail
-loudly rather than mis-sort. Describe this as "the SOQL subset exercised by
-the corpus" in any external write-up.

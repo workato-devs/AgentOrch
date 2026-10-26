@@ -26,56 +26,7 @@ FOREACH_AS = "95c0de6f"
 CHUNK_CALL_AS = "664a521c"
 REMAINDER_CALL_AS = "5ed86f4a"
 REPLY_STEP_AS = "3a2a1647"
-# TWIN NOTE: 89454478 is a byte-identical twin of this recipe (diff verified
-# against both raw_recipe.md files): only the sub-recipe flow_id (45561579
-# there vs 45626522 here) and CSV metadata differ. The 88676116/88624257
-# family shares the same logic with an integer-typed chunk-call schema and a
-# 'Base Timer Unit' picklist label. Each module pins ITS OWN flow_id and
-# verbatim raw tree so twin drift is caught by validation, never papered over.
 
-# Callable "Flexi Idler" service (trigger as c5e63d24, request schema
-# {Secs integer}): idles for request.Secs seconds by chaining a 'Timer'
-# sub-recipe in 10s units.
-#   2  logger.log_message f33691f6: =Secs%10 (the remainder, logged as a
-#      STRING and re-read by IF-6 and the remainder call formula).
-#   3  workato_list.create_list 84057fa4: size = =(Secs/10).to_i (whole 10s
-#      chunks; size 0 creates an EMPTY list -> foreach runs 0 iterations).
-#   FOREACH 4 (as 95c0de6f) over the 84057fa4 list:
-#     5  workato_service.call_service 664a521c flow 45626522, request.secs =
-#        =10-(((now-job_created_at).to_i+10)-(seq_no*10)) -- seq_no is
-#        1-based, so at delta d the chunk calls ask for 10*k-d style values;
-#        NEGATIVE secs at early seq_no are FAITHFUL engine arithmetic under a
-#        pinned now (probed -2 at seq_no 1, delta 12s). Pin them, never 'fix'.
-#   IF 6 (logger message greater_than '0' -- numeric compare on the string):
-#     7  workato_service.call_service 5ed86f4a flow 45626522, request.secs =
-#        =message.to_i-((now-job_created_at).to_i-____Size*10) where ____Size
-#        comes from the list_meta fallback form
-#        _('...list.first.____Size','list_meta','____Size','...list') -- an
-#        EMPTY list yields ____Size 0 (probed), so remainder-only variants
-#        (Secs<10) still evaluate the tail.
-#   8  workato_service.send_reply 3a2a1647: reply.secs_waited =
-#      =(now-job_created_at) -- engine renders the whole-second delta as an
-#      int (Ruby would carry Float; ruled engine-defined at triage, pin int).
-#
-# BRANCH ALGEBRA TRAP: when the remainder is 0 the phantom remainder call
-# would ask for exactly size*10-delta secs -- the SAME value as the last
-# chunk call (10-((d+10)-size*10) == size*10-d). Tool args therefore CANNOT
-# distinguish the IF-6 false branch; expect.call_service_step_as pins the
-# per-call step ids from the trace ('664a521c' vs '5ed86f4a') to prove the
-# branch, and executed_action_count seals the count.
-#
-# ENGINE GAP (reported, batch-05): resolve_text renders falsy values as ''
-# (its text renderer coerces via str(resolved or "")), so the logger message for a 0
-# remainder logs '' where Ruby renders '0'. Branch outcomes are unaffected
-# ('' > '0' is False exactly like '0' > '0'), and no agent-surface value is
-# touched, but expect.log_messages is therefore OPTIONAL and only pinned on
-# variants whose rendering is Ruby-faithful (remainder != 0). Never pin ''
-# for a 0 remainder -- that would freeze the wrong groundtruth.
-#
-# All backends are Workato-internal (logger + workato_list + workato_service
-# seeded replies): mock per backend policy. No persistent state -> no cleanup;
-# every variant pins seed.now AND job_context.job_created_at (never wall
-# clock) because three formulas consume the now-delta.
 
 _RAW_PIN_JSON = r"""{"as": "c5e63d24", "block": [{"as": "f33691f6", "block": [], "input": {"message": "=_('data.workato_service.c5e63d24.request.Secs')%10"}, "keyword": "action", "name": "log_message", "number": 2, "provider": "logger", "skip": false}, {"as": "84057fa4", "block": [], "input": {"size": "=(_('data.workato_service.c5e63d24.request.Secs')/10).to_i"}, "keyword": "action", "name": "create_list", "number": 3, "provider": "workato_list", "skip": false}, {"as": "95c0de6f", "block": [{"as": "664a521c", "block": [], "input": {"flow_id": "45626522", "request": {"secs": "=10-(((now-_('data.workato.job_context.job_created_at')).to_i+10)-(_('data.foreach.95c0de6f.seq_no')*10))"}}, "keyword": "action", "name": "call_service", "number": 5, "provider": "workato_service", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_list\",\"line\":\"84057fa4\",\"path\":[\"list\"]}')}"}, "keyword": "foreach", "name": "", "number": 4, "provider": "", "repeat_mode": null, "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_list\",\"line\":\"84057fa4\",\"path\":[\"list\"]}')}"}, {"as": "", "block": [{"as": "5ed86f4a", "block": [], "input": {"flow_id": "45626522", "request": {"secs": "=_('data.logger.f33691f6.message').to_i-((now-_('data.workato.job_context.job_created_at')).to_i-_('data.workato_list.84057fa4.list.first.____Size', 'list_meta', '____Size', 'data.workato_list.84057fa4.list')*10)"}}, "keyword": "action", "name": "call_service", "number": 7, "provider": "workato_service", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"logger\",\"line\":\"f33691f6\",\"path\":[\"message\"]}')}", "operand": "greater_than", "rhs": "0"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 6, "provider": "", "skip": false}, {"as": "3a2a1647", "block": [], "input": {"reply": {"secs_waited": "=(now-_('data.workato.job_context.job_created_at'))"}, "reply_type": "success"}, "keyword": "action", "name": "send_reply", "number": 8, "provider": "workato_service", "skip": false}], "input": {"reply_schema_json": "[{\"name\":\"secs_waited\",\"type\":\"number\",\"optional\":false,\"control_type\":\"number\"}]", "request_schema_json": "[{\"name\":\"Secs\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\"}]", "rest_enabled": "false", "service_name": "Flexi Idler"}, "keyword": "trigger", "name": "receive_request", "number": 1, "provider": "workato_service", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

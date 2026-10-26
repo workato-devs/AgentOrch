@@ -16,25 +16,7 @@ TRACK = "workato_api_platform_return_response"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = 'f776f701'
-# Public-key distribution endpoint (flow 62549904 v13): the API Platform trigger
-# receives GET /<environment> and dereferences ONLY path_params.environment.
-# Twelve sequential sibling IF blocks (not elsif, but mutually exclusive: each
-# tests the same scalar against a distinct constant; IF #14 has TWO OR'd arms,
-# 'preview' OR 'agentic-preview') each declare a hardcoded multi-line
-# public_key literal (RSA JWK / PEM / EC JWK) and return it as a terminal
-# 200 {key} response. An environment matching no IF executes zero actions and
-# returns no API response. All backends are Workato-internal (api_platform +
-# workato_variable), so the run is fully mocked per the backend policy.
-#
-# TWIN NOTE: recipe 126396823 is a structural twin, but the IF order, several
-# as-ids, and part of the key material/whitespace differ. Groundtruth is NOT
-# shared: every literal below is pinned verbatim from THIS recipe's own
-# dataset/input_recipes/127418592/raw_recipe.md and must stay byte-exact (leading spaces and
-# newlines inside the key literals are significant).
 
-# Verbatim pin of the trigger's endpoint configuration (path param
-# "environment", empty request schema, single 200 response named "public_key"
-# with a string "key" body field).
 EXPECTED_TRIGGER_INPUT: dict[str, Any] = {
     'request': {
         'content_type': 'json',
@@ -53,10 +35,6 @@ EXPECTED_TRIGGER_INPUT: dict[str, Any] = {
     },
 }
 
-# Verbatim pin of the 12 environment IF branches in recipe order. Each entry
-# pins the IF operand + condition list (datapill lhs strings included) and both
-# child actions' as-ids and full inputs (the hardcoded public_key literal, its
-# schema string, and the return_response {key: <declare pill>} mapping).
 EXPECTED_BRANCHES: list[dict[str, Any]] = [
     # IF #2 (or): environment == 'identity-prod' -> RSA JWK via declare acb05a66 / respond b115ce3b
     {

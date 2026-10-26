@@ -26,59 +26,6 @@ ERROR_REPLY_AS = "c764d8ca"
 SOBJECT = "CampaignMember"
 NOTES_FIELD = "Campaign_Member_Notes__c"
 
-# workato_service.receive_request 'Add person to Salesforce campaign'
-# (as d422758b): request {lead_or_contact_id req, campaign_id req, notes opt,
-# status req}. Body = one TRY:
-#   3 salesforce.create_custom_object 25a6445f (LIVE create_record)
-#     CampaignMember: CampaignId <- request.campaign_id,
-#     Campaign_Member_Notes__c <- request.notes (a MISSING pill drops the
-#     column entirely; re-probed), Status <- request.status, and the
-#     SKIP-TERNARY PAIR over ONE request field:
-#       ContactId = starts_with?("003") ? id : skip
-#       LeadId    = starts_with?("00Q") ? id : skip
-#     A 003-id keeps ContactId and DROPS LeadId; a 00Q-id the reverse; any
-#     other prefix drops BOTH (the id then never reaches Salesforce at all)
-#     and the live org rejects a CampaignMember without Lead/Contact ->
-#     catch. The SKIP sentinel never reaches tool args (raw_executor
-#     salesforce_create; re-probed).
-#   4 workato_service.send_reply eae47ad6 success,
-#     reply.campaign_member_id <- salesforce.25a6445f.id: the LIVE created
-#     id, threaded from the create result - never a pinnable literal. NOT
-#     terminal (send_reply does not stop a service recipe).
-#   CATCH 5 (as b3123d81, max_retry_count 0):
-#     6 workato_service.send_reply c764d8ca reply_type 'error', message
-#       <- catch.b3123d81.message. The node's 'code' 500 and
-#       'custom_error_response' true are NOT forwarded by the send_reply
-#       adapter (only reply_type/reply/message; re-probed) - NEVER pin them.
-#       The failed create never traces, so the catch branch executes exactly
-#       ONE action.
-#
-# Live backend: Salesforce. Campaign + Contact/Lead are seeded live
-# (harness.salesforce.seed_records); Campaign_Member_Notes__c provisions via
-# ensure_custom_field schema-in-seed (idempotent Tooling-API create + FLS).
-# CampaignMember is a standard sobject - no stand-in. The RECIPE-CREATED
-# member is registered as owned by the run harness; cleanup deletes ALL owned
-# records (member first - reverse creation order) in the runner's finally.
-# Workato-internal mock: service trigger + send_reply.
-#
-# Branch mapping (offline dry-replay re-probed on this tree, 2026-07-08):
-# - contact_member_created (2 actions): id $CONTACT_ID (003...) -> fields
-#   {CampaignId, ContactId, Status, notes?}; LeadId ABSENT from args.
-# - lead_member_created (2 actions): id $LEAD_ID (00Q...) -> fields
-#   {CampaignId, LeadId, Status}; ContactId ABSENT; this variant also omits
-#   notes to prove the MISSING-pill column drop.
-# - bad_id_error_reply (1 action): a well-formed 005... id -> both ternaries
-#   SKIP -> live create rejected (no Lead/Contact) -> catch -> error reply
-#   {reply_type error, reply {}, message = live SF error text}. The message
-#   is LIVE text: pinned as __ANY__; the verifier checks catch->reply
-#   consistency, that the seeded Campaign is untouched, and that no
-#   CampaignMember exists.
-# Status stays within {'Sent','Responded'} (default CampaignMemberStatus
-# values in the benchmark org; triage-verified live).
-# Blank-string notes are rejected by the seeder: the executor would pass
-# Campaign_Member_Notes__c '' but the live harness drops blank strings before
-# the POST, so '' is not authorable groundtruth (absence is).
-# Service->SF precedent: recipe_88708198 (committed this batch).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_service", "name": "receive_request", "as": "d422758b", "skip": false, "input": {"reply_schema_json": "[{\"name\":\"campaign_member_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"}]", "request_schema_json": "[{\"name\":\"lead_or_contact_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"campaign_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"notes\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"status\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"}]", "service_name": "Add person to Salesforce campaign"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "salesforce", "name": "create_custom_object", "as": "25a6445f", "skip": false, "input": {"CampaignId": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"d422758b\",\"path\":[\"request\", \"campaign_id\"]}')}", "Campaign_Member_Notes__c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"d422758b\",\"path\":[\"request\", \"notes\"]}')}", "ContactId": "=_('data.workato_service.d422758b.request.lead_or_contact_id').starts_with?(\"003\") ? _('data.workato_service.d422758b.request.lead_or_contact_id') : skip", "LeadId": "=_('data.workato_service.d422758b.request.lead_or_contact_id').starts_with?(\"00Q\") ? _('data.workato_service.d422758b.request.lead_or_contact_id') : skip", "Status": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"d422758b\",\"path\":[\"request\", \"status\"]}')}", "sobject_name": "CampaignMember"}, "block": []}, {"number": 4, "keyword": "action", "provider": "workato_service", "name": "send_reply", "as": "eae47ad6", "skip": false, "input": {"reply": {"campaign_member_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"25a6445f\",\"path\":[\"id\"]}')}"}, "reply_type": "success"}, "block": []}, {"number": 5, "keyword": "catch", "provider": "", "name": "", "as": "b3123d81", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 6, "keyword": "action", "provider": "workato_service", "name": "send_reply", "as": "c764d8ca", "skip": false, "input": {"code": "500", "custom_error_response": "true", "message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"b3123d81\",\"path\":[\"message\"]}')}", "reply_type": "error"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -105,16 +52,11 @@ REQUIRED_EXPECT_KEYS = (
 BRANCHES = ("contact_member_created", "lead_member_created", "bad_id_error_reply")
 REQUEST_KEYS = ("lead_or_contact_id", "campaign_id", "notes", "status")
 ALLOWED_STATUSES = ("Sent", "Responded")
-# Pinned schema-in-seed: re-ensure the notes custom field (+FLS) on every run
-# (ensure_custom_field is idempotent). control_type text-area -> TextArea.
 SF_SCHEMA: list[dict[str, str]] = [
     {"sobject": SOBJECT, "field": NOTES_FIELD, "sf_type": "TextArea"},
 ]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"[a-zA-Z0-9]{15,18}")
-# The deliberate neither-prefix id the catch variant sends: well-formed
-# 18-char id shape (realistic caller mistake - a 005 User id), but it never
-# reaches Salesforce because BOTH skip-ternaries drop it.
 _BAD_ID_RE = re.compile(r"^005[a-zA-Z0-9]{12}(?:[a-zA-Z0-9]{3})?$")
 
 

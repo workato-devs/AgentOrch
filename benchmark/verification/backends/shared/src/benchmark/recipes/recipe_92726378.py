@@ -21,9 +21,6 @@ TRIGGER_AS = "14600d8d"
 DECLARE_AS = "01313dbb"
 PUBLISH_AS = "055b99cf"
 USER_PLACEHOLDER = "__TRIGGER_USER__"
-# declare_variable stores the five date-typed anon literals VERBATIM — no
-# date parsing is applied to the '<anon>MM/DD/YYYY</anon>' strings (dry-replay
-# probed 2026-07-09; the declare trace result is exactly this mapping).
 DECLARED_DATES = {
     "date1": "<anon>01/01/2024</anon>",
     "date2": "<anon>02/01/2024</anon>",
@@ -32,48 +29,6 @@ DECLARED_DATES = {
     "date5": "<anon>05/01/2024</anon>",
 }
 
-# slack_bot.new_event app_home_opened (as 14600d8d). Linear body, no
-# branches; the ONLY trigger field any pill dereferences is
-# app_home_opened.user (the '<@user>' mention in block 1 and the publish
-# user_id). Steps:
-#   2  workato_variable.declare_variable 01313dbb (MOCK Workato-internal):
-#      date1..date5 = the anon literals above, stored verbatim.
-#   3  slack_bot.open_bot_app_home 055b99cf (LIVE views.publish): the
-#      adapter resolves the 9 raw blocks + user_id and calls
-#      slack.publish_home; args.view carries the RAW Workato block shape
-#      (block_type/...) — the Block Kit translation happens inside the live
-#      client (_home_view; registered 109445492/86565478 precedent).
-#      Conversion re-probed OFFLINE 2026-07-09 (no publish): 9 Block Kit
-#      blocks ['image','section','divider','section','actions','divider',
-#      'actions','divider','section']; the REAL unsplash image URL passes
-#      through VERBATIM (only <anon> URLs get the Slack placeholder) and the
-#      image branch ignores its vestigial section_text 'Hello'; the two
-#      actions blocks carry 4 buttons total (incl bot_command '46745005' as
-#      action_id/value on two of them, styles primary/danger; 'Lookup
-#      Account' style 'default' is NOT a Block Kit style and is dropped by
-#      the converter); the section_with_fields renders all 9
-#      attachment_fields as '*title*\nvalue' mrkdwn with anon company names
-#      + backticked date pill values verbatim.
-#
-# View-content semantics the variants pin byte-exactly via HOME_BLOCKS
-# (whole-list equality, _contains_args exact-length list compare):
-# - fields 6/7 REUSE date2/date1 (pill-fed), field 9 is the HARDCODED
-#   literal '`<anon>06/01/2024</anon>`' (not variable-fed);
-# - all view content except the mention is trigger-independent literals, so
-#   across variants only the '<@user>' line and user_id may differ.
-#
-# Branch mapping: single reachable linear path. Variants swap the trigger
-# user across the TWO real benchmark workspace users (U0B973TLN7N /
-# U0B91BSRGF8 — the registered app-home family 48616658/86565478/83147854/
-# 120700492/125342694 uses exactly these; live views.publish rejects unknown
-# users, so a third-user variant is not provisionable — the triage
-# 'user_c' pins are folded into every variant's byte-exact view pin).
-#
-# Backends: slack LIVE (views.publish App Home to the seeded trigger user).
-# No cleanup: an App Home publish is never re-read by the benchmark and
-# republishing is idempotent for reruns (86565478 precedent). The declare
-# step is the sanctioned Workato-internal variable mock; no other state
-# anywhere -> seed sections must be empty.
 _STRUCTURE_PINS_JSON = r"""[
  {
   "keyword": "trigger",
@@ -221,8 +176,6 @@ _STRUCTURE_PINS_JSON = r"""[
 ]"""
 STRUCTURE_PINS: list[dict[str, Any]] = json.loads(_STRUCTURE_PINS_JSON)
 
-# The publish args' RAW blocks with every pill resolved (dry-replay probed
-# byte-exact 2026-07-09); the trigger user is the only variable site.
 _HOME_BLOCKS_TEMPLATE_JSON = r"""[
  {
   "alt_text": "Image of CSM",

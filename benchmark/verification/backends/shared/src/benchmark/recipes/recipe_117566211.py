@@ -22,40 +22,6 @@ CATCH_AS = "2da14745"
 ERROR_RESPONSE_AS = "57671952"
 STOP_AS = "8ce124ba"
 
-# BYTE-twin of 117566211 (the 1043-line Automation Compass businessUnits
-# shape): the raw bodies are byte-identical; the only delta is CSV header
-# metadata (created_at/flow_id/updated_at/version_no). 117566211 is the
-# ORIGINAL (v28); 117566211 is the re-issue. Same try/catch/return skeleton
-# as family head 118162472. Shape:
-#   workato_api_platform.receive_request 751ec271 (request block carries NO
-#   schema key at all — no params; trigger seed is exactly {"request": {}})
-#   TRY(2)> snowflake.search_rows_sql 60b10d1f (LIVE): 3-CTE SQL —
-#     ProcessScores weights BUSINESS_PROCESS rows by HIERARCHICAL_LEVEL
-#     (1..4 -> weight 4..1, ELSE 1), computes NORMALIZED_AUTOMATION_SCORE
-#     (CURRENT*100.0/TARGET when TARGET > 0 else 0), CURRENT_AI_UTILIZATION
-#     (CURRENT_AI_INVOLVEMENT_LEVEL*100.0/4 when NOT NULL else 0) and
-#     AI_OPPORTUNITY_GAP; BUMetrics ROUNDs weighted sums over NULLIF
-#     denominators and counts DISTINCT ids per STATUS literal — 'Completed' /
-#     'In-Progress' (HYPHEN — unlike the 'In Progress' used by siblings
-#     479/182) / 'Planned' — plus AI_IMPACT_LEVEL >= 3 high-value
-#     opportunities; final SELECT LEFT JOINs BUSINESS_UNIT to BUMetrics with
-#     COALESCE(...,0) (a BU with no processes yields an all-zero row) and
-#     ORDER BY BU.NAME.
-#   return_response 83954e0e: 200 {businessUnits: ____source over rows with
-#     12 current_item pills id/code/name/icon/primaryColor/secondaryColor/
-#     automationScore/aiReadiness/completedProjects/inProgressProjects/
-#     plannedProjects/highValueOpportunities} + CORS headers.
-#   CATCH 2da14745 (max_retry_count 0)> return_response 57671952: 400
-#     {error: catch message pill}; stop 8ce124ba is DEAD (return_response is
-#     terminal — catch variants expect executed_action_count 1, no stop row).
-# LOAD-BEARING seed typing (triage-proven): level/impact columns are NUMBER
-# so ROUND()/COUNT() come back as integral Decimals -> native ints through
-# _json_value; NUMBER(38,0) rounds fractional seeds, so the seeder rejects
-# non-integer level values.
-# Backends: Snowflake LIVE (seeder create-or-replace, runner drops in
-# finally, READ-ONLY — snapshot equality pinned); api_platform is the
-# Workato-internal mock. Physical table names are shared across the
-# AUTOMATION_COMPASS family — never run family variants concurrently.
 PROCESS_TABLE = "AUTOMATION_COMPASS.BUSINESS_PROCESS"
 UNIT_TABLE = "AUTOMATION_COMPASS.BUSINESS_UNIT"
 PROCESS_COLUMNS = {

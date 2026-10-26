@@ -19,10 +19,6 @@ TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
 TRIGGER_AS = "3be5e081"
 LOOKUP_TABLE_ID = "3900147"
-# Literal 3-part names the SQL references; MUST be the registered
-# snowflake_live table keys so _rewrite_sql maps every occurrence (FROM +
-# max() scalar subselect + the two NOT IN subqueries) onto the benchmark
-# database.
 SNAPSHOT_TABLE = "edw_db.workato_usage_intermediate.accounts_snapshot"
 INTERNAL_TABLE = "product.plg.salesforce_internal_accounts_jiawei"
 DELETED_TABLE = "product.plg.sfdc_hard_deleted_accounts"
@@ -54,44 +50,6 @@ RAW_SQL = (
     "    ;"
 )
 
-# clock.scheduled_event (as 3be5e081, daily 17:00) -- payload-less; NO
-# trigger field is ever dereferenced (trigger_input must be exactly {}).
-# Family SIBLING (NOT twin, 1091 diff lines) of REGISTERED 103520604: same
-# truncate -> snapshot-SQL -> add_batch skeleton, but lookup table 3900147
-# (vs 3290579), +pricing_model column, +2 NOT IN exclusion subqueries, and
-# the rows_affected IF here is fully skip:true (live if/else there).
-#   2  lookup_table.truncate c508a22e table 3900147 (mock)
-#   3  snowflake.run_custom_sql 64fd1130 (LIVE): RAW_SQL -- latest snapshot
-#      via the max() scalar subselect over the SAME table, minus accounts in
-#      the internal-accounts list (NOT IN subquery 1) and the hard-deleted
-#      list (NOT IN subquery 2), gated by the bare is_direct/is_paying
-#      boolean predicates. rows_affected = len(rows) for run_custom_sql
-#      (live_tools). No CURRENT_* in the SQL -> no current_time seed.
-#      Trailing ';' passes through live. The output_schema still declares a
-#      current_plan field the SQL no longer selects -- vestigial, no col
-#      maps it.
-#   4  lookup_table.add_batch_of_entries a909681c: ____source over
-#      64fd1130.rows -> col1..col10 (entry_date/customer/owner_id/owner/
-#      active_subscription/subscription_start_date/current_arr/
-#      cat_company_size/account_id/pricing_model -- NOTE account_id is col9
-#      and pricing_model col10, NOT the 103520604 order).
-#   IF 5 (rows_affected equals_to '0') -- skip:TRUE: the ENTIRE subtree is
-#      PROVABLY DEAD. execute_node's skip guard traces {skipped: true} for
-#      the IF node itself and NEVER evaluates the condition or enters the
-#      children [stop fd3c9883 skip:true; else > add_batch fadff562
-#      skip:true] -- every variant pins the 3-action + 1-skip trace and the
-#      absence of fd3c9883/fadff562.
-#
-# The recipe ENDS after the batch add: the 0-rows case leaves the lookup
-# table truncated-EMPTY (faithful no-op add; the dead IF that once handled
-# it never runs). Backends: Snowflake runs LIVE (all 3 tables seeded under
-# their LITERAL 3-part keys, dropped in the runner's finally; READ-ONLY).
-# Lookup table 3900147 is Workato-internal -> deterministic per-variant
-# mock. SELECT-row ORDER is not guaranteed (no ORDER BY), so batch entries /
-# final rows are pinned as exact MULTISETS keyed on (col9, col2, full row);
-# the seeder requires account_id to be DISTINCT among QUALIFYING rows
-# (non-qualifying rows may repeat an account_id across entry_dates -- that
-# is exactly the max-date-filter case).
 
 _STRUCTURE_PINS_JSON = r"""[
  {
@@ -233,8 +191,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
 ]
 ALLOWED_TOOLS: list[str] = list(EXPECTED_RAW_TOOLS)
 DEAD_STEP_IDS = (DEAD_STOP_AS, DEAD_ELSE_BATCH_AS)
-# lowercase SELECT alias -> lookup column (col1..col10 in recipe order;
-# account_id is col9 and pricing_model col10 here).
 SQL_ALIAS_TO_COL = {
     "entry_date": "col1",
     "customer": "col2",
@@ -263,7 +219,6 @@ SNAPSHOT_COLUMNS = {
 }
 INTERNAL_COLUMNS = {"id": "string"}
 DELETED_COLUMNS = {"account_id": "string"}
-# seed column -> SELECT alias (identity except the three AS renames)
 SEED_COLUMN_TO_ALIAS = {
     "entry_date": "entry_date",
     "account_name": "customer",

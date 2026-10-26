@@ -26,9 +26,6 @@ US_DECLARE_AS = "fce3e11c"
 POST_BIZTECH_AS = "4bce594e"
 POST_BTHR_AS = "2f65a9ec"
 ZONE = "Europe/London"  # semantic zone inside the <anon> wrapper (de-tagged by resolve_zone_info)
-# The live tab is seeded with LITERAL col_-prefixed headers so the search
-# result rows carry exactly the keys the recipe's datapills walk (registered
-# 118858162 family precedent). Full 17-column sheet schema.
 SHEET_HEADERS = [
     "col_APJ TIME",
     "col_EMEA TIME",
@@ -48,8 +45,6 @@ SHEET_HEADERS = [
     "col_D-US-Alt",
     "col_D-Flexi",
 ]
-# Columns the digest renders off the matched row -- required non-empty there
-# so a blank seed cannot masquerade as the zero-row branch.
 DIGEST_COLUMNS = (
     "col_WEEK NO",
     "col_DATE",
@@ -64,52 +59,6 @@ DIGEST_COLUMNS = (
     "col_D-Flexi",
 )
 
-# clock.scheduled_event (as c37baaa3, weekly Monday 08:00, timezone
-# '<anon>Europe/London</anon>') -- payload-less; trigger_input must be exactly
-# {} and determinism comes from the pinned variant 'now'. Body (LINEAR, no
-# if/foreach/try; the branching lives in the two declare formulas):
-#   2  workato_variable.declare_variable e4240616: week_no =
-#      =now.in_time_zone("<anon>Europe/London</anon>").yweek -- the anon-wrapped
-#      tz de-tags via resolve_zone_info (batch07 engine fix, re-probed on this
-#      tree; an invalid de-tagged zone still fails fast) -> ISO week INT.
-#   3  google_sheets.search_spreadsheet_rows_v4_new 9e3dbecf (LIVE, 'Schedule
-#      v2.' sheet '2025', count 200): data {'col_WEEK NO': week_no} -- int week
-#      str-compares against the live cell text; live tab keyed by the LITERAL
-#      col_ headers.
-#   4  workato_variable.declare_variable fce3e11c:
-#      us_shift_period = if col_D-US-Alt.present? "D-US\nD-US-Alt" else col_D-US
-#      us_support = if col_BT US 2 == "-" "`US1`" else "`US1` & `US2`"
-#      (registered-118858162 formula idioms; rows current_item derefs sit
-#      OUTSIDE any foreach -> FIRST-ROW semantics; every variant seeds at most
-#      one matching row so this is unambiguous. Zero rows: us_support renders
-#      '`` & ``' and us_shift_period resolves MISSING -> nil.)
-#   5  slack_bot.post_bot_message 4bce594e '#biztech' -> override channel
-#   6  slack_bot.post_bot_message 2f65a9ec '#bt-hr' -> override channel
-#      (byte-identical digest text; the trace as-ids distinguish the posts)
-#
-# Branch mapping (full 2x2 formula matrix; branch content is DERIVED from the
-# seeded rows, never trusted):
-# - variant_00: BT US 2 '-' + D-US-Alt blank -> single support, one-line shift
-# - variant_01: BT US 2 person + D-US-Alt present -> dual support, 2-line shift
-# - variant_02: BT US 2 person + D-US-Alt blank -> dual support, one-line shift
-# - variant_03: BT US 2 '-' + D-US-Alt present -> single support, 2-line shift
-# Every variant seeds >=1 different-week decoy row; search result_count pins
-# the filter selectivity on every path.
-#
-# ZERO-ROW VARIANT DEFERRED (engine nil-interpolation gap, batch07 finding):
-# with rows [] the else arm of us_shift_period resolves MISSING -> the declare
-# stores nil, and the digest pill then renders the LITERAL 'None' (str(None)
-# at raw_executor resolve_value:2883 / interpolate_literal_text:2901) where
-# Ruby/Workato render '' ("#{nil}" == ""). This module's derivation encodes
-# the FAITHFUL '' render (matched_row None -> us_shift_period nil -> empty
-# digest line), so a zero-row variant fails closed against the current engine
-# instead of pinning the wrong 'None' groundtruth. Add the variant back the
-# day nil-parity lands.
-#
-# Backends: google_sheets LIVE (seed_rows fully overwrites the redirected tab
-# every seed -> deterministic reruns, no cleanup) + slack LIVE (posts to
-# SLACK_CHANNEL_OVERRIDE are terminal observables, never re-read -> no
-# cleanup). workato_variable is Workato-internal in-process.
 
 _RAW_PIN_JSON = r"""{"as": "c37baaa3", "block": [{"as": "e4240616", "block": [], "input": {"variables": {"data": {"week_no": "=now.in_time_zone(\"<anon>Europe/London</anon>\").yweek"}, "schema": "[{\"name\":\"week_no\",\"type\":\"string\",\"optional\":true,\"label\":\"week_no\",\"control_type\":\"text\"}]"}}, "keyword": "action", "name": "declare_variable", "number": 2, "provider": "workato_variable", "skip": false}, {"as": "9e3dbecf", "block": [], "input": {"count": "200", "data": {"col_WEEK NO": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"e4240616\",\"path\":[\"week_no\"]}')}"}, "sheet": "2025", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "keyword": "action", "name": "search_spreadsheet_rows_v4_new", "number": 3, "provider": "google_sheets", "skip": false}, {"as": "fce3e11c", "block": [], "input": {"variables": {"data": {"us_shift_period": "=if _dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_D-US-Alt\"]}').present?\n  \"#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_D-US\"]}')}\\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_D-US-Alt\"]}')}\"\nelse\n  _dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_D-US\"]}')\nend", "us_support": "=if _dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_BT US 2\"]}') == \"-\"\n  \"`#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_BT US 1\"]}')}`\"\nelse\n  \"`#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_BT US 1\"]}')}` & `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"col_BT US 2\"]}')}`\"\nend"}, "schema": "[{\"control_type\":\"text\",\"label\":\"US Support\",\"name\":\"us_support\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"US Support\"},\"parent\":[\"variables\",\"data\"],\"hint\":\"Defaults to nil if not supplied.\",\"sticky\":true},{\"name\":\"us_shift_period\",\"type\":\"string\",\"optional\":true,\"label\":\"US Shift Period\",\"details\":{\"real_name\":\"US Shift Period\"},\"control_type\":\"text\",\"parent\":[\"variables\",\"data\"]}]"}}, "keyword": "action", "name": "declare_variable", "number": 4, "provider": "workato_variable", "skip": false}, {"as": "4bce594e", "block": [], "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": ":firefighter_workato: Good day,\nHere's the *BT Operations* On-Duty for Week #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_WEEK NO\"]}')} (#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_DATE\"]}')}):\n\n*APJ* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_BT APJ\"]}')}` :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_D-APJ\"]}')}\n\n*EMEA* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_BT EMEA\"]}')}` :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_D-EMEA\"]}')}\n\n*US* - #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fce3e11c\",\"path\":[\"us_support\"]}')} :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fce3e11c\",\"path\":[\"us_shift_period\"]}')}\n\n*Escalation* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_BT FLEXI\"]}')}` :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_D-Flexi\"]}')}"}], "channel": "#biztech"}, "keyword": "action", "name": "post_bot_message", "number": 5, "provider": "slack_bot", "skip": false}, {"as": "2f65a9ec", "block": [], "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": ":firefighter_workato: Good day,\nHere's the *BT Operations* On-Duty for Week #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_WEEK NO\"]}')} (#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_DATE\"]}')}):\n\n*APJ* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_BT APJ\"]}')}` :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_D-APJ\"]}')}\n\n*EMEA* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_BT EMEA\"]}')}` :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_D-EMEA\"]}')}\n\n*US* - #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fce3e11c\",\"path\":[\"us_support\"]}')} :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fce3e11c\",\"path\":[\"us_shift_period\"]}')}\n\n*Escalation* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_BT FLEXI\"]}')}` :firefighter_6:\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9e3dbecf\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_D-Flexi\"]}')}"}], "channel": "#bt-hr"}, "keyword": "action", "name": "post_bot_message", "number": 6, "provider": "slack_bot", "skip": false}], "input": {"days_of_week": "1", "time_unit": "weeks", "timezone": "<anon>Europe/London</anon>", "trigger_at": "08:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -142,7 +91,6 @@ REQUIRED_EXPECT_KEYS = (
     "us_shift_period",
     "message_text",
 )
-# Corpus lint: targeting keys + value keys allowed on tool_expectations items.
 _EXPECTATION_TARGET_KEYS = {"tool", "table_id", "lookup_table_id", "match_fields", "channel"}
 _EXPECTATION_VALUE_KEYS = {
     "args_contains",
@@ -155,10 +103,6 @@ _EXPECTATION_VALUE_KEYS = {
     "options_contains",
 }
 SPREADSHEET_LITERAL = "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>"
-# Live Sheets USER_ENTERED value render drops the leading zero of a BARE time
-# cell ('08:00' reads back '8:00' -- live-lane verified on every variant),
-# while range strings ('09:00 - 18:00') stay byte-exact. Seeds must therefore
-# carry the RENDERED form so the round-trip is an identity.
 _BARE_LEADING_ZERO_TIME_RE = re.compile(r"0\d:\d{2}")
 
 

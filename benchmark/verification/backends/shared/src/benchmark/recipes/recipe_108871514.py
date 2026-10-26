@@ -34,33 +34,6 @@ BIND_FORMULA = (
     "\"path\":[\"typeahead\",\"value\"]}').unicode_normalize.downcase + '%'"
 )
 
-# slack_bot.dynamic_menu 'getapplications' (trigger payload seeded; the
-# declared 'query' parameter is NEVER dereferenced -- seeded for faith,
-# provably inert):
-#   2  snowflake.run_custom_sql b3e92a0b (LIVE): select ID as id, NAME as
-#      name from PUBLIC.DEMOINFRA_APPLICATIONS where lower(NAME) like :value
-#      with named bind parameters.data.value =
-#      '%' + typeahead.value.unicode_normalize.downcase + '%' (Ruby NFC
-#      default). The dynamicPickListSelection PUBLIC.PROVIDERS_TEST and
-#      toggleCfg are inert editor metadata; the 2-part table key maps to
-#      <SNOWFLAKE_DATABASE>.PUBLIC.* inside the live adapter only -- the
-#      trace keeps the recipe's verbatim SQL; :value binds via pyformat.
-#   3  slack_bot.generate_menu_options 54859cc4: flat ____source = step-2
-#      rows, label = current_item.name, value = current_item.id (string id
-#      column per the recipe's output_schema). Deterministic validation-only
-#      Workbot echo, no Slack API call.
-# Linear, no block branches: the only boundary is the LIKE match count
-# (0/1/N). No ORDER BY: multi-row menus are pinned as a MULTISET
-# (menu_options_ordered false), single/empty pin exact order.
-# NEAR-TWIN of 108564927 (byte-diffed 2026-07-09): full delta = table
-# DEMOINFRA_APPLICATIONS vs DEMOINFRA_PROVIDERS, menu name getapplications
-# vs getproviders, step ids/uuids, trigger param label 'Query' vs 'query',
-# and 108564927 declares 2 extra UNUSED bind-schema entries (ID /
-# provider_name -- no data values, so snowflake_parameters never binds
-# them). In-batch shape-twin: 109200085 (DEMOINFRA_INSTANCES, int id).
-# Registered pattern: recipe_102760065.py (same run_custom_sql-with-:bind +
-# downcased typeahead + generate_menu_options tail); the only formula delta
-# is the extra .unicode_normalize, landed in raw_executor apply_dp_methods.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "a725e391", "skip": false, "input": {"dynamic_menu_name": "getapplications", "parameters": "[{\"name\":\"query\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Query\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "b3e92a0b", "skip": false, "input": {"output_schema": "[{\"name\":\"id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ID\"},{\"name\":\"name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"NAME\"}]", "parameters": {"data": {"value": "='%' + _dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"a725e391\",\"path\":[\"typeahead\",\"value\"]}').unicode_normalize.downcase + '%'"}, "schema": "[{\"name\":\"value\",\"type\":\"string\",\"optional\":true,\"label\":\"value\",\"details\":{\"real_name\":\"value\"},\"control_type\":\"text\"}]"}, "sql": "select ID as id, NAME as name from PUBLIC.DEMOINFRA_APPLICATIONS where lower(NAME) like :value", "update_only": "false"}, "block": []}, {"number": 3, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "54859cc4", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"b3e92a0b\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"b3e92a0b\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"name\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"b3e92a0b\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}"}}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

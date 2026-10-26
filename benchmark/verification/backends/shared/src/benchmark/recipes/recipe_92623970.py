@@ -28,35 +28,6 @@ LOGGER_STEP_AS = "0ff012d7"
 POST_STEP_AS = "6b0fa2e4"
 UPDATE_STEP_AS = "05d87fc1"
 
-# clock.scheduled_event (as 3c691145; monthly, days 25-31/last_day at 10:00
-# Asia/Singapore) — the recipe dereferences scheduled_time (the +1.months
-# logger formula) and reads `now` (the step-2 search's month string). Body:
-#   2  lookup_table.search_entries 5459eaeb (table 1889452 'Lockers Booking'):
-#      col5 = =now.to_date.strftime("%B %Y"), col6 = 'Approved'
-#   FOREACH 3 (a23a2ba4 over entries, repeat_mode simple):
-#     IF 4 (entry.col8 blank — not yet processed):
-#       5  lookup_table.search_entries 567b312a (table 1889451 'Lockers
-#          Database', col1 = entry.col3) — output is dead downstream but the
-#          action MUST still execute (action count + seeded side table)
-#       6  logger.log_message 0ff012d7: =(scheduled_time + 1.months)
-#          .strftime("%B %Y")
-#       7  slack_bot.post_bot_message 6b0fa2e4: channel = entry.col1 (a Slack
-#          user id — routed to the benchmark override channel via the
-#          seed.slack_channel_map affordance); rendered text = the two
-#          section lines ONLY (divider/buttons/repeat_block_group render no
-#          text), the second with its trailing space verbatim
-#       8  lookup_table.update_entry 05d87fc1 (table 1889452, id =
-#          foreach.id): col7 = 6b0fa2e4.ts (the LIVE Slack ts), col8 =
-#          'Not Renewed'
-#
-# Backends: lookup tables 1889452/1889451 are Workato-internal mocks; the
-# Slack post runs LIVE. col7 stores the live Slack `ts` — NONDETERMINISTIC,
-# so expect.final_booking_rows carries the '__SLACK_TS_<n>__' sentinel and
-# the verifier cross-checks col7 against the ts captured in the run's OWN
-# slack.post_message trace (never a pinned literal). Every seeded col1 must
-# be mapped to '__override__' in slack_channel_map so no variant can ever DM
-# a real user (live isolation); the posted message lives in the override
-# channel and is benchmark-verified state (kept, per cleanup policy).
 
 _RAW_PIN_JSON = r"""{"as": "3c691145", "block": [{"as": "5459eaeb", "block": [], "input": {"lookup_table_id": "1889452", "parameters": {"col5": "=now.to_date.strftime(\"%B %Y\")", "col6": "Approved"}}, "keyword": "action", "name": "search_entries", "number": 2, "provider": "lookup_table", "skip": false}, {"as": "a23a2ba4", "block": [{"as": "", "block": [{"as": "567b312a", "block": [], "input": {"lookup_table_id": "1889451", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col3\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 5, "provider": "lookup_table", "skip": false}, {"as": "0ff012d7", "block": [], "input": {"message": "=(_dp('{\"pill_type\":\"output\",\"provider\":\"clock\",\"line\":\"3c691145\",\"path\":[\"scheduled_time\"]}') + 1.months).strftime(\"%B %Y\")"}, "keyword": "action", "name": "log_message", "number": 6, "provider": "logger", "skip": false}, {"as": "6b0fa2e4", "block": [], "input": {"blocks": [{"block_type": "section_with_text", "section_text": "*#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col3\"]}')}* - `#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col5\"]}')}` Locker Booking"}, {"block_type": "divider"}, {"block_type": "section_with_text", "bot_command": "2331920", "button_title": "Extend Booking", "params": "user_id:#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col1\"]}')}, office:#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col3\"]}')}", "section_text": "Hi <@#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col1\"]}')}>, your locker `#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col4\"]}')}` booking for `#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col5\"]}')}` is going to expire soon. Please confirm if you would like to extend your booking to *#{_dp('{\"pill_type\":\"output\",\"provider\":\"logger\",\"line\":\"0ff012d7\",\"path\":[\"message\"]}')}*. ", "style": "primary"}, {"block_type": "repeat_block_group", "objects": {"blocks": [{"actions": [{"bot_command": "18452836", "button_title": "Extend Booking", "params": "entry_id: #{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"id\"]}')}", "style": "primary", "type": "button"}], "block_type": "actions"}]}}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col1\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 7, "provider": "slack_bot", "skip": false}, {"as": "05d87fc1", "block": [], "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "1889452", "parameters": {"col7": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"6b0fa2e4\",\"path\":[\"ts\"]}')}", "col8": "Not Renewed"}}, "keyword": "action", "name": "update_entry", "number": 8, "provider": "lookup_table", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a23a2ba4\",\"path\":[\"entry\", \"col8\"]}')}", "operand": "blank", "rhs": ""}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 4, "provider": "", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"5459eaeb\",\"path\":[\"entries\"]}')}"}, "keyword": "foreach", "name": "", "number": 3, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"5459eaeb\",\"path\":[\"entries\"]}')}"}], "input": {"days_of_month": "25,27,28,29,30,31,26,last_day", "time_unit": "months", "timezone": "Asia/Singapore", "trigger_at": "10:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

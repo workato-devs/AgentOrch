@@ -25,28 +25,6 @@ SEED_TYPE = "recipe_function_data_ingestion_jobs_crud_variant"
 TRACK = "workato_recipe_function_db_table_crud_router"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe function (trigger as 1d1202b1) routing CRUD over ONE mock
-# Workato db table 45816 'Data Ingestion | Jobs' by parameters.method.upcase:
-#   IF GET (step 2):
-#     IF entries.size == 0 (step 3) -> get_records #4 (53e24485, no filter)
-#          -> return_result #5 {count records.size, entries projection, method, table}
-#     ELSE (step 6) -> get_records #7 (60ec719a, Id eq entries.current_item.id)
-#          -> return_result #8 (same shape)
-#   IF POST (step 9) -> add_record #10 (b7c9b051) mapping the 9 field columns
-#          from parameters.entries CURRENT_ITEM **OUTSIDE any foreach**, i.e.
-#          only the FIRST entry is added even when entries has more items;
-#          return_result #11 echoes count = entries.size (the FULL input size).
-#   IF PUT (step 12) -> get_records #13 (631aa007, Job URL eq FIRST entry's
-#          jobURL) -> FOREACH #14 (as 4d904547) update_record #15 (record id =
-#          foreach row id, all 9 columns = FIRST entry's fields '.presence';
-#          absent fields overwrite with "") -> return_result #16
-#          {count = foreach_meta 4d904547 size}.
-#   IF DELETE (step 17) -> get_records #18 (0fd33de9, Create Date eq FIRST
-#          entry's createDate) -> FOREACH #19 (as c3886afe) delete_record #20
-#          -> return_result #21 {count = 0fd33de9 records.size}.
-# A method outside GET/POST/PUT/DELETE would fall through all four IFs with no
-# return (degenerate no-op; reachable only via the free-text toggle) — the
-# variant set covers the picklist-intended values.
 TABLE_ID = "45816"
 METHOD_UPCASE_FORMULA = "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"1d1202b1\",\"path\":[\"parameters\",\"method\"]}').upcase"
 FIELD_ID = "4352e364-c951-49a5-a86d-7bd8f7028d04"
@@ -58,7 +36,6 @@ DELETE_FOREACH_AS = "c3886afe"
 PUT_COUNT_FOREACH_META_PILL = "#{_dp('{\"pill_type\":\"foreach_meta\",\"provider\":\"foreach\",\"line\":\"4d904547\",\"key\":\"size\"}')}"
 UPDATE_RECORD_ID_PILL = "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4d904547\",\"path\":[\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}"
 DELETE_RECORD_ID_PILL = "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"c3886afe\",\"path\":[\"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}"
-# column uuid -> trigger entries field it is mapped from (POST add + PUT update)
 COLUMN_TO_ENTRY_FIELD: dict[str, str] = {
     "4352e364_c951_49a5_a86d_7bd8f7028d04": "id",
     "3b9e1c92_c3b0_4302_91db_48bf6198de64": "dataSource",
@@ -114,22 +91,6 @@ ALLOWED_TOOLS: list[str] = [
 ]
 SUPPORTED_METHODS = {"GET", "POST", "PUT", "DELETE"}
 
-# --- module-local engine extension ------------------------------------------
-# The PUT return (step 16) maps `count` to a foreach_meta pill:
-#   #{_dp('{"pill_type":"foreach_meta","provider":"foreach","line":"4d904547","key":"size"}')}
-# The shared engine's resolve_dp_json does not dispatch pill_type
-# "foreach_meta" (probed 2026-07-06: NonRecipeError "unsupported datapill
-# type"), and RawWorkatoRuntime.execute_foreach records foreach_meta only for
-# loops that iterate at least once, so a zero-match PUT would also lose the
-# size. Handled fail-closed here, module-locally (recipe_74627281 precedent:
-# shared harness files are frozen for this batch; fold into raw_executor when
-# the engine is next extended):
-#   1. execute_foreach pre-records {"size": len(items)} so a zero-iteration
-#      loop still reports size 0 (Workato parity: repeat-step size = list
-#      size). Loops that iterate keep the engine's own per-iteration meta.
-#   2. workato_return_result resolves EXACTLY the whole-value foreach_meta
-#      pill shape from recorded loop metadata (missing metadata raises) and
-#      delegates everything else to the shared engine unchanged.
 
 _NO_MATCH = object()
 _FOREACH_META_PILL_RE = re.compile(r"\A#\{_dp\('(\{[^']*\})'\)\}\Z")

@@ -26,39 +26,10 @@ FILTER_EVENT_RHS = "<anon>End Date Changed</anon>"
 EVENT_LITERAL = "NEAR_EXPIRE_EVENT"
 GET_LIMIT = 100
 
-# workato_pub_sub.subscribe_to_topic (as 3cf14e01, topic 47223 'DIFA | CRT |
-# Ticket Event', since_offset -3600) with a ROOT-LEVEL TRIGGER FILTER:
-# message.event equals_to '<anon>End Date Changed</anon>'. The rhs is an
-# anonymizer-TAGGED recipe literal compared against the CLEAN seeded
-# message.event — the engine's mixed-anonymization condition rule (raw_executor
-# condition(), :356-366) strips the wrapped side, so the de-tagged literal
-# 'End Date Changed' matches a clean seeded event (re-probed verbatim on HEAD
-# 07af31c2; seeds NEVER carry <anon> tags).
-#   2  workato_db_table.get_records 3528cee8 table 26786 'DIFA | DT-002 |
-#      Notified User': filters ticketkey eq #{trigger message.ticket.key} AND
-#      event eq 'NEAR_EXPIRE_EVENT' (literal); limit 100, order_direction asc
-#      WITHOUT order_by_field_id. Every seed sets
-#      workato_db_table.honor_order_and_limit so the node's order/limit args
-#      flow like live Workato: order_direction alone triggers NO re-sort
-#      (live_tools.py:413-425 sorts only on order_by_field_id) and the limit
-#      applies — seeded (Workato-created) order is the contract, re-probed on
-#      HEAD. Seeds stay under 100 rows so the limit never truncates the
-#      derived match set.
-#   IF 3: 3528cee8 records size greater_than 0 ->
-#     4  workato_db_table.delete_record 2e33611c record_id = records
-#        [current_item].11fbe9a6_… — current_item OUTSIDE any foreach is the
-#        FIRST matching record (Workato first-item semantics, re-probed): with
-#        N>=2 matches only the first seeded match is deleted.
-# Branches: trigger filter false -> 0 actions; filter true + 0 matches ->
-# get_records only (IF false); filter true + >=1 match -> get + delete-first.
-# All backends are Workato-internal (pub_sub trigger payload seeded, db table
-# mock): full mock replay per backend policy, per-variant isolated table
-# state, no cleanup (each seed fully overwrites table 26786).
 
 _RAW_PIN_JSON = r"""{"as": "3cf14e01", "block": [{"as": "3528cee8", "block": [], "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "142d75a2-5bba-4aa6-a8ed-321003ffcd3b": "string", "394ffd38-e1e6-48ab-b4de-c4bcfe00ad1e": "relation", "499fd87d-e86e-46df-80a7-6b521e5ba052": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "6ffaedd7-f150-4445-9cef-7b9ebe1cb8f2": "string", "9c8ca6d3-0142-4cb2-98dc-4386e62d7412": "string", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "c4a63369-4675-4b2a-808e-e0e0a334676a": "string", "fcc88f74-dd6f-4819-b868-1d36a3679a6a": "string", "filters": [{"field_id": "fcc88f74-dd6f-4819-b868-1d36a3679a6a", "op_default": "eq", "value_default": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_pub_sub\",\"line\":\"3cf14e01\",\"path\":[\"message\", \"ticket\", \"key\"]}')}"}, {"field_id": "9c8ca6d3-0142-4cb2-98dc-4386e62d7412", "op_default": "eq", "value_default": "NEAR_EXPIRE_EVENT"}], "limit": "100", "order_direction": "asc", "table_id": "26786"}, "keyword": "action", "name": "get_records", "number": 2, "provider": "workato_db_table", "skip": false}, {"as": "", "block": [{"as": "2e33611c", "block": [], "input": {"record_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3528cee8\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}", "table_id": "26786"}, "keyword": "action", "name": "delete_record", "number": 4, "provider": "workato_db_table", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3528cee8\",\"path\":[\"records\", {\"path_element_type\": \"size\"}]}')}", "operand": "greater_than", "rhs": "0"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 3, "provider": "", "skip": false}], "filter": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_pub_sub\",\"line\":\"3cf14e01\",\"path\":[\"message\", \"event\"]}')}", "operand": "equals_to", "rhs": "<anon>End Date Changed</anon>"}], "operand": "and", "type": "compound"}, "input": {"since_offset": "-3600", "topic_id": "47223"}, "keyword": "trigger", "name": "subscribe_to_topic", "number": 1, "provider": "workato_pub_sub", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# Table 26786 'DIFA | DT-002 | Notified User' columns (underscored output ids).
 COL_RECORD_ID = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 COL_EVENT = "9c8ca6d3_0142_4cb2_98dc_4386e62d7412"
 COL_USERNAME = "c4a63369_4675_4b2a_808e_e0e0a334676a"

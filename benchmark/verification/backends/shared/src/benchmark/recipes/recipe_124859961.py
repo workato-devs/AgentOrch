@@ -25,47 +25,7 @@ PARSE_STEP_AS = "40ba5cbd"
 INSERT_STEP_AS = "dc53ac23"
 MENU_STEP_AS = "b71c5543"
 FOREACH_AS = "d2a427df"
-# TWIN NOTE: 124862303 is an exact twin of this recipe (diff verified against
-# both raw_recipe.md files): only the lookup_table_id (4079230 there vs
-# 4075676 here), flow metadata and the trigger `parameters` JSON whitespace
-# differ. Each module pins ITS OWN table id and verbatim raw tree so twin
-# drift between the two deployed recipes is caught by validation, never
-# papered over.
 
-# slack_bot.dynamic_menu 'Project Configurations' (trigger as 4cb4b049; the
-# payload carries typeahead.value + required parameters {asset_env,
-# asset_type}):
-#   2  lookup_table.search_entries 7a232762 table 4075676
-#      'CICD | LT | Project Configuration' (col1 Id, col2 Project Name,
-#      col3 Asset Environment, col4 Asset Id, col5 Asset Type, col6 Project
-#      Context JSON, col7 Notification Settings, col8 Dependencies, col9
-#      Target Folder Details, col10 Last Updated) with col3 = asset_env and
-#      col5 = asset_type -- the search NARROWS the table before any matching.
-#   3  workato_variable.declare_list 6542744e 'project_list'
-#      {project_name, id}
-#   IF 4 (typeahead.value present -- a blank typeahead SKIPS the whole scan):
-#     FOREACH 5 (as d2a427df) over the search entries, repeat_mode simple:
-#       6  json_parser.parse_json 40ba5cbd, document = entry col6 (the
-#          'Project Context' JSON string, schema {release_name}) -- parse
-#          runs for EVERY narrowed entry, matching or not; empty/invalid
-#          col6 errors the job exactly like Workato.
-#       IF 7 (compound OR): col2.downcase contains typeahead.downcase OR
-#          (release_name.present? ? release_name.downcase : "") contains
-#          typeahead.downcase:
-#         8  workato_variable.insert_to_list dc53ac23 into project_list:
-#            id = entry col1, project_name = release_name.present? ?
-#            "#{release_name} (project: #{col2})"[0...70] : col2 -- the
-#            label ternary keys on release PRESENCE (not on which OR arm
-#            matched) and the true arm is an interpolated-string literal
-#            sliced with Ruby EXCLUSIVE range [0...70] (max 70 chars).
-#   9  slack_bot.generate_menu_options b71c5543 (ALWAYS runs): options
-#      ____source = project_list items, label = project_name, value = id;
-#      an empty list is a valid [] options payload.
-#
-# All backends are Workato-internal (lookup table read-only + variable list +
-# json_parser + deterministic menu payload): mock per backend policy, no
-# cleanup (every variant seeds table 4075676 explicitly and the recipe
-# never writes to it).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "4cb4b049", "skip": false, "input": {"dynamic_menu_name": "Project Configurations", "parameters": "[{\"name\":\"asset_env\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Asset env\"},{\"name\":\"asset_type\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Asset type\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "lookup_table", "name": "search_entries", "as": "7a232762", "skip": false, "input": {"lookup_table_id": "4075676", "parameters": {"col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cb4b049\",\"path\":[\"parameters\", \"asset_env\"]}')}", "col5": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cb4b049\",\"path\":[\"parameters\", \"asset_type\"]}')}"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "workato_variable", "name": "declare_list", "as": "6542744e", "skip": false, "input": {"list_item_schema_json": "[{\"name\":\"project_name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Project name\"},{\"name\":\"id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ID\"}]", "name": "project_list"}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cb4b049\",\"path\":[\"typeahead\", \"value\"]}')}", "operand": "present", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "foreach", "provider": "", "name": "", "as": "d2a427df", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"7a232762\",\"path\":[\"entries\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"7a232762\",\"path\":[\"entries\"]}')}", "block": [{"number": 6, "keyword": "action", "provider": "json_parser", "name": "parse_json", "as": "40ba5cbd", "skip": false, "input": {"document": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d2a427df\",\"path\":[\"entry\", \"col6\"]}')}", "sample_document": "{\"release_name\":\"\"}"}, "block": []}, {"number": 7, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d2a427df\",\"path\":[\"entry\",\"col2\"]}').downcase", "operand": "contains", "rhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cb4b049\",\"path\":[\"typeahead\",\"value\"]}').downcase"}, {"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"json_parser\",\"line\":\"40ba5cbd\",\"path\":[\"document\",\"release_name\"]}').present? ? _dp('{\"pill_type\":\"output\",\"provider\":\"json_parser\",\"line\":\"40ba5cbd\",\"path\":[\"document\",\"release_name\"]}').downcase : \"\"", "operand": "contains", "rhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"4cb4b049\",\"path\":[\"typeahead\",\"value\"]}').downcase"}], "operand": "or", "type": "compound"}, "block": [{"number": 8, "keyword": "action", "provider": "workato_variable", "name": "insert_to_list", "as": "dc53ac23", "skip": false, "input": {"list_item": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d2a427df\",\"path\":[\"entry\", \"col1\"]}')}", "project_name": "=_dp('{\"pill_type\":\"output\",\"provider\":\"json_parser\",\"line\":\"40ba5cbd\",\"path\":[\"document\",\"release_name\"]}').present? ? \"#{_dp('{\"pill_type\":\"output\",\"provider\":\"json_parser\",\"line\":\"40ba5cbd\",\"path\":[\"document\",\"release_name\"]}')} (project: #{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d2a427df\",\"path\":[\"entry\",\"col2\"]}')})\"[0...70] : _dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d2a427df\",\"path\":[\"entry\",\"col2\"]}')"}, "location": "end", "name": "2d44bf57-2877-4a8e-8d84-8f9918ed193e:6542744e"}, "block": []}]}]}]}, {"number": 9, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "b71c5543", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"6542744e\",\"path\":[\"list_items\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"6542744e\",\"path\":[\"list_items\", {\"path_element_type\": \"current_item\"}, \"project_name\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"6542744e\",\"path\":[\"list_items\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}"}, "use_option_groups": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

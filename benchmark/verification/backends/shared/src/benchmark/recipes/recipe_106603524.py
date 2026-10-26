@@ -23,11 +23,6 @@ SEARCH_ALL_AS = "596c386d"
 SEARCH_20D_AS = "68e6796b"
 CATCH_AS = "baa77910"
 STOP_AS = "db452987"
-# Schema-in-seed contract (mdapi Support_Ticket__c deployed 2026-07-07 with
-# Account__c Lookup(Account) / Status__c Text / Days_Open__c Number(18,0);
-# the seed schema section re-ensures FLS on the two writable scalar columns
-# every run -- 88707765 precedent; the Lookup is deploy-time-only and never
-# re-created here).
 REQUIRED_SCHEMA = [
     {"sobject": "Support_Ticket__c", "field": "Status__c", "sf_type": "Text"},
     {"sobject": "Support_Ticket__c", "field": "Days_Open__c", "sf_type": "Number"},
@@ -35,60 +30,6 @@ REQUIRED_SCHEMA = [
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName"}
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_recipe_function.execute (as ea80dd69; parameters.AccountList[]
-# {AccountID, AccountName}). Whole body wrapped in TRY (step 2, catch
-# max_retry_count 3 -- the author added retries for Salesforce timeouts):
-#   3  workato_variable.declare_variable a826e077:
-#      account_ids_string = AccountList&.pluck("AccountID").join("','")
-#      (probe-verified: 2 accounts -> "id1','id2"; [] -> "")
-#   4  salesforce.search_sobjects_soql_v2 596c386d (LIVE):
-#      SELECT Account__c AccountID, COUNT(Id) TotalOpenTickets
-#      FROM Support_Ticket__c WHERE IsDeleted = FALSE AND Status__c NOT IN
-#      ('Closed', 'Resolved') AND Account__c IN ('<ids>') GROUP BY Account__c
-#      (limit 2000; aggregate COUNT + SELECT aliases served by
-#      _apply_aggregates, engine 584a39d8; every seeded ticket declares
-#      read_fields ['IsDeleted'] so the strict boolean leaf evaluates the
-#      LIVE read-back false -- 118905064 precedent)
-#   5  workato_smart_list.create_list 22b39266 'OpenTickets' from the
-#      aggregate records (primary_index AccountID; Workato-internal --
-#      smart-list steps never appear in tool_calls, only in the trace)
-#   6  salesforce.search_sobjects_soql_v2 68e6796b (LIVE): same query
-#      + AND Days_Open__c > 20, COUNT alias OpenTicketsMore20days
-#   7  workato_smart_list.create_list fe0596ef 'OpenTicketsMore20days'
-#   8  workato_smart_list.query_list 96f06bfe: SELECT ... FROM OpenTickets
-#      LEFT JOIN OpenTicketsMore20days ON OpenTickets.AccountID =
-#      OpenTicketsMore20days.AccountID (all identifiers via
-#      list_name/columns pills; SQLite smart-list engine; a LEFT-JOIN miss
-#      yields OpenTicketsMore20days null)
-#   9  workato_recipe_function.return_result 004b17c4:
-#      result.SupportTickets ____source-mapped over the joined rows
-#   CATCH 10 (as baa77910, max_retry_count 3):
-#     11 STOP db452987 stop_with_error=true, stop_reason
-#        '#{catch.type} : #{catch.message}' (engine-canonical type string
-#        'RawRecipeExecutionError'; the trace stop row carries no
-#        stop_reason -- the catch payload is pinned via step_outputs)
-#
-# Branch mapping (per benmark_rules -- coverage comes from data shapes, the
-# only control flow is try/catch):
-# - variant_00 mixed_counts_join: acct A 3 open (2 >20d) -> {A,3,2}; acct B
-#   1 open none >20d -> LEFT-JOIN miss -> {B,1,null}.
-# - variant_01 closed_filtered_out: acct C carries only Closed/Resolved
-#   tickets -> excluded by NOT IN -> absent from the result; an off-list
-#   decoy account proves the IN filter.
-# - variant_02 empty_account_list: AccountList [] -> ids string '' ->
-#   IN ('') matches nothing -> both lists empty -> LEFT JOIN 0 rows ->
-#   SupportTickets [] (a seeded decoy ticket proves the emptiness is the
-#   filter, not missing data).
-# - variant_03 catch_stop_error: force_action_error on 596c386d -> catch ->
-#   stop_with_error true (sanctioned fault injection; the catch is not
-#   naturally reachable from seedable state).
-#
-# GROUP BY output order = owned-record iteration order in the harness
-# (insertion-ordered dict): seed tickets grouped by account in the order the
-# expected rows are pinned. Backends: salesforce LIVE (benchmark-owned
-# records; cleanup deletes owned Support_Ticket__c + Account seeds in a
-# finally block -- read-only recipe, but owned records must not leak);
-# workato_smart_list / workato_variable are Workato-internal in-process.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

@@ -28,62 +28,6 @@ SERVICE_STEP_AS = "fdb042a9"
 _REF_TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# Salesforce new Campaign_Activity__c region-mapping recipe (trigger as
-# ffce87c2, since_offset -3600, 15-field field_list) with a RUNTIME trigger
-# filter the batch_B triage entry MISSED:
-#   filter: trigger Campaign__c equals_to '7011N000000xp4nQAA' (or-compound
-#   with a single condition) — a non-matching Campaign__c runs ZERO actions
-#   (trigger_filter_matched false; covered by variant_07).
-# Body:
-#   2  workato_service.call_service (fdb042a9, flow 45561582 'Flexi Idler',
-#      request {Secs:'360'}) — Workato-internal; the reply is deterministic
-#      seed state (seed.workato_service_replies['fdb042a9'] = {}, fail-fast)
-#      and nothing downstream reads it
-#   3  salesforce.search_sobjects (b4c80fea: Campaign_Activity__c, Id =
-#      trigger.Id, limit 150, field_list Id/Name/Region__c/
-#      Person_Sub_Region__c/Browser_Timezone__c/Person_Country__c) — LIVE
-#   4  IF b4c80fea CA[current_item].Browser_Timezone__c starts_with 'America'
-#      AND CA[current_item].Region__c blank (current_item outside a foreach =
-#      first record):
-#      5  lookup_table.search_entries (ba084cef, table 3817174, col1 =
-#         trigger.Browser_Timezone__c)
-#      6  IF entries size > 0:
-#         7  salesforce.update_sobject (6f47b815: id = trigger.Id, Region__c =
-#            entries[current_item].entry.col2, Person_Country__c = entry.col3)
-#      8  logger.log_message (64869195 'NORAM (US/Canada)') — "skip": true —
-#         DISABLED in the raw recipe: reached-but-skipped trace marker only
-#      9  STOP (no error)
-#   10 TRY: 11 lookup_table.get_entry (235d3c31, table 3256346, col3 =
-#      trigger.Browser_Timezone__c)
-#   12 CATCH (7bc5859d, retry 0): 13 STOP (no error)
-#   14 IF 235d3c31.id present:
-#      15 IF b4c80fea CA[current_item].Region__c blank OR
-#         CA[current_item].Person_Sub_Region__c blank:
-#         16 salesforce.update_sobject (98af47c8: id = trigger.Id,
-#            Person_Sub_Region__c = entry.col1, Region__c = entry.col2)
-#         17 STOP (no error)
-#   otherwise the recipe falls through and ends (no stop marker).
-#
-# SEMANTICS DIVERGENCE (pinned deliberately, per the batch_B triage flag): the
-# engine's lookup get_entry returns {ok: true, entry: None} WITHOUT an id on
-# no-match (lookup_table.py get_entry -> _entry_result(None)), so the
-# not-found path exits via IF14-false (variant_04, expect.get_entry_no_match).
-# Real Workato 'Get entry' ERRORS on not-found — that is why the raw recipe
-# wraps step 11 in try/catch -> stop. Under the engine the catch branch is
-# reachable only via a forced action failure (variant_05, force_action_error
-# on 235d3c31). Both paths exist in the variant set; ground truth follows the
-# ENGINE semantics.
-#
-# Live Salesforce: Campaign_Activity__c physical==logical (mdapi-deployed org
-# fact; precedent recipe_118427850). Custom fields via schema-in-seed
-# ensure_custom_field (REQUIRED_SCHEMA below): Browser_Timezone__c /
-# Person_Sub_Region__c / Person_Country__c (+ Region__c, already ensured by
-# the 118427850 seeds — declared here too so this recipe stands alone). The
-# seed creates exactly ONE benchmark-owned CA record; the trigger threads its
-# live id via the $CA_ID token (trigger AND expect, recipe_97967767
-# precedent). Cleanup deletes owned records in finally and fails on leftovers.
-# Lookup tables 3817174 / 3256346 are Workato-internal mocks seeded per
-# variant and read-only.
 
 _STRUCTURE_PINS_JSON = r'''
 [

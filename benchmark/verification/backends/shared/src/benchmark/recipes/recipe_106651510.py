@@ -24,61 +24,10 @@ SEARCH_STEP_AS = "a07a5b6b"
 MENU_STEP_AS = "bce0615a"
 CATCH_AS = "e534d68c"
 UPDATE_STEP_AS = "d81aaa3b"
-# The literal 2-part name the SQL references; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.FRESHDESK.PRODUCT_SUPPORT_TICKET_EXPORT).
 SNOWFLAKE_TABLE = "FRESHDESK.PRODUCT_SUPPORT_TICKET_EXPORT"
 TABLE_COLUMNS = {"SUCCESS_OWNER_AUTO_POPULATED": "string"}
 IF_FORMULA_SUFFIX = '.split("_") [0].capitalize'
 
-# slack_bot.dynamic_menu 'List of Success Owner' (as 144cca42). BOTH declared
-# trigger parameters exist but only request_type is dereferenced (the IF
-# formula); typeahead.value feeds the SQL LIKE. request_type must be seeded
-# NON-BLANK in every variant: `.split` on a MISSING/blank pill raises (the
-# faithful Workato nil-job error), which would divert into the catch.
-#   2  workato_variable.declare_variable e0710040 job_report='OK' (mock)
-#   TRY 3:
-#     IF 4: '=_dp(parameters.request_type).split("_") [0].capitalize'
-#        equals_to 'Freshdesk' — NOTE the literal SPACE before [0]
-#        (probe-verified verbatim on this recipe: 'freshdesk_agents' ->
-#        'Freshdesk', 'zendesk_agents' -> 'Zendesk').
-#       5  snowflake.search_rows_sql a07a5b6b (LIVE): SELECT DISTINCT
-#          SUCCESS_OWNER_AUTO_POPULATED FROM FRESHDESK.
-#          PRODUCT_SUPPORT_TICKET_EXPORT WHERE LOWER(...) LIKE
-#          LOWER('%<typeahead.value>%'), limit '2000' (appended by
-#          _append_limit_offset). No ORDER BY: multi-row results are
-#          UNORDERED and must be verified as a multiset
-#          (expect.menu_options_ordered false).
-#       6  slack_bot.generate_menu_options bce0615a: vestigial
-#          `option_groups [{}]` + use_option_groups 'false' routes to the
-#          FLAT options path (engine fix landed batch 05, re-probed on this
-#          recipe verbatim); options ____source = step-5 rows, label = value
-#          = current_item success_owner_auto_populated (live rows carry the
-#          lowercase alias the pill reads).
-#   CATCH 7 (as e534d68c, max_retry_count 0):
-#     8  workato_variable.update_variables d81aaa3b job_report='Failed'
-#        targeting the DECLARED step ('81c8f4ce-…:e0710040:job_report').
-#
-# Branch mapping:
-# - freshdesk_menu: request_type capitalizes to 'Freshdesk' -> live SQL ->
-#   menu options. 3 actions (declare + 2 registry tools).
-# - skip_non_freshdesk: request_type capitalizes to something else -> IF
-#   false -> the TRY body runs nothing. 1 action, ZERO registry tools, no
-#   snowflake seed (nothing to clean).
-# - catch_failed: force_action_error on a07a5b6b (fires BEFORE the adapter —
-#   no live call, no snowflake seed) -> CATCH -> job_report 'Failed' on the
-#   declared step. 2 actions, ZERO registry tools.
-#
-# Live semantics pinned by variants (same class as registered twin 94382842):
-# - LOWER() on BOTH sides: mixed-case typeahead matches mixed-case owners.
-# - LIKE '%%' (blank typeahead) matches every NON-NULL owner; LOWER(NULL)
-#   LIKE … is NULL -> null owners are excluded by SQL.
-# - DISTINCT collapses duplicate owner names.
-#
-# Typeahead charset guard: the value interpolates into a single-quoted SQL
-# LIKE literal. Quotes/backslashes would break the literal and %/_ are LIKE
-# wildcards that silently change match semantics — the seeder rejects them
-# so groundtruth stays a plain case-insensitive substring match.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "144cca42", "skip": false, "input": {"dynamic_menu_name": "List of Success Owner", "parameters": "[\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Success Owner\",\n    \"name\": \"success_owner\",\n    \"type\": \"string\",\n    \"optional\": true\n  },\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Request Type\",\n    \"name\": \"request_type\",\n    \"type\": \"string\",\n    \"optional\": true\n  }\n]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "e0710040", "skip": false, "input": {"variables": {"data": {"job_report": "OK"}, "schema": "[{\"name\":\"job_report\",\"type\":\"string\",\"optional\":true,\"label\":\"Job Report\",\"details\":{\"real_name\":\"Job Report\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"144cca42\",\"path\":[\"parameters\",\"request_type\"]}').split(\"_\") [0].capitalize", "operand": "equals_to", "rhs": "Freshdesk"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "a07a5b6b", "skip": false, "input": {"limit": "2000", "parameters": {"schema": "[]"}, "sql": "SELECT DISTINCT SUCCESS_OWNER_AUTO_POPULATED FROM FRESHDESK.PRODUCT_SUPPORT_TICKET_EXPORT WHERE LOWER(SUCCESS_OWNER_AUTO_POPULATED) LIKE LOWER('%#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"144cca42\",\"path\":[\"typeahead\", \"value\"]}')}%')"}, "block": []}, {"number": 6, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "bce0615a", "skip": false, "input": {"option_groups": [{}], "options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"a07a5b6b\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"a07a5b6b\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"success_owner_auto_populated\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"a07a5b6b\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"success_owner_auto_populated\"]}')}"}, "use_option_groups": "false"}, "block": []}]}, {"number": 7, "keyword": "catch", "provider": "", "name": "", "as": "e534d68c", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 8, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "d81aaa3b", "skip": false, "input": {"job_report": "Failed", "name": "81c8f4ce-f798-4fd4-96dd-c0bcb03c3128:e0710040:job_report"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

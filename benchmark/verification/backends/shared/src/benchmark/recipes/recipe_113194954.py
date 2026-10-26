@@ -28,41 +28,6 @@ ROSTER_TABLE = "3684742"
 CLOSURES_TABLE = "3571620"
 GITHUB_TABLE = "3571621"
 
-# clock.scheduled_event (as cfd6d1af, biweekly Wed 09:00 Asia/Kolkata) —
-# payload-less trigger, seed.trigger is the explicit {}:
-#   2  lookup_table.get_entries 24654513 table 3684742 'knowledge sharing
-#      session Roaster' (col1 Username / col2 slackname / col3 index).
-#   3  lookup_table.get_entry ec6ffecf table 3571620 'KT CLOSURES'
-#      parameters {col1: 'start_pos'} -> entry.col2 = the roster index.
-#   4  workato_variable.declare_variable 3cbb97c3 start_pos =
-#      #{ec6ffecf.entry.col2} (full-match pill, raw string).
-#   5  workato_variable.declare_variable 132cb750 slack_list =
-#      =entries.pluck("col1")[start_pos.to_i] — the POSITIONAL pluck works
-#      because the mock flattens entry fields to the top level of each
-#      get_entries item (lookup_table.py); the variable is DECLARED BUT DEAD
-#      downstream (nothing reads it), pinned only via the declare trace.
-#   6  lookup_table.search_entries 469f790b table 3684742 parameters
-#      {col3: #{start_pos}} — a STRING VALUE match on the index column, NOT
-#      positional (probe-verified with a shuffled roster).
-#   7  lookup_table.search_entries 843b95da table 3571621 'Github Users'
-#      parameters {col1: #{469f790b.entries[current_item].entry.col1}} —
-#      current_item OUTSIDE any foreach = FIRST match.
-#   8  slack.post_message_to_channel 6f60f454 channel
-#      'knowledge-sharing-session' (non-'U' literal -> routed to
-#      SLACK_CHANNEL_OVERRIDE), parse true; text renders the literal header
-#      line + '<@#{843b95da…entry.col2}>' mention. The `buttons` input
-#      (button_actions / flow_id 51780405) is DROPPED METADATA — the engine
-#      renders text only and never waits; expects must not pin it as
-#      rendered (the fragment asserts the args carry NO buttons key).
-#
-# Strictly linear, no ifs/foreach. Backends: lookup_table x3 +
-# workato_variable are Workato-internal (mock / in-process per backend
-# policy); slack runs LIVE. The run is read-only on the lookup tables and
-# the post is a terminal observable that is never re-read -> no cleanup.
-# Variants differ by the seeded start_pos ('0'/'1'/'2') to prove the
-# col3-value match against three different roster/github pairs; seeds keep
-# the pluck index in range (out-of-range would only nil the DEAD slack_list
-# variable — probed, not a variant).
 
 _RAW_PIN_JSON = r"""{"as": "cfd6d1af", "block": [{"as": "24654513", "block": [], "input": {"lookup_table_id": "3684742"}, "keyword": "action", "name": "get_entries", "number": 2, "provider": "lookup_table", "skip": false}, {"as": "ec6ffecf", "block": [], "input": {"lookup_table_id": "3571620", "parameters": {"col1": "start_pos"}}, "keyword": "action", "name": "get_entry", "number": 3, "provider": "lookup_table", "skip": false}, {"as": "3cbb97c3", "block": [], "input": {"variables": {"data": {"start_pos": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"ec6ffecf\",\"path\":[\"entry\", \"col2\"]}')}"}, "schema": "[{\"name\":\"start_pos\",\"type\":\"string\",\"optional\":true,\"label\":\"start_pos\",\"details\":{\"real_name\":\"start_pos\"},\"control_type\":\"text\"}]"}}, "keyword": "action", "name": "declare_variable", "number": 4, "provider": "workato_variable", "skip": false}, {"as": "132cb750", "block": [], "input": {"variables": {"data": {"slack_list": "=_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"24654513\",\"path\":[\"entries\"]}').pluck(\"col1\")[_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"3cbb97c3\",\"path\":[\"start_pos\"]}').to_i]"}, "schema": "[{\"name\":\"slack_list\",\"type\":\"string\",\"optional\":true,\"label\":\"slack_list\",\"details\":{\"real_name\":\"slack_list\"},\"control_type\":\"text\"}]"}}, "keyword": "action", "name": "declare_variable", "number": 5, "provider": "workato_variable", "skip": false}, {"as": "469f790b", "block": [], "input": {"lookup_table_id": "3684742", "parameters": {"col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"3cbb97c3\",\"path\":[\"start_pos\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 6, "provider": "lookup_table", "skip": false}, {"as": "843b95da", "block": [], "input": {"lookup_table_id": "3571621", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"469f790b\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"entry\", \"col1\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 7, "provider": "lookup_table", "skip": false}, {"as": "6f60f454", "block": [], "input": {"buttons": {"button_actions": "Take this session, bd, , , , ,\nSkip the session, sales, danger, Confirm, Are you sure you want to skip to next week?, Yes, Cancel", "flow_id": "51780405"}, "channel": "knowledge-sharing-session", "parse": "true", "text": "Hi, We have a KT session scheduled today\n<@#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"843b95da\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"entry\", \"col2\"]}')}> , could you please respond if you're ready today?"}, "keyword": "action", "name": "post_message_to_channel", "number": 8, "provider": "slack", "skip": false}], "input": {"days_of_week": "3", "time_unit": "weeks", "timezone": "Asia/Kolkata", "trigger_at": "09:00:00", "trigger_every": "2"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

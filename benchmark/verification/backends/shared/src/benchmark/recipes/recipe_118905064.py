@@ -21,7 +21,6 @@ TRIGGER_AS = "b8aa6233"
 MENU_NAME = "[RepGenie] Fields"
 LOOKUP_TABLE_ID = "4026533"
 TRIGGER_PARAM_KEYS = {"api_name", "object_name"}
-# menu_branch -> (search step number, search as, menu step number, menu as)
 BRANCH_STEPS = {
     "lookup": ("3", "7fb98fac", "4", "e89c104c"),
     "contact": ("7", "b1582dc0", "8", "586380ee"),
@@ -29,56 +28,6 @@ BRANCH_STEPS = {
 }
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# slack_bot.dynamic_menu '[RepGenie] Fields' (as b8aa6233; optional trigger
-# parameters api_name / object_name plus the typeahead box):
-#   IF 2 (parameters.api_name present):
-#     3  lookup_table.search_entries 7fb98fac on table 4026533
-#        '[Rep Genie] Picklist Lookups' by col1 = api_name (Workato-internal
-#        mock, seeded per variant)
-#     4  slack_bot.generate_menu_options e89c104c over the entries
-#        (label = entry.col2, value = entry.col3; use_option_groups false ->
-#        plain flattened options, no option_groups key)
-#   ELSIF 5 (parameters.object_name present):
-#     IF 6 (object_name == 'Contact'):
-#       7  salesforce.search_sobjects_soql_v2 b1582dc0 (LIVE):
-#          SELECT Id, Name, Email FROM Contact WHERE Name like
-#          '%<typeahead.value>%' AND IsDeleted = false (limit 150)
-#       8  generate_menu_options 586380ee (label '#{Name} (#{Email})',
-#          value Id)
-#     ELSE 9:
-#       10 salesforce.search_sobjects_soql_v2 1ecaa00b (LIVE, dynamic FROM
-#          #{parameters.object_name}): SELECT Id, Name FROM <object> WHERE
-#          Name like '%<typeahead.value>%' AND IsDeleted = false (limit 150)
-#       11 generate_menu_options 0dc00721 (label Name, value Id)
-#   neither parameter present -> the whole body is skipped: a legal
-#   zero-action dynamic-menu job.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 lookup  : api_name present -> lookup search (2 matching rows +
-#   1 decoy col1) -> menu from col2/col3.
-# - variant_01 contact : object_name='Contact' -> live Contact SOQL matches
-#   the two seeded 'Bench 118905064 Zx *' contacts (LastName-only seeds:
-#   the live Contact Name renders as the LastName), excludes the Kappa decoy
-#   -> menu 'Name (Email)' / Id.
-# - variant_02 object  : object_name='Account' -> ELSE arm, dynamic FROM ->
-#   the two seeded Zx accounts match, Kappa decoy excluded -> menu Name / Id.
-# - variant_03 none    : parameters {} -> IF 2 false ('=_dp' present on a
-#   missing key -> MISSING -> false) and ELSIF 5 false -> zero actions.
-#
-# Backends: lookup_table 4026533 is a Workato-internal per-variant mock (read
-# only here -> the snapshot must be identical before/after). Salesforce runs
-# LIVE against benchmark-owned records; seed.salesforce.strict_soql_conditions
-# MUST be true ('IsDeleted = false' is an unquoted-boolean leaf that only the
-# strict evaluator understands - lenient mode would silently drop it) and
-# every record MUST declare read_fields ['IsDeleted'] so the live read-back
-# carries the derived-false column the strict leaf compares against.
-# generate_menu_options is a controlled echo (Workato menu payload return, no
-# Slack channel write) and the recipe never writes Salesforce -> the only
-# cleanup obligation is deleting this run's seeded records (finally block).
-# Live record ids are threaded into expect via $<REF>_ID tokens
-# (64106452 / 118168683 precedent). No try/catch exists in the raw recipe, so
-# force_action_error is rejected: a forced failure would fail the whole job
-# instead of exercising a recipe branch.
 
 _STRUCTURE_PINS_JSON = r'''[
  {

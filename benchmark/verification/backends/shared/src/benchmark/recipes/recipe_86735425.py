@@ -15,10 +15,6 @@ SEED_TYPE = "psa_podpost_freshdesk_service_variant"
 TRACK = "psa_podpost_freshdesk_service"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# All non-skip actions collected structurally (across every branch), in
-# raw-summary order: create branch (add_entry + reply), read branch
-# (get_entry + reply), update branch (get_entry + update_entry + reply),
-# and the catch branch error reply.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "add_entry"),
     ("workato_service", "send_reply"),

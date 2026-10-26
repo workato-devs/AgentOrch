@@ -10,15 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_57440067
 
 
-# Slack bot dynamic menu "Active Salesforce Accounts" (typeahead.value):
-# try { salesforce.search_sobjects_soql on Account (Id, Name, Current_ARR__c,
-# limit 2000) WHERE IsDeleted = false AND Name LIKE '%<typeahead>%' AND
-# (Churn_Reason__c = null OR Current_ARR__c > 0) ->
-# slack_bot.generate_menu_options with label
-# "<Name> | $<Current_ARR__c thousands-separated>" and value <Id> }
-# catch { EMPTY block — errors are swallowed and the run completes without
-# executing any action }. Salesforce runs live (records provisioned per
-# variant via harness.salesforce.seed_records, cleaned up after the run).
 RECIPE_ID = "57440067"
 SEED_TYPE = "dynamic_menu_salesforce_active_accounts_variant"
 TRACK = "live_salesforce_slack_dynamic_menu"

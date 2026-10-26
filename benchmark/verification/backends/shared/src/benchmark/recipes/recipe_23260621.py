@@ -15,11 +15,6 @@ SEED_TYPE = "workato_recipe_function_google_sheets_signup_variant"
 TRACK = "live_google_sheets_recipe_function_signup_log"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# JP-signup logger function: recipe-function execute(13 marketing/lead
-# parameters) -> logger.log_message (whole parameters object) ->
-# google_sheets.add_spreadsheet_row_v4 (14 columns: raw pills plus PII-masking
-# formulas for email/phone/marketo/intercom and job_context.job_created_at
-# strftime) -> return_result (empty). Linear, no control flow.
 SPREADSHEET_ID_RAW = "18AShtlbXcGNnwmHPm9EJT5fRTq5GrFHRnjR7h7HZqJ8"
 SHEET_NAME = "Sheet1"
 PARAMETER_KEYS = [
@@ -47,8 +42,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
     "google_sheets.add_spreadsheet_row_v4",
     "workato_recipe_function.return_result",
 ]
-# logger.log_message never goes through ctx.tools (it is a Workato-internal
-# runtime log), so it appears in the raw trace but not in tool_calls.
 ALLOWED_TOOLS: list[str] = [
     "google_sheets.add_spreadsheet_row_v4",
     "workato_recipe_function.return_result",

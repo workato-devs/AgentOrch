@@ -15,12 +15,6 @@ SEED_TYPE = "state_lookup_variant"
 TRACK = "workato_service_state_lookup"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Callable "State" service. Step 2 logs request.State.downcase. If State is
-# present (if step 3): reply with the [DC] State__c row matched on the Long
-# column (send_reply step 5) and stop; else if matched on the Short column
-# (send_reply step 8) and stop; else reply "OTHERS" (send_reply step 10).
-# The stop after each success means exactly one send_reply fires. A blank
-# State skips the outer if, so only the logger runs.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("logger", "log_message"),
     ("workato_service", "send_reply"),

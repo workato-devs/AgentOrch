@@ -18,63 +18,6 @@ TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "ab4ebba5"
 
-# Callable recipe function (trigger ab4ebba5): keeps a Snowflake history table's
-# schema in sync with its base table. Whole body wrapped in TRY (step 2):
-#   3  declare_variable (2631f665): base/history database, schema and table
-#      names, all six copied verbatim from trigger parameters
-#   4  snowflake.run_custom_sql (c97a2c66): DESCRIBE TABLE <base db>.<base
-#      schema>.<base table> -- LIVE DDL introspection through the custom-SQL
-#      path (no statement whitelist; probe-verified DESCRIBE runs live and
-#      returns lowercase 'name'/'type' columns)
-#   5  update_variables (051a3e1d): table_header = rows.pluck('name')
-#      .join(",").upcase.split(",")  (computed but never consumed downstream;
-#      must still execute for trace parity)
-#   6  snowflake.run_custom_sql (bec1a644): WITH HISTORY_TABLE_HEADER/
-#      BASE_TABLE_HEADER CTEs over INFORMATION_SCHEMA.COLUMNS, SELECT
-#      COLUMN_NAME FROM base EXCEPT history -- the new-column set
-#   7  IF bec1a644 rows.size > 0:
-#      8   logger (e0ee7862): rows.format_map("'%{column_name}'").join(', ')
-#          (quote-wrapped placeholder chain -- the batch-02 engine gap, now
-#          fixed and probe-verified)
-#      9   snowflake.run_custom_sql (e5b3b4e2): COLUMN_NAME, DATA_TYPE FROM
-#          INFORMATION_SCHEMA.COLUMNS WHERE ... COLUMN_NAME IN (<logger msg>)
-#      10  update_variables (8d8ed948): sql_script_for_adding_fields =
-#          rows.format_map('%{column_name} %{data_type}').join(', ')
-#      11  snowflake.run_custom_sql (bbfd0d45): ALTER TABLE <history db>.
-#          <history schema>.<history table> ADD <sql_script> -- LIVE ALTER
-#          (probe-verified: ALTER TABLE ... ADD col TEXT runs live and the
-#          column appears in the table)
-#   12 return_result (da6b3bcb): {is_successful: "true", fields_added:
-#      e5b3b4e2 rows.size} -- when step 9 never ran (IF false) the size pill
-#      resolves MISSING -> null (Workato-faithful nil)
-#   CATCH (step 13, as 1ae64ff0, max_retry_count 0):
-#   14 return_result (2abe3ee4): {is_successful: "false", fields_added: "0",
-#      error_message: catch message}
-#
-# DETERMINISM CONSTRAINT (probe-verified live): the EXCEPT result set and the
-# COLUMN_NAME IN (...) result set are UNORDERED -- two extra base columns came
-# back in a different order on consecutive runs. Every ALTER-branch variant
-# must therefore add exactly ONE column so the logger message, the IN-list SQL,
-# sql_script_for_adding_fields and the ALTER statement are order-independent
-# and can be pinned exactly.
-#
-# SEEDING CONSTRAINT: snowflake_live table keys must be the fully-qualified
-# 3-part <database>.<schema>.<table> names EXACTLY as the recipe interpolates
-# them (params are uppercase), because SnowflakeLiveClient._rewrite_sql
-# replaces the registered key text inside the SQL; a 2-part key would corrupt
-# "DESCRIBE TABLE <db>.<key>" into "<db>.<quoted 3-part name>". The params
-# database must equal env SNOWFLAKE_DATABASE (the harness forces every
-# qualified name into that database and INFORMATION_SCHEMA is resolved there);
-# seed_86179000 fails fast on any mismatch.
-#
-# Catch variant: params name a base table that is never seeded; the live
-# DESCRIBE fails with the deterministic Snowflake compilation error (probed
-# verbatim: "002003 (42S02): SQL compilation error:\nTable '<name>' does not
-# exist or not authorized.") and the catch branch returns it.
-#
-# Cleanup: seeded tables are create-or-replace'd by every seed and dropped by
-# harness.snowflake_live.cleanup in finally (the ALTER mutates the history
-# table, so cleanup is a rerun-safety requirement, not cosmetics).
 
 _STRUCTURE_PINS_JSON = r'''
 [

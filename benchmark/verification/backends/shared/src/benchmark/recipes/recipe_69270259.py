@@ -15,8 +15,6 @@ SEED_TYPE = "workato_app_recipe_lifecycle_variant"
 TRACK = "workato_app_recipe_lifecycle"
 TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
-# On a schedule the recipe stops then re-starts the same managed recipe
-# (id 24999443) to reset its state.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_app", "stop_recipe"),
     ("workato_app", "start_recipe"),

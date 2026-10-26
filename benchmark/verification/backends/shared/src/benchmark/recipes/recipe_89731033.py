@@ -25,81 +25,12 @@ PAGINATION_SOQL_STEP_AS = "63a33a39"
 FILTER_DECLARE_STEP_AS = "83dfe49e"
 BATCH_SIZE_DECLARE_STEP_AS = "27d909cb"
 MAX_BATCH_SIZE = 2000
-# Benchmark-owned live fixtures intentionally stay far below the connector's
-# pagination boundary.  This is a safety/cost cap on seeded test data, not a
-# claim that the production branch is logically unreachable.
 MAX_SEED_OPPORTUNITIES = 100
 OPPORTUNITY_SEED_FIELDS = {"Name", "StageName", "CloseDate", "Type"}
-# Org-assigned LastModifiedDate must strictly decrease across the recipe's
-# ORDER BY LastModifiedDate DESC ground truth; audit-field writes are disabled
-# in the benchmark org, so a real pause between seed phases is the only
-# faithful spacing (precedent recipe_88704851 CREATED_DATE_SPACING_SECONDS).
 LMD_SPACING_SECONDS = 1.2
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# workato_api_platform.receive_request (as d3598ac7; request {deal_type
-# optional ('Renew, Expand or Land'), account_type optional-unused};
-# response 200 {opportunities: [{id, name}]}). Body (linear, no try/catch,
-# no stop):
-#   2  lookup_table.search_entries 839fdf7a (table 3304617 '[CSCON] Deal
-#      Types': col1 Name, col2 SOQL Filter) by col1 = request.deal_type
-#   3  declare_variable 83dfe49e deal_type_filter =
-#        if entries.first.entry.col2.present?
-#          "AND (" + col2 + ")"  else  ""  end
-#      (probe-verified: EMPTY entries -> entries.first resolves MISSING ->
-#      .present? false -> "" — the no-lookup-match path and the blank-col2
-#      path both inject nothing)
-#   4  declare_variable 27d909cb max_batch_size = 2000 (schema parse_output
-#      integer_conversion -> the engine stores int 2000; the SOQL limit arg
-#      resolves to int 2000)
-#   5  declare_list d2c4c0f3 'records' {id, name}
-#   6  salesforce.search_sobjects_soql_v2 aef0ef3e (LIVE):
-#        SELECT Id, Name, Type, LastModifiedDate FROM Opportunity
-#        WHERE IsClosed = false #{deal_type_filter}
-#        ORDER BY LastModifiedDate DESC        (limit = max_batch_size pill)
-#      — REQUIRES seed.salesforce.strict_soql_conditions true ('IsClosed =
-#      false' keyword leaf + injected 'AND (Type = ...)' + ORDER BY applied)
-#   7  insert_to_list_batch 4a5c5db8 records <- ____source aef0ef3e.records
-#      {id: Id, name: Name}, location end
-#   8  IF aef0ef3e.records.{size} equals_to max_batch_size:
-#      9  search_sobjects_soql_v2 63a33a39 (same SOQL, offset 2000) +
-#      10 insert_to_list_batch 9df0d960
-#      — DEAD-IN-BENCHMARK: reachable only with exactly 2000 open owned
-#      opportunities; seeding 2000 live records is prohibitive. The branch is
-#      recorded as proven-unreachable; the verifier pins that exactly ONE
-#      SOQL search (as aef0ef3e) executes.
-#   11 workato_api_platform.return_response 86b1eaac (200, opportunities
-#      ____source = d2c4c0f3.list_items {id, name}) — terminal.
-#
-# Branch-mapping notes (recorded per benmark_rules):
-# - variant_00 renew_filtered: deal_type 'Renew' -> col2 "Type = 'Renewal'"
-#   appended -> only OPEN Renewal owned opps returned, LastModifiedDate DESC
-#   (2 matches seeded in phases 1 and 3 -> response order [phase3, phase1];
-#   an open New Business opp and a Closed-Won Renewal opp are live decoys).
-# - variant_01 blank_filter_all_open: deal_type 'Land' matches an entry with
-#   BLANK col2 -> present? false -> filter '' -> ALL open owned opps
-#   regardless of Type ([phase3, phase2, phase1]); a closed decoy excluded.
-# - variant_02 no_lookup_match: deal_type 'Expand' absent from the table ->
-#   entries [] -> entries.first MISSING -> filter '' (distinct proof of the
-#   empty-entries arm; result_count 0 on the lookup) -> all open owned opps.
-# - variant_03 zero_open_opps: deal_type 'Renew' with matching lookup row,
-#   but only closed opps + an open New Business decoy are seeded -> the
-#   filtered query returns [] -> batch insert of an empty source -> response
-#   opportunities [].
-#
-# LastModifiedDate DESC determinism: SF timestamps have 1s granularity, so
-# every response-order-sensitive record is seeded in its OWN phase and phases
-# are provisioned LMD_SPACING_SECONDS apart (later phase = newer timestamp =
-# earlier in the DESC response). The seeder enforces one response ref per
-# phase + reverse-phase response order; the verifier asserts the live
-# read-back LastModifiedDate values are strictly descending (ties fail).
-#
-# Backends: salesforce LIVE (owned-record scan keeps the unscoped
-# 'IsClosed = false' query deterministic; the recipe is READ-ONLY on
-# Salesforce — snapshot equality is pinned — and cleanup deletes every owned
-# record in finally, failing on leftovers); lookup_table + workato_variable +
-# workato_api_platform are Workato-internal deterministic mocks.
 
 _STRUCTURE_PINS_JSON = r'''
 [

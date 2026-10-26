@@ -18,59 +18,6 @@ TRACK = "live_salesforce_campaign_activity_batch_api"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "5d8cbd3f"
-# API endpoint: request {Input[] of {unqualified_reason, campaign_activity_id}};
-# JSON response {status, sucess_records[], failed_records[]} (the
-# "sucess_records" typo is verbatim in the raw recipe and kept everywhere).
-#
-#   TRY (2):
-#     workato_variable.declare_list 'Success Records' (3, fb87693f) and
-#     'Failed Records' (4, 92de3914).
-#     IF (5) request.Input size > 10:
-#       FOREACH Input (6, 609a8aab, simple):
-#         TRY (7): salesforce.update_sobject Campaign_Activity__c
-#           {id: item.campaign_activity_id, Unqualified_Reason__c:
-#           item.unqualified_reason} (8, 1d614d89) -> insert_to_list Success
-#           (9, 09ad599c, results "Success").
-#         CATCH (10, 8e2e16ca, max_retry 0): insert_to_list Failed
-#           (11, 9d314b1d, results "Failed.\nError Message:\n<catch message>")
-#           -> the loop continues with the next item.
-#     ELSE (12):
-#       FOREACH Input (13, 3cab382e, repeat_mode=batch, batch_size 20; ZERO
-#         iterations on an empty Input):
-#         salesforce.composite_update_sobject (14, fa2c6ecd, allOrNone=false)
-#           records ____source = the batch pill.
-#         FOREACH successRecords (15, 28037b9f) -> insert Success (16, 47b1e527).
-#         FOREACH failedRecords (17, 209619fe) -> insert Failed (18, cbc67c9e;
-#           raw-recipe quirk: the "error message" is the Id pill again).
-#     workato_api_platform.return_response (19, 69f53081) 200
-#       {status: "Success", sucess_records <- Success list,
-#        failed_records <- Failed list} - TERMINAL.
-#   CATCH (20, f5053b8f, max_retry 0): return_response (21, 22787640) 200
-#     {status: "Failed.\nError message: <catch message>",
-#      sucess_records <- Success list} - the API answers 200 even on failure.
-#
-# Live backend: Salesforce custom object Campaign_Activity__c with custom field
-# Unqualified_Reason__c (deployed; the seed schema section re-ensures the field
-# + FLS on every run). Workato-internal (deterministic mock): variable lists,
-# API-platform response.
-#
-# seed.composite_update_extended_output is set unconditionally by the seeder:
-# Workato's composite update always exposes successRecords/failedRecords, so
-# the faithful result shape for THIS recipe requires the opt-in executor flag.
-# Engine fix 3b7736da (2026-07-07): under that flag the success/failed items
-# ECHO the input record's fields ({Id, Unqualified_Reason__c, success} /
-# +errors[]), and allOrNone=false collects per-record failures (a bad record
-# fails only its own slot; the composite trace row then reports ok=false,
-# which verify_88707765 admits ONLY via the explicit
-# expect.composite_failed_count opt-in).
-#
-# Raw-recipe quirks pinned by the <=10 variants:
-# - the response's top-level status stays the literal "Success" even when
-#   failed_records is non-empty (only the outer catch changes it);
-# - the failedRecords insert (step 18) builds its results text as
-#   "Failed\nError Mesage:\n<Id>" - sic: misspelled "Mesage" and the Id pill
-#   reused as the error message, so the response's failed row status carries
-#   the record id, not the Salesforce error.
 
 EXPECTED_ACTIONS: list[tuple[int, str, str, str]] = [
     (3, 'fb87693f', 'workato_variable', 'declare_list'),

@@ -19,36 +19,6 @@ TRIGGER_AS = "0dc619ef"
 FOREACH_AS = "140b9c9f"
 FOREACH_REPEAT_MODE = "simple"
 BLANK_STOP_STEP_NUMBER = 5
-# Callable recipe function (trigger as 0dc619ef; parameters.String, a
-# comma-separated string). The recipe replies through
-# workato_service.send_reply (it never calls return_result):
-#   declare_list 'Output List' (step 2, as 9e860062)
-#   IF3 parameters.String blank:
-#     send_reply success (step 4, as f6e6ea72; List ____source-mapped from the
-#       still-empty Output List -> reply {"List": []})
-#     STOP 5 (graceful, stop_with_error=false)
-#   declare_variable (step 6, as e4f0eb26): Array = String.strip.split(","),
-#     is_array_of_strings = "false"
-#   workato_list.create_list (step 7, as 78454755) size = Array.length
-#     (iteration scaffold)
-#   FOREACH (step 8, as 140b9c9f, repeat_mode=simple) over the created list:
-#     IF9 (Array[foreach index]).to_i not_equals_to Array[foreach index]:
-#       update is_array_of_strings = "true" (step 10, as b88c6a70)
-#       [harness equals_to/not_equals_to is str(lhs)==str(rhs), so per item:
-#        '1'.to_i=1 vs '1' -> '1'=='1' equal (stays integer classification);
-#        'abc'.to_i=0 vs 'abc' -> differ (string); ' 3'.to_i=3 vs ' 3' ->
-#        '3' != ' 3' differ (string). Deterministic and pinned per variant.]
-#     insert_to_list Output List Value = Array[foreach index].strip
-#       (step 11, as 5c761018)
-#   IF12 is_array_of_strings is_true:
-#     send_reply success (step 13, as 19475c1e; string Values)
-#     logger.log_message list_items.to_json (step 14, as 74a60038)
-#   ELSE (step 15):
-#     send_reply success (step 16, as 13747cc2; Value = .to_i integers)
-#     logger.log_message '[{"Value": ' + pluck join (step 17, as 928c42be)
-# No external backend at all: workato_service replies, workato variables/lists
-# and the loggers are deterministic Workato-internal mocks (mock-only recipe
-# per the backend policy). The captured send_reply is the observable output.
 PINNED_TRIGGER_INPUT = {   'parameters_schema_json': '[{"control_type":"text","label":"String","name":"String","type":"string","optional":false,"hint":"Comma '
                               'Separated String"}]',
     'result_schema_json': '[{"name":"List","type":"array","of":"object","label":"List","optional":false,"properties":[{"control_type":"text","label":"Value","name":"Value","type":"string","optional":false}]}]'}

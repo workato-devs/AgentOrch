@@ -25,8 +25,6 @@ TRUNCATE_AS = "f4a05902"
 UPSERT_AS = "b3ea987f"
 STOP_STEP_NUMBER = 5
 SNOWFLAKE_TABLE = "SALESFORCE.FY_QUOTA"
-# Raw upsert schema order (b3ea987f extended_input_schema): float for the two
-# quota columns, NUMBER(38,0) for month/row_number, varchar for the rest.
 SNOWFLAKE_COLUMNS = {
     "fiscal_period": "string",
     "fiscal_period_and_month": "string",
@@ -40,10 +38,6 @@ SNOWFLAKE_COLUMNS = {
     "sfdc_sales_team": "string",
     "user": "string",
 }
-# The benchmark tab is seeded with the LITERAL col_-prefixed headers so the
-# search-result row keys line up with the create_list source keys and the
-# query_list column pills (118554940/118858162 precedent). This recipe never
-# WRITES to the sheet, so the col_-literal convention is round-trip safe.
 SHEET_HEADERS = [
     "col_user",
     "col_sfdc_sales_team",
@@ -56,56 +50,8 @@ SHEET_HEADERS = [
     "col_quota_amount",
     "col_ramp_status",
 ]
-# Production layout: the recipe declares its own column_headers, so Workato
-# returns the sheet's in-cell header line as the FIRST result row; the
-# create_list [1..-1] slice exists to drop it ("Create a collection without
-# column header"). Every seed reproduces that layout: data row 1 must be the
-# header-echo row (each col_<h> cell carries the bare header name <h>).
 HEADER_ECHO_ROW = {header: header[len("col_"):] for header in SHEET_HEADERS}
 
-# clock.scheduled_event (as 49b2799a, daily 14:00 Etc/UTC) -- payload-less;
-# no trigger pill is dereferenced downstream. Body:
-#   2  declare_variable fd2899ad: Table='FY_QUOTA', batch_size='16000'
-#      (integer schema; batch_size is never read downstream)
-#   3  google_sheets.search_spreadsheet_rows_v4_new 0a1d8423 (LIVE,
-#      env-redirected benchmark tab): data {col_user: '='} -- the formula-mode
-#      criterion evaluates to '' and Workato DROPS blank criteria, so the
-#      search is the recipe's documented retrieve-all trick (recipe comment:
-#      "Using formula mode in any field allows us to retrieve all outputs
-#      instead of explicitly searching for anything"); count 50000
-#   IF 4 (rows size equals_to '50000') -> STOP 5 (stop_with_error true,
-#      'Result size has been hit'). PRACTICALLY UNREACHABLE / dead in the
-#      benchmark: it fires only when the tab holds EXACTLY 50,000 matching
-#      rows (count caps the result size AT the threshold -- the stop is the
-#      author's overflow guard). Seeding 50,000 live Sheets rows is
-#      prohibitive; the seeder enforces a small seed and every variant pins
-#      stopped=false plus zero stop trace rows as the dead-branch proof.
-#   6  workato_smart_list.create_list 010b3708 'fy_quota': list_source =
-#      =rows_pill[1..-1] -- Ruby range slice drops the FIRST result row (the
-#      header-echo row). The slice is LOAD-BEARING: without it the header
-#      text would flow into the Snowflake upsert. Pinned via the create_list
-#      trace rows + an explicit no-header-leak check on the upsert args.
-#   7  workato_smart_list.query_list 1375c2b6: explicit 11-column SELECT over
-#      #{columns.*} pills from #{list_name}; output_schema_by=index maps the
-#      col_* source columns positionally onto row_number/user/.../ramp_status.
-#      ENGINE-CANONICAL projection is the UNION dict (source col_* keys PLUS
-#      the alias keys); values pass through as the sheet-rendered strings
-#      (row_number stays the live search's integer). The upsert derefs only
-#      the alias fields.
-#   8  snowflake.run_custom_sql f4a05902: 'TRUNCATE TABLE #{Table}' -- the
-#      bare 1-part pill name resolves to FY_QUOTA and the live adapter
-#      rewrites it (from/join/into/update/table bare-name branch) to the
-#      registered SALESFORCE.FY_QUOTA physical table.
-#   9  snowflake.upsert_rows_batch b3ea987f: table SALESFORCE.FY_QUOTA, key
-#      ROW_NUMBER, rows ____source = query rows with 11 current_item field
-#      derefs. After the TRUNCATE the table is empty, so every row INSERTS;
-#      the stale-table variant pins created==row count as the truncate proof.
-#
-# Backends: google_sheets LIVE (search-only; the run must leave the seeded
-# tab byte-identical -- verified initial-vs-final snapshot); snowflake LIVE
-# (benchmark-owned table, dropped in cleanup even on failure);
-# workato_smart_list + workato_variable are in-executor Workato-internal
-# mocks per backend policy.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "49b2799a", "skip": false, "input": {"time_unit": "days", "timezone": "Etc/UTC", "trigger_at": "14:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "fd2899ad", "skip": false, "input": {"variables": {"data": {"Table": "FY_QUOTA", "batch_size": "16000"}, "schema": "[{\"name\":\"batch_size\",\"type\":\"integer\",\"optional\":true,\"label\":\"batch size\",\"control_type\":\"integer\"},{\"name\":\"Table\",\"type\":\"string\",\"optional\":true,\"label\":\"Table\",\"details\":{\"real_name\":\"Table\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "google_sheets", "name": "search_spreadsheet_rows_v4_new", "as": "0a1d8423", "skip": false, "input": {"column_headers": "user\nsfdc_sales_team\nsales_sub_team\nfy_full_monthly_quota\nfiscal_year\nmonth_of_quota_final\nfiscal_period\nfiscal_period_and_month\nquota_amount\nramp_status", "count": "50000", "data": {"col_user": "="}, "sheet_name": "FY21 - FY26 Monthly Quotas - For Data Upload", "spreadsheet_id": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "0AAIkb6BAiONcUk9PVA/0AAIkb6BAiONcUk9PVA"}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"0a1d8423\",\"path\":[\"rows\", {\"path_element_type\": \"size\"}]}')}", "operand": "equals_to", "rhs": "50000"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "stop", "provider": "", "name": "", "as": "", "skip": false, "input": {"stop_reason": "Result size has been hit", "stop_with_error": "true"}, "block": []}]}, {"number": 6, "keyword": "action", "provider": "workato_smart_list", "name": "create_list", "as": "010b3708", "skip": false, "input": {"list_name": "fy_quota", "list_source": "=_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"0a1d8423\",\"path\":[\"rows\"]}')[1..-1]", "primary_index": "row_number"}, "block": []}, {"number": 7, "keyword": "action", "provider": "workato_smart_list", "name": "query_list", "as": "1375c2b6", "skip": false, "input": {"col_sep": "comma", "csv": "false", "headers": "false", "output_schema_by": "index", "result_schema_json": "[{\"name\":\"row_number\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\"},{\"name\":\"user\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"sfdc_sales_team\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"sales_sub_team\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"fy_full_monthly_quota\",\"type\":\"number\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"fiscal_year\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"month_of_quota_final\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\"},{\"name\":\"fiscal_period\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"fiscal_period_and_month\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"quota_amount\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\"},{\"name\":\"ramp_status\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Ramp status\"}]", "sql": "select \n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"row_number\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_user\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_sfdc_sales_team\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_sales_sub_team\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_fy_full_monthly_quota\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_fiscal_year\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_month_of_quota_final\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_fiscal_period\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_fiscal_period_and_month\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_quota_amount\"]}')},\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"columns\", \"col_ramp_status\"]}')}\n\nfrom #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"010b3708\",\"path\":[\"list_name\"]}')}"}, "block": []}, {"number": 8, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "f4a05902", "skip": false, "input": {"sql": "TRUNCATE TABLE #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fd2899ad\",\"path\":[\"Table\"]}')}", "update_only": "false"}, "block": []}, {"number": 9, "keyword": "action", "provider": "snowflake", "name": "upsert_rows_batch", "as": "b3ea987f", "skip": false, "input": {"key_columns": "ROW_NUMBER", "rows": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\"]}')}", "fiscal_period": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"fiscal_period\"]}')}", "fiscal_period_and_month": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"fiscal_period_and_month\"]}')}", "fiscal_year": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"fiscal_year\"]}')}", "fy_full_monthly_quota": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"fy_full_monthly_quota\"]}')}", "month_of_quota_final": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"month_of_quota_final\"]}')}", "quota_amount": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"quota_amount\"]}')}", "ramp_status": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"ramp_status\"]}')}", "row_number": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"row_number\"]}')}", "sales_sub_team": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"sales_sub_team\"]}')}", "sfdc_sales_team": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"sfdc_sales_team\"]}')}", "user": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"1375c2b6\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"user\"]}')}"}, "table": "SALESFORCE.FY_QUOTA"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -150,8 +96,6 @@ REQUIRED_EXPECT_KEYS = (
     "upsert_updated",
     "final_fy_quota_rows",
 )
-# Sheets seed ceiling: keeps the IF-4 '50000 rows' stop branch provably dead
-# (and live seeding tractable).
 MAX_SEED_ROWS = 100
 
 

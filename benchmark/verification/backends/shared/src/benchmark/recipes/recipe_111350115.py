@@ -21,66 +21,7 @@ SERVICE_NAME = "Check email domain in Salesforce"
 LOOKUP_TABLE_ID = "3258381"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# Callable service "Check email domain in Salesforce" (trigger as
-# receive_request; POST /check_email_domain_in_salesforce; request
-# {email, upsert_choice.account_id} -- only request.email is dereferenced):
-#   TRY (step 2):
-#     #3  logger.log_message (as 83af7689) domain =
-#         request.email.split("@")[1]  -- blank email resolves MISSING -> ""
-#     #4  lookup_table.search_entries (as search_entries) table 3258381
-#         'Freemail providers', col1 = logger message  -- Workato-internal mock
-#     IF #5 entries size > 0:
-#       #6  send_reply success {domain, result: "filtered"}
-#       #7  STOP (stop_with_error=false, graceful)
-#     #8  salesforce.search_sobjects Domain__c (as search_sobjects) filter
-#         Domain__c = logger message, limit 150 -- LIVE benchmark-owned records
-#     IF #9 Domain__c size == 0:
-#       #10 send_reply success {domain, result: "not found"}
-#     IF #11 Domain__c size > 0:
-#       #12 send_reply success {domain, message: current Account__c id,
-#           result: "found", salesforce_account_name: JOIN PILL
-#           get_custom_object(Account__c -> Account.id).Name}
-#   CATCH (step 13, as catch, max_retry_count 0):
-#     IF #14 catch.message == "'Message' must be present" AND logger blank:
-#       #15 send_reply error "No email address provided. Please provide an
-#           email address."
-#     IF #16 catch.message != "'Message' must be present":
-#       #17 send_reply error <catch.message>
-#
-# TWIN: byte-identical to 112451583 except lookup_table_id 3258381
-# (vs 3258396); built independently with its own groundtruth.
-#
-# Live backend: Salesforce Domain__c custom object (DEPLOYED: Domain__c Text,
-# Account__c Lookup(Account)) + benchmark-owned Account for the found-branch
-# join. seed.salesforce.relationship_expansion serves the joined parent
-# Account fields on read-back. The seed schema declares both custom fields for
-# FLS (ensure_custom_field early-exits into the FLS grant because the fields
-# already exist; sf_type is only consulted when a field is missing).
-# Workato-internal (deterministic mock): lookup table 3258381, service
-# replies, logger.
-#
-# Branch-mapping notes (variant-plan divergences, recorded per benmark_rules):
-# - catch_blank_email: in real Workato a blank email makes the logger raise
-#   "'Message' must be present"; the harness logger logs "" without raising,
-#   so that catch branch is reachable ONLY via seed.force_action_error on
-#   step_as search_entries with EXACTLY that message (batch-01 precedent for
-#   forced catch branches). The logger still runs first and stays blank, so
-#   IF #14 evaluates both arms faithfully.
-# - catch_generic_error: force_action_error on step_as search_sobjects with a
-#   custom message exercises IF #16. The failed action records no trace row
-#   (fault injection precedes the adapter), so executed_action_count excludes
-#   it.
-# - The IF #14 combination (message == literal AND logger NOT blank) falls
-#   through with no reply; it is a reachable no-op, not required coverage.
-#
-# Cleanup: only variants that seed live records need it; they are deleted by
-# harness.salesforce.cleanup in run_111350115's finally block. Lookup-table
-# state is per-run in-memory mock state, fully overwritten by every seed.
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip +
-# verbatim raw input per node, incl. the split("@")[1] formula, the
-# get_custom_object join pill and the catch literals). Any upstream drift
-# fails validation instead of silently changing ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {
@@ -354,9 +295,6 @@ ALLOWED_TOOLS: list[str] = [
     "salesforce.search_records",
     "workato_service.send_reply",
 ]
-# Domain__c custom fields the recipe reads (schema-in-seed for the FLS grant;
-# both fields are already deployed live -- Account__c is a Lookup(Account) in
-# the org, the Text sf_type below is never used to create it).
 REQUIRED_DOMAIN_SCHEMA: dict[str, str] = {
     "Domain__c": "Text",
     "Account__c": "Text",

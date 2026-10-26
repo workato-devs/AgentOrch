@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Recompute a published leaderboard from the archived per-variant records.
+"""Recompute a leaderboard from local per-variant evaluation records.
 
-Every evaluation run in ``outputs/full_eval/<run_name>/<model>/<mode>/`` ships
+Each local evaluation run in ``outputs/full_eval/<run_name>/<model>/<mode>/`` writes
 ``results.jsonl`` (one scored record per recipe-variant, including the model's
-plan and the evaluator's verdicts) and the ``leaderboard.json`` we report.
+plan and the evaluator's verdicts) and the aggregate ``leaderboard.json``.
 This script re-runs the harness's own aggregator (vendored
 ``metrics.aggregate.leaderboard``, deterministic seeded bootstrap CIs) over
 ``results.jsonl`` and checks the result against ``leaderboard.json`` —

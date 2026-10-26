@@ -34,41 +34,6 @@ SOURCE_COLUMNS = {
     "is_valid_workflow": "boolean",
 }
 
-# workato_recipe_function.execute (as d5a45675, result schema {status}); no
-# trigger parameters are ever read. Body:
-#   2  workato_variable.declare_variable 70d77402: snap_date =
-#      now.strftime('%Y-%m-%d') (pinned seed.now; the SQL never uses it)
-#   TRY (step 3):
-#     4  snowflake.run_custom_sql a0fed501 (LIVE): create or replace table
-#        plg.chi_2024_recipe_hierarchy_operational as WITH RECURSIVE
-#        recipe_hierarchy_interim (anchor: is_valid_workflow = true roots at
-#        level 0 with array_construct(flow_id) path; recursion: parent_id
-#        joins scoped to entry_date+data_center, level+1, array_append path,
-#        array_contains(flow_id::variant, path) = false cycle guard) ...
-#        final select: calendar_date, flow_id, data_center, parent_id
-#        (nulled on level-0 rows that carry one), workflow_type CASE
-#        ('RF workflow' / 'Root workflow' / 'Not workflow'), root_flow,
-#        level, hierarchy_path; group by all; trailing ';'
-#     5  snowflake.run_custom_sql_async_v2 171a0a26 skip:true -- the engine
-#        traces {skipped: true} and never executes it (raw_executor
-#        execute_node skip branch)
-#   CATCH (step 6, as 461b1472, max_retry_count 0):
-#     7  return_result c4d311ab {status:'failed'} -- TERMINAL, halts the run
-#     8  STOP 49c00a91 (stop_with_error, catch.type/message pills) --
-#        unreachable after the terminal return_result (engine-canonical; the
-#        interpolated stop_reason never renders)
-#   9  return_result fdf1f721 {status:'success'}
-#
-# Backends: Snowflake runs LIVE. Seed keys are the literal 2-part names the
-# SQL carries (schema PLG kept, database rewritten to SNOWFLAKE_DATABASE).
-# The CTAS target is registered with rows [] and NO columns: the seeder then
-# DROPS any stale copy pre-run, _rewrite_sql maps the name, and cleanup drops
-# whatever the CTAS created. The SQL uses no current_date/current_timestamp
-# and no binds, so seed.snowflake_live carries no current_time.
-# hierarchy_path is a live ARRAY: the connector returns it as JSON text, so
-# expects declare it as a JSON list and the verifier compares json.loads.
-# The recipe-function trigger/returns are deterministic Workato-internal
-# mocks. Row identity in the target is (flow_id, level, root_flow).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_recipe_function", "name": "execute", "as": "d5a45675", "skip": false, "input": {"result_schema_json": "[{\"name\":\"status\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Status\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "70d77402", "skip": false, "input": {"variables": {"data": {"snap_date": "=now.strftime(\"%Y-%m-%d\")"}, "schema": "[{\"name\":\"snap_date\",\"type\":\"string\",\"optional\":true,\"label\":\"snap_date\",\"details\":{\"real_name\":\"snap_date\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 4, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "a0fed501", "skip": false, "input": {"sql": "create or replace table plg.chi_2024_recipe_hierarchy_operational as \nwith recursive recipe_hierarchy_interim as (\n    select t.flow_id\n        , t.entry_date\n        , t.data_center\n        , t.parent_id\n        , t.flow_id as root_flow\n        , 0 as level\n        , array_construct(t.flow_id) as hierarchy_path\n    from plg.chi_2024_hierarchy_base_interim_operational t\n    where is_valid_workflow = true\n\n    union all\n\n    select t.flow_id\n        , rhi.entry_date\n        , rhi.data_center\n        , t.parent_id\n        , rhi.root_flow\n        , rhi.level + 1 as level\n        , array_append(rhi.hierarchy_path, t.flow_id) hierarchy_path\n    from plg.chi_2024_hierarchy_base_interim_operational t\n    cross join recipe_hierarchy_interim rhi\n    where t.parent_id = rhi.flow_id and t.entry_date = rhi.entry_date and t.data_center = rhi.data_center\n    and array_contains(t.flow_id::variant, rhi.hierarchy_path) = false\n)\n\nselect entry_date calendar_date\n    , rh.flow_id, rh.data_center\n    , case when level = 0 and parent_id is not null then null else parent_id end parent_id\n    , case \n        when level = 0 and parent_id is not null then 'RF workflow'\n        when level = 0 and parent_id is null then 'Root workflow'\n        else 'Not workflow'\n    end as workflow_type\n    , root_flow\n    , level\n    , hierarchy_path\nfrom recipe_hierarchy_interim rh\ngroup by all\n\n;", "update_only": "false"}, "block": []}, {"number": 5, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql_async_v2", "as": "171a0a26", "skip": true, "block": []}, {"number": 6, "keyword": "catch", "provider": "", "name": "", "as": "461b1472", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 7, "keyword": "action", "provider": "workato_recipe_function", "name": "return_result", "as": "c4d311ab", "skip": false, "input": {"result": {"status": "failed"}}, "block": []}, {"number": 8, "keyword": "stop", "provider": "", "name": "", "as": "49c00a91", "skip": false, "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"461b1472\",\"path\":[\"type\"]}')}, #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"461b1472\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "block": []}]}]}, {"number": 9, "keyword": "action", "provider": "workato_recipe_function", "name": "return_result", "as": "fdf1f721", "skip": false, "input": {"result": {"status": "success"}}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

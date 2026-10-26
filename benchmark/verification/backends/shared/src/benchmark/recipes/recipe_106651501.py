@@ -24,11 +24,6 @@ SEARCH_STEP_AS = "85f2b107"
 MENU_STEP_AS = "aab14ffe"
 UPDATE_STEP_AS = "d719ef1b"
 CATCH_STEP_AS = "31cbad55"
-# The literal 3-PART name the SQL interpolates; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.FRESHDESK.PRODUCT_SUPPORT_TICKET_EXPORT —
-# the original WORKATO_BUSINESS_SYSTEMS database name is dropped by design;
-# re-probed on the current tree).
 SNOWFLAKE_TABLE = "WORKATO_BUSINESS_SYSTEMS.FRESHDESK.product_support_ticket_export"
 TABLE_COLUMNS = {"COMPANY_NAME": "string"}
 SQL_TEMPLATE = (
@@ -37,43 +32,6 @@ SQL_TEMPLATE = (
     "WHERE LOWER(COMPANY_NAME) LIKE LOWER('%{typeahead}%')"
 )
 
-# slack_bot.dynamic_menu 'List of Freshdesk Company Names' (as bd069835;
-# parameters company_name/report are DECLARED but never dereferenced — the
-# recipe reads ONLY typeahead.value, into the SQL LIKE):
-#   2  workato_variable.declare_variable 36bf1d17 job_report='OK' (mock)
-#   TRY 3 (NO IF gate — near-twin 88437797 minus its request_type gate):
-#     4  snowflake.search_rows_sql 85f2b107 (LIVE): SELECT DISTINCT
-#        COMPANY_NAME FROM WORKATO_BUSINESS_SYSTEMS.FRESHDESK.
-#        product_support_ticket_export WHERE LOWER(COMPANY_NAME) LIKE
-#        LOWER('%<typeahead.value>%'), limit '2000'.
-#        NO ORDER BY: multi-distinct matches are NOT strictly pinnable, so
-#        every variant seeds AT MOST ONE distinct matching company (the
-#        seeder derives the DISTINCT match set and enforces size <= 1).
-#     5  slack_bot.generate_menu_options aab14ffe: vestigial
-#        `option_groups [{}]` + use_option_groups 'false' routes to the
-#        FLAT options path (re-probed on this recipe verbatim); options
-#        ____source = step-4 rows, label = value = current_item
-#        company_name (live rows carry the UPPER key and the lowercase
-#        alias; the pill reads lowercase).
-#   CATCH 6 (as 31cbad55, max_retry_count 0):
-#     7  workato_variable.update_variables d719ef1b job_report='Failed' —
-#        target name is DOUBLE-ANONYMIZED
-#        ('<anon>aaaa…</anon>:<anon>bbbbbbbb</anon>:job_report'):
-#        _resolve_variable_step_id lands the write on the UNIQUE declaring
-#        step 36bf1d17 (unique-field-owner resolution, re-probed).
-#
-# Branch gating (all re-probed on the current tree):
-# - TRY success: declare -> live search -> menu (3 actions). Zero matches is
-#   the SAME branch with options [].
-# - CATCH via seed.force_action_error on 85f2b107: fires BEFORE the live
-#   adapter, so catch variants own no live state (empty seed, no snapshots,
-#   no cleanup call).
-# - DISTINCT collapse and LOWER-both-sides matching are proven live by
-#   seeds (duplicate company rows collapse to one option; LOWER(NULL) LIKE …
-#   is NULL so a null company row can never surface).
-# Typeahead charset guard: the value interpolates into a single-quoted SQL
-# LIKE literal — quotes/backslashes and LIKE wildcards (%/_) are rejected
-# so groundtruth stays a plain case-insensitive substring match.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "bd069835", "skip": false, "input": {"dynamic_menu_name": "List of Freshdesk Company Names", "parameters": "[\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Company\",\n    \"name\": \"company_name\",\n    \"type\": \"string\",\n    \"optional\": true\n  },\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Report\",\n    \"name\": \"report\",\n    \"type\": \"string\",\n    \"optional\": true\n  }\n]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "36bf1d17", "skip": false, "input": {"variables": {"data": {"job_report": "OK"}, "schema": "[{\"name\":\"job_report\",\"type\":\"string\",\"optional\":true,\"label\":\"Job Report\",\"details\":{\"real_name\":\"Job Report\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 4, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "85f2b107", "skip": false, "input": {"limit": "2000", "parameters": {"schema": "[]"}, "sql": "SELECT DISTINCT COMPANY_NAME FROM WORKATO_BUSINESS_SYSTEMS.FRESHDESK.product_support_ticket_export WHERE LOWER(COMPANY_NAME) LIKE LOWER('%#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"bd069835\",\"path\":[\"typeahead\", \"value\"]}')}%')"}, "block": []}, {"number": 5, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "aab14ffe", "skip": false, "input": {"option_groups": [{}], "options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"85f2b107\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"85f2b107\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"company_name\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"85f2b107\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"company_name\"]}')}"}, "use_option_groups": "false"}, "block": []}, {"number": 6, "keyword": "catch", "provider": "", "name": "", "as": "31cbad55", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 7, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "d719ef1b", "skip": false, "input": {"job_report": "Failed", "name": "<anon>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</anon>:<anon>bbbbbbbb</anon>:job_report"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

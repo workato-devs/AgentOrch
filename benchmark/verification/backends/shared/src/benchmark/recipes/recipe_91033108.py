@@ -23,40 +23,6 @@ DELETE_AS = "c0945c6f"
 CONFIG_TABLE = "3357221"
 SCHED_TABLE = "3357223"
 
-# slack_bot.new_event member_left_channel (as eb16353c, toggleCfg event_name
-# custom value; seeded trigger event, no live Slack call — the recipe
-# dereferences ONLY member_left_channel.channel + .user):
-#   2  lookup_table.search_entries f9501965 table 3357221 '[NEW] Standup Bot
-#      Config Table', parameters exactly {col2: #{member_left_channel.channel}}.
-#   IF 3: f9501965 entries size equals_to '0' ->
-#     STOP 4 (stop_with_error 'false', NO as-id). ENGINE SEMANTICS
-#     (probe-verified 2026-07-08): the stop traces as the bare marker
-#     {number: 4, keyword: 'stop', stopped: true} and is the LAST trace row.
-#   5  lookup_table.search_entries 902801c9 table 3357223 '[Standup Bot]
-#      Message Scheduling Table', parameters {col2: .user, col3: .channel} —
-#      AND match over both columns.
-#   6  lookup_table.delete_entry c0945c6f table 3357223, id =
-#      #{902801c9.entries[current_item].id} — current_item OUTSIDE any foreach
-#      = FIRST matching schedule row ONLY (probe-verified: with 2 matching
-#      rows only the first is deleted, the second survives);
-#      ignore_not_found stays the literal STRING 'false' (toggleCfg custom).
-#
-# UNGUARDED ERROR EDGE (probe-verified, do NOT build a variant for it):
-# config row present but NO schedule row matching user+channel -> the id pill
-# resolves empty -> raw_executor raises NonRecipeError
-# "lookup_table.delete_entry requires a resolved entry id". In real Workato
-# this branch is a catchless JOB ERROR (blank required id,
-# ignore_not_found=false); the engine classifies it NonRecipeError
-# (harness-attributed), which would mis-bucket the failure — the seeder
-# refuses such seeds instead.
-#
-# Family: shares tables 3357221/3357223 with registered 91033107 (schedule
-# sync, update_entry x2) and 91033101 (workato_service + bot posts) — a
-# DIFFERENT program, built fresh. Mock tables are per-run isolated; variant
-# values are kept disjoint from the siblings' (U08MLC*/C08STDP* ids) for
-# clarity. Both backends are Workato-internal (lookup tables + seeded
-# trigger): full mock per backend policy, per-variant isolated state files,
-# no cleanup (every seed fully overwrites both tables).
 
 _RAW_PIN_JSON = r"""{"as": "eb16353c", "block": [{"as": "f9501965", "block": [], "input": {"lookup_table_id": "3357221", "parameters": {"col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"eb16353c\",\"path\":[\"member_left_channel\", \"channel\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 2, "provider": "lookup_table", "skip": false}, {"as": "", "block": [{"as": "", "block": [], "input": {"stop_with_error": "false"}, "keyword": "stop", "name": "", "number": 4, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"f9501965\",\"path\":[\"entries\", {\"path_element_type\": \"size\"}]}')}", "operand": "equals_to", "rhs": "0"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 3, "provider": "", "skip": false}, {"as": "902801c9", "block": [], "input": {"lookup_table_id": "3357223", "parameters": {"col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"eb16353c\",\"path\":[\"member_left_channel\", \"user\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"eb16353c\",\"path\":[\"member_left_channel\", \"channel\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 5, "provider": "lookup_table", "skip": false}, {"as": "c0945c6f", "block": [], "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"902801c9\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "3357223"}, "keyword": "action", "name": "delete_entry", "number": 6, "provider": "lookup_table", "skip": false}], "input": {"event_name": "member_left_channel"}, "keyword": "trigger", "name": "new_event", "number": 1, "provider": "slack_bot", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

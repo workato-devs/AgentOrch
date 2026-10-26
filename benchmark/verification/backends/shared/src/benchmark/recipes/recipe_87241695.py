@@ -21,42 +21,6 @@ SEARCH_AS = "329ab153"
 FOREACH_AS = "fecbd8a2"
 POST_AS = "582c85b9"
 
-# clock.scheduled_event (as aed2f0c4, weekly Monday 00:00) -- payload-less
-# (trigger_input must be exactly {}); no trigger field is ever dereferenced.
-#   2  google_sheets.search_spreadsheet_rows_v4_new 329ab153 (LIVE): sheet
-#      'PTO BOT', criteria {col_Future: 'Yes'} (exact, case-sensitive match --
-#      the col_ prefix strips to header 'Future',
-#      google_sheets_live._matches), count 200.
-#   FOREACH 3 (fecbd8a2 over 329ab153.rows, repeat_mode simple):
-#     4  slack_bot.post_bot_message 582c85b9 (LIVE): channel 'U02T2EDQD1U'
-#        (a literal user-id DM -- MUST be routed to the benchmark override
-#        channel via seed.slack_channel_map in the executor's slack_post_message;
-#        posting to the raw U-id would DM a real user); blocks = ONE
-#        repeat_block_group whose objects.____source is the FULL search rows
-#        pill and whose inner section_with_text dereferences the OUTER
-#        foreach pills (col_Requested_By / col_Start_Date / col_End_Date).
-#
-# REPEAT SEMANTICS (batch-08 engine fix, slack_block_lines objects.____source
-# branch): the inner section renders once per SOURCE row -- but its pills are
-# bound to the OUTER foreach item, so every message consists of N IDENTICAL
-# lines (N = total matching rows), one message per matching row. Pre-fix the
-# engine rendered the section exactly once; the pinned slack_texts encode
-# text_i == "\n".join([line_i] * N) so a repetition regression fails byte
-# equality (variant 00: 2 messages x 2 lines; variant 03: 3 messages x 3
-# lines).
-#
-# PILL ALIASES: the node's output schema declares BOTH underscored
-# (col_Requested_By) and deprecated space-form (col_Requested By) names; the
-# adapter alias map is byte-exact alias[4:] (no underscore->space
-# conversion), so the bench tab headers MUST be seeded in the underscored
-# forms ('Requested_By', 'Start_Date', 'End_Date', 'Future') for the pills
-# to resolve. The seeder pins the exact header tuple.
-#
-# Backends: Google Sheets LIVE (read-only; harness.google_sheets.seed_rows
-# fully replaces the bench tab per variant -- per the cleanup principle no
-# cleanup is needed, the seed overwrites all state each run and the recipe
-# never writes) and Slack LIVE (posts to the override channel; ordinary
-# posts that are never re-read/deleted need no cleanup).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "aed2f0c4", "skip": false, "input": {"days_of_week": "1", "time_unit": "weeks", "trigger_at": "00:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "google_sheets", "name": "search_spreadsheet_rows_v4_new", "as": "329ab153", "skip": false, "input": {"count": "200", "data": {"col_Future": "Yes"}, "sheet": "PTO BOT", "spreadsheet": "1oPfX-9j2ZL4IEyMAfJ3vwzEUywXG8LqrO5YD6twpzac", "team_drives": "my_drive"}, "block": []}, {"number": 3, "keyword": "foreach", "provider": "", "name": "", "as": "fecbd8a2", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"329ab153\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"329ab153\",\"path\":[\"rows\"]}')}", "block": [{"number": 4, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "582c85b9", "skip": false, "input": {"blocks": [{"block_type": "repeat_block_group", "button_type": "continue_flow", "objects": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"329ab153\",\"path\":[\"rows\"]}')}", "blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "The following are the PTO for the week:\n\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"fecbd8a2\",\"path\":[\"col_Requested_By\"]}')}: #{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"fecbd8a2\",\"path\":[\"col_Start_Date\"]}')}-#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"fecbd8a2\",\"path\":[\"col_End_Date\"]}')}"}]}}], "channel": "U02T2EDQD1U"}, "block": []}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -70,7 +34,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
     "slack.post_message",
 ]
 ALLOWED_TOOLS: list[str] = list(EXPECTED_RAW_TOOLS)
-# Semantic constants derived FROM the byte-pinned tree.
 _SEARCH_INPUT = _EXPECTED_TREE["block"][0]["input"]
 _POST_NODE = _EXPECTED_TREE["block"][1]["block"][0]
 CHANNEL_LITERAL = str(_POST_NODE["input"]["channel"])
@@ -81,8 +44,6 @@ SHEET_LITERAL = str(_SEARCH_INPUT["sheet"])
 MATCH_HEADER = "Future"
 MATCH_VALUE = str(SEARCH_CRITERIA["col_Future"])
 LINE_PREFIX = "The following are the PTO for the week:\n\n"
-# The bench tab headers, pinned in the underscored (non-deprecated) schema
-# forms; Email is a deliberately-undereferenced decoy column.
 SHEET_HEADERS = ("Email", "Requested_By", "Start_Date", "End_Date", "Future")
 PILL_HEADERS = ("Requested_By", "Start_Date", "End_Date")
 REQUIRED_EXPECT_KEYS = (
@@ -95,7 +56,6 @@ REQUIRED_EXPECT_KEYS = (
     "tools",
     "tool_expectations",
 )
-# Corpus lint: allowed tool_expectations keys.
 _EXPECTATION_TARGET_KEYS = {"tool", "channel"}
 _EXPECTATION_VALUE_KEYS = {"args_contains", "result_count", "text_fragments"}
 

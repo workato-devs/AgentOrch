@@ -29,8 +29,6 @@ TRIGGER_TABLE = "PUBLIC.EMPLOYEE"
 TRIGGER_PRIMARY_KEY = "EMAIL"
 TRIGGER_SORT_COLUMN = "MODIFIED_AT"
 CONVERSATION_ID = "G013R8QUFRB"
-# The trigger row is never dereferenced by the steps (the recipe rescans the
-# whole table), but a faithful updated-row payload is still required.
 REQUIRED_TRIGGER_FIELDS = ("id", "email", "modified_at")
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_smart_list", "query_list"),      # 2  CREATE TABLE DUPE_EMP
@@ -56,11 +54,6 @@ ALLOWED_TOOLS: list[str] = [
     "slack.post_message",
 ]
 
-# The shared engine's smart_list_query does not parse a bare
-# "SELECT DISTINCT <col> FROM <table>" (no WHERE); this raw recipe needs
-# exactly that one form at step 8. The extension lives here (module-local
-# runtime subclass) because harness files are frozen for this batch; fold it
-# into raw_executor.smart_list_query when the engine is next extended.
 _SELECT_DISTINCT_RE = re.compile(
     r"SELECT\s+DISTINCT\s+([A-Za-z_][A-Za-z0-9_]*)\s+FROM\s+([A-Za-z_][A-Za-z0-9_ ]*)",
     flags=re.I,

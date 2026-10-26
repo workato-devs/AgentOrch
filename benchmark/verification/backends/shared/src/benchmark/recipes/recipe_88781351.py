@@ -17,36 +17,6 @@ TRACK = "workato_service_round_robin_linkedin"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
 SERVICE_NAME = "Round Robin LinkedIn Routing"
-# Callable service 'Round Robin LinkedIn Routing' (trigger as 7b372a5c;
-# request {persona, category?, asset, email, ad_type} — asset/email are
-# schema-required but never dereferenced by any step):
-#   declare_variable c4998cd3 category = request.category
-#   IF 3 (skip:true, DEAD) > update_variables 6297598e (number 4, skip:true,
-#     DEAD) — dead code by explicit skip flags in the raw JSON; proof is the
-#     pinned tree below (DEAD_STEP_NUMBERS must stay skip=true), no variant.
-#   IF 5 (request.ad_type == 'Sponsored Message' AND request.persona != 'OEM'):
-#     update_variables b82548af category = 'ALL'
-#   lookup_table.search_entries 80079618 (table 3256282 'Round Robin LinkedIn',
-#     col2 = variable category, col4 = request.ad_type)
-#   TRY 8:
-#     lookup_table.get_entry 84800fd6 (col2/col4 as above, col3 =
-#       search entries pluck('entry').pluck('col3').min — lexicographic string
-#       min: keep seeded counts single-digit so string-min == numeric-min)
-#   CATCH 10 (as 90e02762, max_retry_count 0):
-#     lookup_table.get_entry 478aa0df (col3 = ....pluck('col3').last)
-#   workato_service.send_reply e3546496 success {sdr_email = 478aa0df.col1
-#     .presence or 84800fd6.col1, success 'true'}
-#   lookup_table.update_entry 5c5d2e94 (id = 478aa0df.id.presence or
-#     84800fd6.id, ignore_not_found false, col3 = multi-line if/else/end
-#     count + 1 — resolves to an INT; the mock stores it back as a string)
-#
-# HARNESS DIVERGENCE (triage-flagged, still true): the mock get_entry returns
-# {ok: true, entry: null} on no-match instead of raising, so the real-Workato
-# 'entry not found' catch trigger is unreachable naturally. The catch branch
-# is exercised via seed.force_action_error on step 84800fd6.
-# All backends are Workato-internal (lookup table + service reply): mock per
-# backend policy. The update_entry write is per-run isolated mock state — no
-# cleanup, every variant seeds table 3256282 explicitly.
 LOOKUP_TABLE_ID = "3256282"
 TRY_GET_ENTRY_AS = "84800fd6"
 CATCH_AS = "90e02762"
@@ -77,11 +47,6 @@ ALLOWED_TOOLS: list[str] = [
     "lookup_table.update_entry",
 ]
 
-# --- Verbatim raw-recipe pin: the full normalized node tree (number, keyword,
-# provider, name, as, skip, input for every non-skipped node). Any upstream
-# drift in the min/last plucks, the presence-or fallbacks, the multi-line
-# count formula, the IF conditions or the skip flags fails validation instead
-# of silently changing groundtruth.
 _RAW_PIN_JSON = r"""{"as": "7b372a5c", "block": [{"as": "c4998cd3", "block": [], "input": {"variables": {"data": {"category": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"7b372a5c\",\"path\":[\"request\", \"category\"]}')}"}, "schema": "[{\"control_type\":\"text\",\"label\":\"Category\",\"name\":\"category\",\"type\":\"string\",\"optional\":true}]"}}, "keyword": "action", "name": "declare_variable", "number": 2, "provider": "workato_variable", "skip": false}, {"as": "", "block": [{"as": "6297598e", "block": [], "keyword": "action", "name": "update_variables", "number": 4, "provider": "workato_variable", "skip": true}], "keyword": "if", "name": "", "number": 3, "provider": "", "skip": true}, {"as": "", "block": [{"as": "b82548af", "block": [], "input": {"category": "ALL", "name": "dcc0acfb-8105-4969-a6ae-de18f0339439:c4998cd3:category"}, "keyword": "action", "name": "update_variables", "number": 6, "provider": "workato_variable", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"7b372a5c\",\"path\":[\"request\", \"ad_type\"]}')}", "operand": "equals_to", "rhs": "Sponsored Message"}, {"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"7b372a5c\",\"path\":[\"request\", \"persona\"]}')}", "operand": "not_equals_to", "rhs": "OEM"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 5, "provider": "", "skip": false}, {"as": "80079618", "block": [], "input": {"lookup_table_id": "3256282", "parameters": {"col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"c4998cd3\",\"path\":[\"category\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"7b372a5c\",\"path\":[\"request\", \"ad_type\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 7, "provider": "lookup_table", "skip": false}, {"as": "", "block": [{"as": "84800fd6", "block": [], "input": {"lookup_table_id": "3256282", "parameters": {"col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"c4998cd3\",\"path\":[\"category\"]}')}", "col3": "=_('data.lookup_table.80079618.entries').pluck('entry').pluck('col3').min", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"7b372a5c\",\"path\":[\"request\", \"ad_type\"]}')}"}}, "keyword": "action", "name": "get_entry", "number": 9, "provider": "lookup_table", "skip": false}, {"as": "90e02762", "block": [{"as": "478aa0df", "block": [], "input": {"lookup_table_id": "3256282", "parameters": {"col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"c4998cd3\",\"path\":[\"category\"]}')}", "col3": "=_('data.lookup_table.80079618.entries').pluck('entry').pluck('col3').last", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"7b372a5c\",\"path\":[\"request\", \"ad_type\"]}')}"}}, "keyword": "action", "name": "get_entry", "number": 11, "provider": "lookup_table", "skip": false}], "input": {"max_retry_count": "0", "retry_interval": "2"}, "keyword": "catch", "name": "", "number": 10, "provider": "", "skip": false}], "input": {}, "keyword": "try", "name": "", "number": 8, "provider": "", "skip": false}, {"as": "e3546496", "block": [], "input": {"reply": {"sdr_email": "=_('data.lookup_table.478aa0df.entry.col1').presence or _('data.lookup_table.84800fd6.entry.col1')", "success": "true"}, "reply_type": "success"}, "keyword": "action", "name": "send_reply", "number": 12, "provider": "workato_service", "skip": false}, {"as": "5c5d2e94", "block": [], "input": {"id": "=_('data.lookup_table.478aa0df.id').presence or _('data.lookup_table.84800fd6.id')", "ignore_not_found": "false", "lookup_table_id": "3256282", "parameters": {"col3": "=if _('data.lookup_table.478aa0df.entry.col3').present?\n_('data.lookup_table.478aa0df.entry.col3').to_i + 1\nelse \n_('data.lookup_table.84800fd6.entry.col3').to_i + 1\nend"}}, "keyword": "action", "name": "update_entry", "number": 13, "provider": "lookup_table", "skip": false}], "input": {"reply_schema_json": "[{\"name\":\"sdr_email\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"success\",\"type\":\"boolean\",\"optional\":false}]", "request_schema_json": "[{\"control_type\":\"text\",\"label\":\"Persona\",\"name\":\"persona\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Category\",\"name\":\"category\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Asset\",\"name\":\"asset\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Email\",\"name\":\"email\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Ad type\",\"name\":\"ad_type\",\"type\":\"string\",\"optional\":false}]", "service_name": "Round Robin LinkedIn Routing"}, "keyword": "trigger", "name": "receive_request", "number": 1, "provider": "workato_service", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 

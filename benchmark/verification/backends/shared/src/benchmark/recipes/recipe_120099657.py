@@ -35,44 +35,6 @@ MONTHS = (
     "July", "August", "September", "October", "November", "December",
 )
 
-# slack_bot.bot_command_v2 'newhire change startdate' (as be5b34bf; six
-# required parameters + context.user/user_email pills). Linear body:
-#   2  workato_variable.declare_variable 17e411b2 (MOCK Workato-internal):
-#      job_created_at_formatted = parameters.adjusted_start_date
-#      .strftime("%d %B %Y") — the ONLY uses of this variable downstream
-#      (block attachment_fields + button params) are DROPPED from rendered
-#      text by design, so variants pin it via the declare step's traced
-#      result (triage note, re-probed 2026-07-08).
-#   3  slack_bot.post_bot_reply_v2 bd3a37a3 (LIVE -> env override channel):
-#      rendered text = the section_text ONLY ('Your request for adjusting
-#      start date for `<new_hire_name>` is being reviewed by <anon>Sarah
-#      Miller</anon>.') — block-level attachment_fields are dropped by
-#      slack_text (registered 87484821 groundtruth pins the same drop) and
-#      the <anon> tag stays verbatim in the live text.
-#   4  slack.get_user_by_email be887438 (LIVE users.lookupByEmail): the email
-#      is the HARDCODED fictional literal '<anon>sarah.miller@company.com
-#      </anon>' -> deterministic users_not_found in EVERY variant (triage
-#      probed live: {ok:true, not_found:true, id:null}, no raise).
-#   5  slack_bot.post_bot_message 44ad1551 (LIVE): channel = be887438.id pill
-#      -> null -> '' -> env override reroute (non-'U' channel routing,
-#      re-probed); text = the section_text ('<@user> has requested for an
-#      adjusted start date for `<new_hire_name>`.'); the actions block
-#      (Approve/Reject buttons) is not rendered into text — same established
-#      drop.
-#
-# Branch mapping: linear, no branches; the only data-dependent behavior is
-# the deterministic not_found lookup. Variants pin pill resolution:
-# - v0 request_a: offset date_time adjusted_start_date -> '20 July 2026'
-# - v1 request_b_diff_date: different month/day + different new_hire_name
-# - v2 request_c_date_only_param: date-only '2026-11-03' -> '03 November 2026'
-#   (strftime %d zero-pads) + distinct entity_id/requester_email
-#
-# Backends: slack LIVE only (users.lookupByEmail + chat.postMessage x2, both
-# posts to the env override channel). Ordinary posts that nothing later
-# reads/updates/deletes -> no cleanup (cleanup principle). To keep the
-# strftime derivation unambiguous, seeds must not sit on a UTC date
-# boundary (offset instants whose UTC date differs from the written date
-# are rejected fail-fast).
 EXPECTED_RAW_TOOLS: list[str] = [
     "workato_runtime.declare_variable",
     "slack.post_reply",

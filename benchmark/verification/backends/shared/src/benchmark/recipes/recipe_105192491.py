@@ -83,36 +83,6 @@ TABLE_COLUMNS: dict[str, dict[str, str]] = {
     },
 }
 
-# clock.scheduled_event (as e495d305, monthly day-3 10:00 Asia/Singapore) --
-# payload-less; NO trigger field is ever dereferenced (trigger_input {}).
-# The only time source is the JOB CONTEXT: every variant must pin
-# job_context.job_created_at (the add_record date formula
-# =job_created_at.in_time_zone("Asia/Singapore").to_date -- probed on HEAD:
-# 2026-07-08T18:30:00Z -> '2026-07-09', SG rolls the date).
-#   2  snowflake.search_rows_sql b9f9415a (LIVE): 3-CTE lookup-table-stats
-#      SQL over the six workato_usage.* tables; _rewrite_sql maps every ref
-#      to BENCH_DB.WORKATO_USAGE.* with zero unmapped leftovers and leaves
-#      the CTE names alone (re-probed). No 'limit' token in the SQL, so the
-#      connector appends ' limit 100' (offset 0 dropped). No CURRENT_* -> no
-#      seed.snowflake_live.current_time. Live-verified features from triage:
-#      approx_percentile, COUNT(alias.*) (counts rows with NO null column --
-#      seeds keep every entry column non-null), GROUP BY ordinals, CTE-level
-#      ORDER BY, SELECT distinct.
-#   3  FOREACH 1b368bb3 over b9f9415a.rows (repeat_mode simple; 0 rows -> 0
-#      iterations, faithful no-op).
-#   4  workato_db_table.add_record 1f3cbcf0 (mock table 13575, uuid parameter
-#      keys -- registered precedent 102158721): lut_id/total_rows/lut_name
-#      from the foreach row (total_rows arrives as the live COUNT integer),
-#      snapshot date from the job-context formula. add_record APPENDS -- the
-#      recipe never truncates, so final rows = pre-seeded rows + adds.
-# The final SELECT has NO top-level ORDER BY (only the CTE-internal ORDER BY,
-# which does not order the outer statement): SELECT row order -- and with it
-# add_record CALL order -- is not guaranteed live. All multi-row expectations
-# are pinned as exact MULTISETS keyed on lut_id; the seeder requires
-# QUALIFYING lut_ids to be distinct.
-# Backends: Snowflake LIVE and READ-ONLY (snapshot equality before/after;
-# cleanup drops exactly the six seeded tables in the runner's finally).
-# workato_db_table 13575 is a per-variant mock (Workato-internal).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "e495d305", "skip": false, "input": {"days_of_month": "3", "time_unit": "months", "timezone": "Asia/Singapore", "trigger_at": "10:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "b9f9415a", "skip": false, "input": {"limit": "100", "offset": "0", "sql": "WITH distinct_lookup_table_entries AS (SELECT distinct *\nFROM\n    workato_usage.lookup_table_entries),\nlut_stats AS (SELECT distinct\n    wd.data_center,\n    wd.workspace_id,\n    wd.workspace_name,\n    wd.environment,\n    ad.account_name,\n    ad.owner,\n    ad.success_owner,\n    lt.id,\n    lt.name as lut_name,\n    COUNT(lte.*) AS total_rows,\n    SUM(lte.data_size_bytes) AS total_rows_size,\n    MIN(lte.data_size_bytes) AS min_row_size,\n    MAX(lte.data_size_bytes) AS max_row_size,\n    AVG(lte.data_size_bytes) AS avg_row_size,\n    approx_percentile(lte.data_size_bytes,0.90) AS p90_row_size,\n    approx_percentile(lte.data_size_bytes,0.95) AS p95_row_size,\n    approx_percentile(lte.data_size_bytes,0.99) AS p99_row_size,\n    approx_percentile(lte.data_size_bytes,0.999) AS p999_row_size\nFROM\n    distinct_lookup_table_entries lte\nJOIN\n    workato_usage.lookup_tables lt ON lte.lookup_table_id = lt.id AND lte.data_center = lt.data_center\nJOIN\n    workato_usage.workspace_dim wd ON lt.user_id = wd.workspace_id AND lt.data_center = wd.data_center AND wd.is_latest = true\nJOIN\n    workato_usage.accounts_dim ad ON wd.sales_account_id = ad.account_id AND wd.is_latest = true AND ad.is_latest = true\nGROUP BY\n    1,2,3,4,5,6,7,8,9),\nlut_analysis AS (SELECT distinct\n    lt.data_center,\n    lt.workspace_id,\n    lt.workspace_name,\n    lt.environment,\n    lt.account_name,\n    lt.owner,\n    lt.success_owner,\n    -- rd.flow_id,\n    -- rd.name,\n    -- ls.operation,\n    lt.id as lut_id,\n    lt.lut_name,\n    lt.total_rows,\n    lt.total_rows_size,\n    lt.min_row_size,\n    lt.max_row_size,\n    lt.avg_row_size,\n    lt.p90_row_size,\n    lt.p95_row_size,\n    lt.p99_row_size,\n    lt.p999_row_size\nFROM lut_stats lt\nJOIN workato_usage.line_stats ls ON lt.id = ls.object_name AND lt.data_center = ls.data_center\nJOIN workato_usage.recipe_dim rd ON ls.flow_id = rd.flow_id AND ls.data_center = rd.data_center AND rd.is_latest = true\n-- AND rd.running = true\nWHERE lt.total_rows_size IS NOT null\n-- AND lt.total_rows >= 100000\nORDER BY lt.total_rows_size DESC)\n\nSELECT distinct lut_id, lut_name, total_rows FROM lut_analysis WHERE data_center = 'US' AND lut_id IN ('3663505','3188000','114607','278133','239210','3187998','312866','2363713','3627461','19437','3298516','2542966','3563156','3563155','3563154','3563157','2911972','146681','99451','3181579','3208018','330929','289929','139303','3169955','330930','233339','3187428','1474637','95384','2908554','34113','3245680','3240614','3522947','332453','3444464','3444798','223431','91784','47351','3641584','56357','3302666','2577817','246128','3451094','3421744','278869','43559','2901015','1974840','3040242','3199278','3669276','3168773','116792','75203','149942','40533','231376','221329','153997','3187999','218573','275102','110122','278870','106237','71865','3586444','3589197','3697949','3593992','2447996','3021377','111215','37163','218057','3430717','98311','3642343','3609641','3257930','363977','3556330','61486','2295552','330986','3667035','106269','3253274','3464519','105579','3250368','2016515','3250436','2311958','278157','3301087')"}, "block": []}, {"number": 3, "keyword": "foreach", "provider": "", "name": "", "as": "1b368bb3", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"b9f9415a\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"b9f9415a\",\"path\":[\"rows\"]}')}", "block": [{"number": 4, "keyword": "action", "provider": "workato_db_table", "name": "add_record", "as": "1f3cbcf0", "skip": false, "input": {"parameters": {"4a457f1d_c2cf_46a8_95b5_caf1f3a9a5fd": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"1b368bb3\",\"path\":[\"lut_id\"]}')}", "7807484b_2fef_41c1_9503_35b19e83ad63": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"1b368bb3\",\"path\":[\"total_rows\"]}')}", "832eca21_0db3_43c7_a29a_2089c6f0e52c": "=_dp('{\"pill_type\":\"job_context\",\"path\":[\"job_created_at\"]}').in_time_zone(\"Asia/Singapore\").to_date", "f02aaacd_f104_4a8c_9d7e_836e981e3a2d": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"1b368bb3\",\"path\":[\"lut_name\"]}')}"}, "table_id": "13575"}, "block": []}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

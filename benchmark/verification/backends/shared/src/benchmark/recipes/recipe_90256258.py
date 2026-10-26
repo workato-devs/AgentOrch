@@ -15,7 +15,6 @@ TRACK = "live_slack_live_snowflake_bot_command"
 TRIGGER_PROVIDER = "slack_bot"
 TRIGGER_NAME = "bot_command_v2"
 
-# Depth-first action order collected from the raw recipe (steps 3,4,5,6,8,9,10,11,13,15).
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("slack_bot", "post_bot_message"),
     ("workato_variable", "declare_variable"),
@@ -29,9 +28,6 @@ EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("slack_bot", "post_bot_message"),
 ]
 
-# Trace tool names each action maps to (used as the allow-set for trace tools).
-# post_bot_message -> slack.post_message ; slack.get_user_by_email -> slack_bot.get_user_by_email ;
-# declare_variable/accumulate_list_items are Workato-internal runtime tools (never in tool_calls).
 EXPECTED_RAW_TOOLS: list[str] = [
     "slack.post_message",
     "workato_runtime.declare_variable",
@@ -45,7 +41,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
     "slack.post_message",
 ]
 
-# Unique live tool names the recipe may call (Workato-internal runtime tools excluded on purpose).
 ALLOWED_TOOLS: list[str] = [
     "slack.post_message",
     "slack_bot.get_user_by_email",

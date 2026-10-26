@@ -213,23 +213,26 @@ def check_documentation() -> None:
 
 
 def check_smoke() -> None:
-    output_root = BENCH / "outputs"
+    output_root = BENCH / "outputs/full_eval"
     output_root.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="benchmark-check-", dir=output_root) as temporary:
         _check_smoke(Path(temporary))
 
 
 def _check_smoke(output_dir: Path) -> None:
-    print("[7] smoke: scripted self-test, connector runner, vendored tests")
+    print("[7] smoke: canonical evaluator, connector runner, evaluator tests")
     env = {**os.environ, "PYTHONPATH": str(BENCH), "PYTHONDONTWRITEBYTECODE": "1"}
     run = output_dir.name
-    for mode in ("global", "react"):
-        r = subprocess.run([sys.executable, "-m", "examples.smoke_adapter.eval", "--mode", mode, "--adapter",
-                            "examples.smoke_adapter.example_adapter:build", "--model-id", "smoke-test", "--run-name", run,
-                            "--recipe-id", "64112882", "--limit", "1"], cwd=ROOT, env=env, capture_output=True, text=True)
-        last = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else ""
-        good = r.returncode == 0 and '"n": 1' in last
-        (ok if good else fail)(f"smoke adapter --mode {mode}: {'n=1 scored' if good else r.stderr[-300:]}")
+    r = subprocess.run(
+        [sys.executable, "-m", "evaluation.full_eval", "--run-name", run,
+         "--backend", "simulated", "--model", "scripted-gold",
+         "--modes", "plan_execute,react", "--ids", "64112882",
+         "--variants", "0", "--scripted-selftest"],
+        cwd=ROOT, env=env, capture_output=True, text=True,
+    )
+    (ok if r.returncode == 0 else fail)(
+        "canonical Global / Step-by-Step sample: " +
+        ("completed" if r.returncode == 0 else r.stderr[-300:]))
     r = subprocess.run([sys.executable, "-m", "verification.connector_runner", "--backend", "simulated",
                         "--recipe-id", "64112882", "--variant", "0", "--output-dir", str(output_dir / "connector")], cwd=ROOT, env=env, capture_output=True, text=True)
     good = r.returncode == 0 and '"verifier_ok": true' in r.stdout

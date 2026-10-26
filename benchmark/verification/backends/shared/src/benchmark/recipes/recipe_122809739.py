@@ -28,47 +28,6 @@ RAW_SQL = (
     "WHERE workflow_run_id = :id ORDER BY created_at DESC LIMIT 1"
 )
 
-# workato_api_platform.receive_request (as a322b3cc; path_params
-# workflow_run_id is the ONLY dereferenced trigger field). Body = one TRY:
-#   3  snowflake.run_custom_sql a94d022e (LIVE Snowflake): RAW_SQL with
-#      bind :id = path_params.workflow_run_id; the SQL carries its own
-#      ORDER BY created_at DESC LIMIT 1 (so the client appends nothing)
-#   4  IF rows size > 0 -> 5 return_response 209c4d97 http 201
-#      {pending 'false', id / content / created_at / file_link from
-#       rows current_item (current_item outside a loop = first row)}
-#   6  ELSE -> 7 return_response f8346730 http 200 {pending 'true'}
-#   8  CATCH e49a6953 (max_retry_count 0) -> 9 return_response 4524f2d3
-#      http 200 {pending 'true'} (same body as ELSE, distinct trace step)
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 latest_row_201: two rows for run 4711 with different
-#   created_at plus a NEWER row for another run id (the WHERE must beat
-#   recency) -> ORDER BY DESC LIMIT 1 returns the newest 4711 row -> 201
-#   pending:'false' with its fields. 2 actions.
-# - variant_01 no_rows_200_pending: run id 9999 matches nothing -> ELSE ->
-#   200 {pending 'true'} via f8346730. 2 actions.
-# - variant_02 catch_200_pending: seed.force_action_error on a94d022e ->
-#   the TRY catches -> 200 {pending 'true'} via 4524f2d3. 1 action (the
-#   forced error raises before any tool call). The SQL and table are static,
-#   so no trigger-controllable live failure exists; the forced error is the
-#   deterministic catch path.
-#
-# ENGINE FIDELITY NOTES:
-# - created_at renders as snowflake_live._json_value isoformat of the live
-#   TIMESTAMP_NTZ read-back (naive, e.g. '2026-06-30T18:45:30'); seeds use
-#   'YYYY-MM-DD HH:MM:SS' literals so the rendered form is stable and the
-#   expects pin it exactly.
-# - response.pending is the raw literal string 'false'/'true' (the
-#   boolean_conversion in the schema is not applied by the engine).
-# - the :id bind carries the path-param STRING against the NUMBER
-#   workflow_run_id column; live Snowflake implicitly casts numeric strings.
-#   Seeds only use numeric-string run ids. VERIFY on the first live run.
-#
-# Backends: Snowflake runs LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally). walnutiq.outputs is a
-# 2-part name -> WALNUTIQ schema in the live database. The API platform
-# trigger/responses are deterministic Workato-internal mocks (terminal).
-# The recipe is READ-ONLY on Snowflake (snapshot equality verifier-pinned).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

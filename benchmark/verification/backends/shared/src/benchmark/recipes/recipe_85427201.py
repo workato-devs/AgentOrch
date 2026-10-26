@@ -23,9 +23,6 @@ TRIGGER_CONDITIONS = "OEM_Account__c = null AND OEM_ID__c != null AND Data_Cente
 TRIGGER_FIELD_LIST = "Id\nOEM_ID__c\nOEM_Account__c\nData_Center__c"
 SEARCH_STEP_AS = "55b52d05"
 COMPOSITE_STEP_AS = "31f0de91"
-# Schema-in-seed contract: every variant must declare exactly these custom
-# fields (ensure_custom_field provisions them once; they are schema, not
-# data, so cleanup never removes them -- 128901328 precedent).
 REQUIRED_SCHEMA = [
     {"sobject": "Workato_User__c", "field": "OEM_ID__c", "sf_type": "Text"},
     {"sobject": "Workato_User__c", "field": "OEM_Account__c", "sf_type": "Text"},
@@ -36,66 +33,6 @@ REQUIRED_SCHEMA = [
 TRIGGER_ROW_KEYS = {"Id", "OEM_ID__c", "OEM_Account__c", "Data_Center__c"}
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# salesforce.scheduled_sobject_soql_query (as 362d1833, daily 01:20 Pacific,
-# batch_size 2000) on Workato_User__c WHERE "OEM_Account__c = null AND
-# OEM_ID__c != null AND Data_Center__c != null", field_list Id/OEM_ID__c/
-# OEM_Account__c/Data_Center__c. The scheduled trigger is replayed from the
-# seeded payload carrying this run's live-created record ids (64106452
-# precedent); the trigger conditions are pinned verbatim in the structure
-# pins. Body:
-#   2  workato_smart_list.create_list 9e56bd7f 'Workato Users' from the
-#      trigger record list (primary_index Id; Workato-internal, in-process --
-#      smart-list steps never appear in tool_calls, only in the trace)
-#   3  workato_smart_list.query_list c8d5b12a:
-#      SELECT DISTINCT OEM_ID__c,Data_Center__c FROM Workato Users
-#      (output_schema_by=index -> rows {oem_id, data_center}; served by the
-#      SQLite smart-list engine, spaced list name included -- probe-verified)
-#   4  FOREACH ccb00bb1 over the distinct pairs (repeat_mode simple):
-#      5  salesforce.search_sobjects_soql 55b52d05 (LIVE): Workato_User__c
-#         WHERE OEM_ID__c = '<oem_id>' AND Data_Center__c = '<data_center>'
-#         AND Account__c != null AND Is_Admin__c = true (limit 2000; needs
-#         seed.salesforce.strict_soql_conditions -- != null / = true are
-#         strict-only operators)
-#      6  IF Workato_User__c size > 0 ->
-#         7  workato_smart_list.query_list de43c6be:
-#            UPDATE Workato Users SET OEM_Account__c = '<first admin
-#            Account__c>' WHERE OEM_ID__c = '<oem_id>' AND Data_Center__c =
-#            '<data_center>' (current_item outside the search loop = first
-#            admin row; AND-compound UPDATE served by the SQLite engine --
-#            probe-verified)
-#   8  workato_smart_list.query_list 375699c0:
-#      SELECT Id,OEM_Account__c FROM Workato Users WHERE OEM_Account__c IS
-#      NOT NULL AND OEM_Account__c != '' (SQLite engine -- probe-verified)
-#   9  FOREACH ee666d35 over the resolved rows (repeat_mode batch,
-#      batch_size 2000; zero iterations on an empty source) ->
-#      10 salesforce.composite_update_sobject 31f0de91 (LIVE): records
-#         {Id, OEM_Account__c} per batch current_item, allOrNone=false,
-#         batch_size 200 -> one salesforce.update_record call per record.
-#         Nothing dereferences successRecords/failedRecords, so the
-#         composite_update_extended_output seed flag stays OFF.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 admin_found_updates_users: one (oem_id, dc) pair from two
-#   trigger users; a live admin (Account__c set, Is_Admin__c true) matches ->
-#   smart-list UPDATE -> final SELECT returns both users -> composite update
-#   writes OEM_Account__c on both live records.
-# - variant_01 no_admin_no_update: one pair, no admin -> IF-6 false, final
-#   SELECT empty -> batch foreach runs ZERO iterations -> no Salesforce write.
-# - variant_02 multi_pair_mixed: two distinct pairs -> foreach runs twice;
-#   only the admin-backed pair is updated (loop > 1 and both IF outcomes in
-#   one run).
-#
-# World-state consistency: seeded admin records carry OEM_Account__c already
-# set (pre-linked), so they would NOT match the trigger conditions -- which
-# is exactly why they are absent from the seeded trigger batch. Trigger-batch
-# users are seeded with OEM_Account__c unset, faithfully satisfying
-# "OEM_Account__c = null AND OEM_ID__c != null AND Data_Center__c != null".
-#
-# Backends: salesforce LIVE (benchmark-owned records; custom fields via
-# schema-in-seed ensure_custom_field); workato_smart_list is Workato-internal
-# (in-memory SQLite). Cleanup: harness.salesforce.cleanup in a finally block
-# deletes every record this run's seed provisioned (required -- the run
-# mutates live rows).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

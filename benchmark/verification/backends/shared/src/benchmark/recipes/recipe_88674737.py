@@ -22,39 +22,6 @@ CATCH_AS = "cdf884c4"
 CATCH_LOG_AS = "71f22ee0"
 LOG_TOOL = "workato_runtime.log_message"
 
-# slack_bot.bot_command_v2 0d147108 (domain 'fridaybot', name 'do', scope
-# 'nothing', allow_dialog 'false', hide_from_help 'true' — "This command does
-# nothing. Use this as a vase action."; parameters schema is an empty object)
-#   TRY (2):
-#     3 logger.log_message 8a8d5d15 (comment 'Who clicked this?'): message =
-#       trigger context.user_email pill — the ONLY trigger deref in the recipe.
-#   CATCH 4 (as cdf884c4, max_retry_count 0, retry_interval 2):
-#     5 logger.log_message 71f22ee0: message = catch.cdf884c4.message pill.
-#
-# PURE MOCK (Workato-internal only): logger renders as the runtime tool
-# workato_runtime.log_message directly in the raw trace — it never touches
-# ctx.tools, so result.tool_calls is ALWAYS [] and expect.tools /
-# expect.tool_expectations are empty lists on every variant; the verifier
-# fragment pins the log message text and the executing step as-id from the
-# trace instead. No live lane, no cleanup, no snapshots.
-#
-# BYTE-EXACT TWIN of head 88676643: the two raw_recipe.md files differ ONLY
-# in the title line and CSV metadata (flow_id 44982407 vs 45178933,
-# created_at, version_no 3 vs 1); every recipe-body byte (as-ids, uuids,
-# inputs, schema) is identical — probe-diffed on the current tree.
-# verify_88674737 DELEGATES to verify_88676643 (batch-06 delegation
-# precedent: merge the head's fragment first). Distinct variant data.
-#
-# Probe findings pinned by seeder/variants (current tree, 2026-07-08):
-# - happy: 1 action — log 8a8d5d15 {message: <context.user_email>}; the catch
-#   never records (no cdf884c4 step output).
-# - catch: reachable ONLY via seed.force_action_error on 8a8d5d15 (the mock
-#   logger cannot fail naturally; established batch-04/05 mechanism). The
-#   failed try logger records NOTHING; the single traced action is 71f22ee0
-#   logging the forced error text verbatim (catch payload {type, message}).
-# - a MISSING context.user_email renders the pill as '' silently (probed);
-#   the seeder requires a non-empty plausible email so the happy log is
-#   always a non-trivial pinned value.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "bot_command_v2", "as": "0d147108", "skip": false, "input": {"allow_dialog": "false", "description": "This command does nothing. Use this as a vase action.", "domain": "fridaybot", "hide_from_help": "true", "name": "do", "scope": "nothing"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "logger", "name": "log_message", "as": "8a8d5d15", "skip": false, "input": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"0d147108\",\"path\":[\"context\", \"user_email\"]}')}"}, "block": []}, {"number": 4, "keyword": "catch", "provider": "", "name": "", "as": "cdf884c4", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 5, "keyword": "action", "provider": "logger", "name": "log_message", "as": "71f22ee0", "skip": false, "input": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"cdf884c4\",\"path\":[\"message\"]}')}"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -64,7 +31,6 @@ EXPECTED_ACTIONS: list[tuple[int, str, str, str]] = [
     (5, CATCH_LOG_AS, "logger", "log_message"),
 ]
 EXPECTED_RAW_TOOLS: list[str] = [LOG_TOOL]
-# logger is a runtime-internal tool: nothing is exposed through ctx.tools.
 ALLOWED_TOOLS: list[str] = []
 REQUIRED_EXPECT_KEYS = (
     "branch",

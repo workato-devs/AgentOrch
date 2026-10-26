@@ -23,69 +23,15 @@ HOME_AS = "fd296d51"
 DEAD_HOME_AS = "8aa4ae07"   # skip:true older 17-block home (editor leftover)
 CATCH_AS = "7c0db11c"
 DM_AS = "8bc6eb0f"
-# LIVE workspace fact: views.publish and the catch DM both target the trigger
-# user and are live fail-fast -- the user MUST be a real workspace member.
-# U0B91BSRGF8 <-> jamie.lee@corp.example is the proven benchmark member
-# (119575741/121951507 precedent).
 LIVE_MEMBER_ID = "U0B91BSRGF8"
-# LIVE substitution pin: the greeting block's image_url carries an EMBEDDED
-# anon path segment (https://avatars.slack-edge.com/<anon>2024-01-01</anon>/
-# ...png). Slack DOWNLOADS image_url at publish time and the tagged path is
-# anonymizer fiction, so slack_live substitutes the stable Slack-hosted
-# placeholder at the live boundary (batch07 fix extends the 119575741
-# full-wrap logic to embedded tags). args stay raw-faithful (anon url kept);
-# the DELIVERED view's first-block accessory must carry the placeholder.
 PLACEHOLDER_IMAGE_URL = "https://a.slack-edge.com/80588/img/plugins/app/service_72.png"
 
-# slack_bot.new_event app_home_opened (as fc4e7116) -- the ONLY trigger pill
-# dereferenced is app_home_opened.user (greeting formula x2, both
-# open_bot_app_home user_id inputs, catch DM channel + mention). Body:
-#   TRY 2:
-#     3  slack_bot.open_bot_app_home fd296d51 -- LIVE views.publish of the
-#        25-block ProServ menu home: 1 section_with_image (greeting ternary
-#        '=today.wday == 5 ? <Friday text> : <plain text>' + anon image),
-#        3 section_with_text headers, 9 actions (bot_command buttons incl one
-#        url button 61748548), 9 context description blocks, 3 dividers.
-#        today.wday in comparison/ternary position is the batch07 engine fix
-#        (standalone .wday worked; the chain position raised) -- re-probed on
-#        this tree with BOTH weekday pins. section_with_image and context
-#        Block Kit translations are the batch07 slack_live fixes (25 blocks
-#        in -> 25 blocks out; pre-fix 10 blocks silently vanished).
-#     4  open_bot_app_home 8aa4ae07 -- skip:true, DEAD (older 17-block home);
-#        traced {skipped: true} AFTER a successful publish; NOT traced on the
-#        catch path (the body aborts at the raising node before reaching it).
-#   CATCH 5 (7c0db11c, max_retry 0):
-#     6  slack_bot.post_bot_message 8bc6eb0f -- channel = app_home_opened.user
-#        (U-prefixed channels stay verbatim -> LIVE DM to the member), text
-#        '<@user>, it seems something went wrong with Bot homepage! \n
-#        Please contact bot admin <@U025CTFAX6K>' (hardcoded admin mention
-#        stays raw-faithful literal).
-#
-# Branch mapping (branch is DERIVED from now/force_action_error, never
-# trusted; the greeting ternary is the recipe's ONLY dynamic content):
-# - variant_00 friday_home: now pinned to a Friday (UTC date -- engine
-#   'today' is the UTC date of seed.now) -> wday 5 -> Friday greeting with
-#   the timesheet reminder; 25-block publish.
-# - variant_01 weekday_home: now pinned to a Monday -> else arm -> plain
-#   greeting; block skeleton otherwise identical (proves the ternary is the
-#   only delta).
-# - variant_02 catch_dm: force_action_error on fd296d51 -> TRY aborts before
-#   the publish -> CATCH -> LIVE DM to the trigger user; the dead step is NOT
-#   traced on this path and no views.publish happens.
-#
-# Backends: slack LIVE ONLY (views.publish App Home is idempotent per user
-# and never re-read; the catch DM is an ordinary post never re-read -- no
-# cleanup exists by design). Trigger comes from the seed.
 
 _RAW_PIN_JSON = r"""{"as": "fc4e7116", "block": [{"as": "", "block": [{"as": "fd296d51", "block": [], "input": {"blocks": [{"alt_text": "ProServ Bot", "block_type": "section_with_image", "image_url": "https://avatars.slack-edge.com/<anon>2024-01-01</anon>/1458338400595_e4c75069b7735e32d871_88.png", "section_text": "=today.wday == 5 ? \"Hey <@\"+_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\",\"user\"]}')+\">, it's good to have you here. What would you like to do today? \\n :yay: Happy Fridayyy!!! Don't forget to fill the timesheets in Certinia. Enjoy your weekend\" : \"Hey <@\"+_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\",\"user\"]}')+\">, it's good to have you here. What would you like to do today?\""}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "> :envelope_with_arrow: *Sales / Customer Success Requests* "}, {"actions": [{"bot_command": "61748545", "button_title": "Professional Services Opp", "params": "action: request_form", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Create a professional services opportunity and request a Practice Manager for scoping.  Use this for enterprise onboardings, implementation services, and/or advisory services (SOWs)", "type": "text"}]}, {"actions": [{"bot_command": "61748548", "button_title": "Investment Service Request", "style": "primary", "type": "button", "url": "https://docs.google.com/forms/d/e/1FAIpQLSe4ZEWWCtcyXwXb3_SnzpbmURS5GbHeJwwuTC81J-4xk7ZGIQ/viewform"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Place a request for investment services approval.  Utilize the ScaleX program for new logo acquisition or the Accelerate360 program for at-risk accounts.", "type": "text"}]}, {"actions": [{"bot_command": "45586144", "button_title": "Technical Assistance Request", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Place a request for ad-hoc technical assistance for existing customers.  Requests may include recipe reviews, task optimization guidance or security reviews.  Should require less than 4 hours of effort.", "type": "text"}]}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "> :wrench: *Professional Services Utilities* "}, {"actions": [{"bot_command": "43286104", "button_title": "Add Project Contact", "params": "operation_name: addprojectcontact", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Add contact for CSAT survey", "type": "text"}]}, {"actions": [{"bot_command": "45586053", "button_title": "Enrich Introduction Deck", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Automate deck enrichment for Direct Customer Packaged Onboardings (will not work for Non-Enterprise Onboardings)", "type": "text"}]}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "> :stopwatch: *Time Tracking Tools* "}, {"actions": [{"bot_command": "62706588", "button_title": "Initialize Timesheet", "style": "default", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Initial setup required for automated certinia timesheet creation. (To be run only ONCE)", "type": "text"}]}, {"actions": [{"bot_command": "62706589", "button_title": "Certinia Create Timesheet", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Automatically generates the weekly timesheet report for Certinia.", "type": "text"}]}, {"actions": [{"bot_command": "62706583", "button_title": "Select Projects", "style": "default", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Allows you to select and manage non-billable projects within Certinia.", "type": "text"}]}, {"actions": [{"bot_command": "63559694", "button_title": "Manage Calendars", "style": "default", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Allows you to select and manage the calendars to be included in the timesheet generation process for Certinia.", "type": "text"}]}], "user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "keyword": "action", "name": "open_bot_app_home", "number": 3, "provider": "slack_bot", "skip": false}, {"as": "8aa4ae07", "block": [], "keyword": "action", "name": "open_bot_app_home", "number": 4, "provider": "slack_bot", "skip": true}, {"as": "7c0db11c", "block": [{"as": "8bc6eb0f", "block": [], "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "<@#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\", \"user\"]}')}>, it seems something went wrong with Bot homepage! \nPlease contact bot admin <@U025CTFAX6K>"}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 6, "provider": "slack_bot", "skip": false}], "input": {"max_retry_count": "0", "retry_interval": "2"}, "keyword": "catch", "name": "", "number": 5, "provider": "", "skip": false}], "input": {}, "keyword": "try", "name": "", "number": 2, "provider": "", "skip": false}], "input": {"event_name": "app_home_opened"}, "keyword": "trigger", "name": "new_event", "number": 1, "provider": "slack_bot", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# The exact raw Workato block payload of the LIVE home step; args.view.blocks
-# must carry it VERBATIM with ONLY the greeting formula resolved (index 0
-# section_text). Block Kit translation happens inside the live client.
 HOME_BLOCKS_RAW: list[dict[str, Any]] = json.loads(r"""[{"alt_text": "ProServ Bot", "block_type": "section_with_image", "image_url": "https://avatars.slack-edge.com/<anon>2024-01-01</anon>/1458338400595_e4c75069b7735e32d871_88.png", "section_text": "=today.wday == 5 ? \"Hey <@\"+_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\",\"user\"]}')+\">, it's good to have you here. What would you like to do today? \\n :yay: Happy Fridayyy!!! Don't forget to fill the timesheets in Certinia. Enjoy your weekend\" : \"Hey <@\"+_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"fc4e7116\",\"path\":[\"app_home_opened\",\"user\"]}')+\">, it's good to have you here. What would you like to do today?\""}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "> :envelope_with_arrow: *Sales / Customer Success Requests* "}, {"actions": [{"bot_command": "61748545", "button_title": "Professional Services Opp", "params": "action: request_form", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Create a professional services opportunity and request a Practice Manager for scoping.  Use this for enterprise onboardings, implementation services, and/or advisory services (SOWs)", "type": "text"}]}, {"actions": [{"bot_command": "61748548", "button_title": "Investment Service Request", "style": "primary", "type": "button", "url": "https://docs.google.com/forms/d/e/1FAIpQLSe4ZEWWCtcyXwXb3_SnzpbmURS5GbHeJwwuTC81J-4xk7ZGIQ/viewform"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Place a request for investment services approval.  Utilize the ScaleX program for new logo acquisition or the Accelerate360 program for at-risk accounts.", "type": "text"}]}, {"actions": [{"bot_command": "45586144", "button_title": "Technical Assistance Request", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Place a request for ad-hoc technical assistance for existing customers.  Requests may include recipe reviews, task optimization guidance or security reviews.  Should require less than 4 hours of effort.", "type": "text"}]}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "> :wrench: *Professional Services Utilities* "}, {"actions": [{"bot_command": "43286104", "button_title": "Add Project Contact", "params": "operation_name: addprojectcontact", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Add contact for CSAT survey", "type": "text"}]}, {"actions": [{"bot_command": "45586053", "button_title": "Enrich Introduction Deck", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Automate deck enrichment for Direct Customer Packaged Onboardings (will not work for Non-Enterprise Onboardings)", "type": "text"}]}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "> :stopwatch: *Time Tracking Tools* "}, {"actions": [{"bot_command": "62706588", "button_title": "Initialize Timesheet", "style": "default", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Initial setup required for automated certinia timesheet creation. (To be run only ONCE)", "type": "text"}]}, {"actions": [{"bot_command": "62706589", "button_title": "Certinia Create Timesheet", "style": "primary", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Automatically generates the weekly timesheet report for Certinia.", "type": "text"}]}, {"actions": [{"bot_command": "62706583", "button_title": "Select Projects", "style": "default", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Allows you to select and manage non-billable projects within Certinia.", "type": "text"}]}, {"actions": [{"bot_command": "63559694", "button_title": "Manage Calendars", "style": "default", "type": "button"}], "block_type": "actions"}, {"block_type": "context", "elements": [{"text": "Allows you to select and manage the calendars to be included in the timesheet generation process for Certinia.", "type": "text"}]}]""")
 GREETING_FORMULA_PREFIX = "=today.wday == 5 ?"
-# Slack Block Kit type census of the delivered 25-block home view.
 PUBLISHED_COUNTS = {"blocks": 25, "section": 4, "divider": 3, "actions": 9, "context": 9}
 
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
@@ -112,7 +58,6 @@ REQUIRED_EXPECT_KEYS = (
     "dead_step_traced",
     "catch",
 )
-# Corpus lint: targeting keys + value keys allowed on tool_expectations items.
 _EXPECTATION_TARGET_KEYS = {"tool", "table_id", "lookup_table_id", "match_fields", "channel"}
 _EXPECTATION_VALUE_KEYS = {
     "args_contains",

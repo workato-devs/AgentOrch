@@ -17,30 +17,6 @@ TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
 TRACKER_TABLE_ID = "531"
 TOPIC_ID = "35836"
-# Daily clock trigger (12:30 America/Los_Angeles; payload-less) ->
-#   declare_list 'Tracker' (fb73fd30)
-#   declare_variable 871e147c {page_token_exempted: nil, limit: 200}
-#   REPEAT 1c636317 (do-while pagination):
-#     get_records 81da35e7 on table 531 '[INTT] Training Enrolment Tracker'
-#       filters [Status eq 'Exempted', Exempted-To-Date lte =today],
-#       continuation_token = page_token.presence or SKIP (omitted on page 1),
-#       limit = the 871e147c limit pill
-#     IF records.size > 0: insert_to_list_batch 870089a3 into Tracker
-#       (____source mapping ONLY email/record_id/course_id)
-#     update_variables d8fabc64 page_token = continuation_token.presence or
-#       clear ('' once the mock serves no token)
-#     WHILE continuation_token present -> false on the single mock page
-#   FOREACH fa218202 over Tracker.list_items:
-#     workato_pub_sub.publish_to_topic f2e91ae8 (topic 35836) message
-#       {type 'Exempted', email, record_id, course_id,
-#        number_of_reminders: null, last_reminder_sent: null} -- the last two
-#       are NEVER inserted into the Tracker list, so the pills resolve null.
-# HARD RULE (mock pagination reality): the datatable mock re-serves the FULL
-# seeded row set on every get_records call, so ONLY single-page variants are
-# faithful -- variants must never seed continuation_tokens (a seeded token
-# would re-insert the same rows on iteration 2 and double-publish).
-# All backends are Workato-internal (datatable / pub-sub / variables) ->
-# fully mockable per the backend policy; per-variant isolated state.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("workato_variable", "declare_list", "fb73fd30"),
     ("workato_variable", "declare_variable", "871e147c"),

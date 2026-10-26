@@ -15,8 +15,6 @@ SEED_TYPE = "company_size_service_variant"
 TRACK = "company_size_service"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Ten sequential size-band branches, each one send_reply guarded by a
-# numeric range on EmployeeNO.to_i (with a stop after each reply).
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

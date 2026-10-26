@@ -10,16 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_97310593
 
 
-# Weekly clock trigger (trigger_at is anonymizer-tagged in the raw -- INERT:
-# scheduled_event trigger inputs are node metadata, the run's payload comes
-# from seed['trigger']) runs a Snowflake custom SQL aggregate -- an UNALIASED
-# SPACED count over workspace_dim/accounts_dim/audit_log_replication_settings
-# joins filtered by alr.enabled = true, NO ORDER BY -- then loops the single
-# result row and appends Count/LastRunAt to the live Google Sheet
-# (sheet AuditLogStreaming).
-# Derived mechanically from REGISTERED recipe_97310640.py (same skeleton and
-# as-ids f71a8fa2/a41835e7/08e8617f/f28be309; deltas = SQL text, spaced count
-# column, sheet name, repeat_mode omitted).
 RECIPE_ID = "97310593"
 SEED_TYPE = "clock_snowflake_sql_to_sheet_audit_log_streaming_variant"
 TRACK = "live_snowflake_read_sheet_append"

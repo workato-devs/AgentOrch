@@ -17,37 +17,6 @@ TRACK = "live_slack_agentic_error_notification"
 TRIGGER_PROVIDER = "workato_pub_sub"
 TRIGGER_NAME = "subscribe_to_topic"
 TRIGGER_AS = "dc957003"
-# Pub/sub topic 51011 "Agentic | Errors" (since_offset -3600) -> build a
-# Fields list from the message's optional context -> ONE live Slack post:
-#   #2 declare_list f9b72e2e "Fields" (name/value)
-#   IF#3 message.conversation_id present -> #4 insert "Conversation ID"
-#   IF#5 message.skill_name present      -> #6 insert "Skill"
-#   IF#7 message.tags present            -> #8 insert "Tags"
-#   IF#9 message.job_id present AND message.job_url present
-#                                        -> #10 insert "Job" = "<url|id>"
-#   #11 slack_bot.post_bot_message edf02c48:
-#       channel  = message.error_channel.presence
-#                  || account property "Agentic.error.channel"
-#       message  = color danger, pretext "*Error in Recipe `recipe_name`*",
-#                  title "::  Error Details  ::",
-#                  attachment_text "error\n***...***"
-#       attachment_fields = ____source over Fields list -> one "name: value"
-#       line per inserted row (engine renders them in slack_text; the
-#       source-mapped-dict gap flagged at triage is FIXED and probe-verified)
-#
-# Backends: pub_sub trigger + variable list are Workato-internal (mock);
-# slack_bot.post_bot_message runs LIVE as slack.post_message. The resolved
-# channel is a C-channel, so the adapter routes the post to
-# SLACK_CHANNEL_OVERRIDE either way (isolation preserved); the ||-arm coverage
-# is real because the account-property pill is fail-fast when unseeded.
-# Every variant seeds account_properties["Agentic.error.channel"] explicitly
-# (the property name does not contain "slack", so no auto-override affordance
-# applies) and blank optional message fields as explicit "" (MISSING-sentinel
-# convention) so the presence IFs evaluate faithfully.
-#
-# Cleanup: the recipe post is deleted after verification (channel hygiene,
-# sibling 125748438 precedent); reruns never read it, so variants stay
-# independent either way.
 ACCOUNT_PROPERTY = "Agentic.error.channel"
 MESSAGE_FIELDS = (
     "job_id", "job_url", "conversation_id", "skill_name", "error",

@@ -22,74 +22,6 @@ SF_LOGICAL_SOBJECT = "SBQQ__QuoteLine__c"
 WORKSPACE_TABLE_ID = "13097"
 PROVISIONING_TABLE_ID = "22982"
 
-# workato_recipe_function.execute trigger (as 51664fed) with parameters
-# {opportunity, workato_user_id, opportunity_owner_sales_team, data_center};
-# returns {} (empty return_result). Body:
-#   2  salesforce.search_sobjects_soql_v2 904320c5 (LIVE): SELECT
-#      SBQQ__EffectiveStartDate__c FROM SBQQ__QuoteLine__c WHERE 6 parent
-#      dotted-path conditions (= true x3, = '<opportunity>', (NOT ... LIKE
-#      '%Services%'), != 'Bundle Feature') GROUP BY SBQQ__EffectiveStartDate__c
-#      -- REQUIRES seed.salesforce.strict_soql_conditions true (the !=, = TRUE
-#      and NOT LIKE arms only evaluate faithfully under the strict flag; the
-#      strict evaluator strips the trailing GROUP BY before matching)
-#   3  declare_variable f91eccae: sales_team_segment_conversion = multi-line
-#      if/elsif include? chain over opportunity_owner_sales_team
-#      (Enterprise/Embedded/BPO/Agentic, else "Commercial")
-#   4  workato_db_table.get_records 18c862e0 (MOCK table 13097 '[AWP] Insights
-#      Data - by Workspace and Result') by Secondary ID=opportunity + Workato
-#      User Id
-#   5  IF 18c862e0.records.size == 0:
-#   6    workato_db_table.add_record 92522687 (13097): Secondary ID, Workato
-#        User Id, Segment=step-3 variable, Status='Pending', Data Center
-#   7  FOREACH b753a02a over 904320c5.records (repeat_mode simple):
-#   8    declare_variable 65356e7c: pending_provisioning_status = 'Pending
-#        Provisioning' (hardcoded)
-#   9    workato_db_table.get_records d621b74b (MOCK table 22982 '[AWP]
-#        Workspace Provisioning Request') by Opportunity Id + Workato User Id
-#        + Provisioning Date=foreach SBQQ__EffectiveStartDate__c + Provisioning
-#        Status=step-8 variable
-#  10    IF d621b74b.records.size == 0:
-#  11      workato_db_table.add_record ba7671ae (22982): Provisioning Date,
-#          Opportunity Id, Workato User Id, Provisioning Status
-#  12 workato_recipe_function.return_result f062edf8 (empty {})
-#
-# Live backend: Salesforce SBQQ__QuoteLine__c -> QuoteLine__c stand-in
-# (SALESFORCE_SOBJECT_MAP; mdapi package /tmp/mdapi_117385101, manifest.md
-# carries the exact SOBJECT_MAP/FIELD_MAP entries). The 6 parent dotted paths
-# (SBQQ__Quote__r.SBQQ__Primary__c/Ordered__c/Opportunity2__c,
-# SBQQ__Product__r.IsActive/Product_Sub_Family__c/Family) are FLATTENED
-# columns on the stand-in; SALESFORCE_FIELD_MAP keys the DOTTED logical names
-# and _logical_aliases re-exposes them flat on read-back, which is exactly
-# where strict-SOQL _field_lookup resolves them. Quote_Opportunity2__c is Text
-# (trigger passes foreign-org-shaped opportunity id strings), so seeds never
-# need live Quote/Product/Opportunity records. Workato DB tables 13097/22982
-# stay mocked (Workato-internal backend rule).
-#
-# Branch-mapping notes (recorded per benmark_rules):
-# - variant_00 both IFs true (empty tables), segment Enterprise: 1 quote line
-#   -> workspace add + one provisioning add; count 8.
-# - variant_01 both IFs false (both rows pre-seeded), segment Embedded; count 6.
-# - variant_02 IF5 false (workspace row pre-seeded), foreach x2 both IF10 true,
-#   segment BPO; count 10.
-# - variant_03 IF5 true, foreach x2 both IF10 false (provisioning rows
-#   pre-seeded), segment Agentic; count 9.
-# - variant_04 zero quote lines (SOQL matches nothing) -> zero-iteration
-#   foreach, IF5 true, else-branch segment Commercial; count 5.
-# - ENGINE GAP (probe-confirmed 2026-07-07, still open): eval_if_formula
-#   handles an else clause only as a BARE `else` line; the raw formula's
-#   inline form `else "Commercial"` (value on the same line) silently yields
-#   "" instead of "Commercial". variant_04 pins the FAITHFUL value
-#   ("Commercial") and FAILS until the shared engine supports the inline-else
-#   form; do not weaken the expect.
-# - GROUP-BY fidelity: the harness groups only when an aggregate is present,
-#   so GROUP-BY-without-aggregate returns raw rows (no dedupe). All variants
-#   seed DISTINCT SBQQ__EffectiveStartDate__c values per opportunity, where
-#   raw rows == grouped rows; never seed duplicate dates for one opportunity.
-#
-# Cleanup: the recipe is READ-ONLY on Salesforce (no SF writes); every live
-# record is benchmark-owned and run_117385101 calls harness.salesforce.cleanup
-# in finally, failing on leftovers. Workato DB table state is mock-isolated
-# per variant; variants are independently seedable.
 
 _STRUCTURE_PINS_JSON = r'''
 [
@@ -375,8 +307,6 @@ EXPECT_KEYS = (
     "tools",
     "tool_expectations",
 )
-# Corpus lint: recognized tool_expectations keys, and the subset that count as
-# value keys (every item must carry at least one).
 EXPECTATION_KEYS = {
     "tool", "table_id", "lookup_table_id", "match_fields", "channel",
     "args_contains", "result_count", "response_contains", "result_contains",

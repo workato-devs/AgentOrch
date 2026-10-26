@@ -15,13 +15,6 @@ SEED_TYPE = "api_platform_log_and_respond_variant"
 TRACK = "workato_api_platform_log_and_respond"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API endpoint recipe: the API Platform trigger receives an HTTP request; step 2
-# logs the request metadata (method / URL / headers / body / content type) via
-# the Workato logger, and step 3 returns a static JSON body {"success": true}
-# with http_status_code 200. The response body has no datapills, so it is
-# identical for every request. logger.log_message surfaces as the controlled
-# workato_runtime.log_message op (not a live tool call); return_response is
-# terminal.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("logger", "log_message"),
     ("workato_api_platform", "return_response"),

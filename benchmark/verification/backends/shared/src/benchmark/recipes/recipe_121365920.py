@@ -17,29 +17,6 @@ TRACK = "live_slack_workato_db_churn_tracking"
 TRIGGER_PROVIDER = "salesforce"
 TRIGGER_NAME = "new_custom_object"
 SOBJECT_NAME = "OpportunityFieldHistory"
-# Salesforce OpportunityFieldHistory event (trigger payload only, no live SF
-# action; trigger filter: Field == 'StageName' AND OldValue not_contains
-# 'Closed' AND NewValue contains 'Closed') -> workato_db_table.get_records
-# table 29282 '[FCA] Non Payment Churn Tracking' filtered by Opp ID ->
-# IF(records size > 0) { IF(Message ID col present) { IF(Stage contains
-# 'Closed Won') try { slack EDIT the previously-posted message via advanced.ts
-# ('Churned Recorded, Stage: ...') } catch(0c7240de) { IF(catch message ==
-# 'Cant update message') slack threaded post via advanced.thread_ts };
-# IF(Stage contains 'Closed Lost') try { slack EDIT 'Resolved' } catch
-# (9571f26e) { IF(catch message == 'Cant update message') slack threaded
-# 'Resolved' } } ; workato_db_table.update_record stage col = trigger
-# Opportunity.StageName }.
-#
-# Slack runs LIVE. Message-edit variants use a two-phase seed: the seeder
-# posts a real message ($SEED_MESSAGE_TS token) and writes its live ts into
-# the table-29282 seed row, so chat.update / threaded replies target a real
-# ts. The Slack channel is the project_property 'Slack Channel: Non-Payments'
-# (seeded explicitly; the executor redirects non-user channels to
-# SLACK_CHANNEL_OVERRIDE, so the live post lands in the benchmark channel).
-# The account_property 'Salesforce Environment' (title_link URL) is also
-# seeded explicitly. Catch branches are reached via seed.force_action_error
-# with the recipe's exact 'Cant update message' comparison string (or a
-# different string for the swallowed-error path).
 TABLE_ID = "29282"
 COL_OPP = "7282605a_5019_4d32_9bca_ad22eee221a6"
 COL_STAGE = "ce590e2a_eec4_4dc2_bde2_321f102f3b1d"

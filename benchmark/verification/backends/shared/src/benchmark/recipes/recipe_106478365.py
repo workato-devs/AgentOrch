@@ -18,53 +18,6 @@ TRIGGER_PROVIDER = "workato_webhooks"
 TRIGGER_NAME = "new_event"
 TRIGGER_AS = "c40de19d"
 
-# dbt-job "Error Resolution" webhook recipe (trigger as c40de19d, webhook_suffix
-# 'Error Resolution'; only trigger['payload'] — a raw JSON string — is read):
-#   2  json_parser.parse_json (08df4f91) over the payload (fail-fast on
-#      empty/invalid JSON)
-#   3  workato_db_table.get_records (474ba69f, table 14696 'Error History',
-#      filters: jobId col 194f7b20 op_integer eq document.data.jobId AND
-#      resolved col ff897762 op_boolean isfalse -> eq False; limit 10 desc)
-#   4  IF records.current_item.<record id 11fbe9a6> present ->
-#   5  TRY:
-#      6  lookup_table.get_entries (0e4202e2, table 3820912 data-owner list)
-#      7  FOREACH over entries:
-#         8  slack_bot.post_bot_message (2a1f0dc1: channel = entry.col3,
-#            section 'Bad Job #{document.data.jobName} fixed
-#            :smiley::thumbsup::skin-tone-2:')
-#         9  slack_bot.post_bot_message (909c0957) — "skip": true — DISABLED
-#      10 slack_bot.post_bot_message (f92a551d) — "skip": true — DISABLED
-#      11 slack_bot.post_bot_message (f6269629) — "skip": true — DISABLED
-#      12 workato_db_table.update_record (be64d30f: record_id =
-#         records.current_item id, set resolved-datetime col 18644aef = '=now'
-#         and resolved col ff897762 = 'true') — ACTIVE: the recipe's real
-#         persistent effect (variant MUST pin data.now)
-#   13 CATCH (90ddfe8f, max_retry 0):
-#      14 slack_bot.post_bot_message (e241bc28: channel literal 'U07GCQL582H',
-#         ':almighty_loaf: #{job_context.recipe_name} broken, please fix!
-#         :almighty_loaf:')
-#   15 workato_recipe_function.return_result (c2b86df3, {} — terminal)
-#
-# IMPORTANT — TRIAGE CORRECTION (probe-verified against the current engine's
-# execute_node skip handling, same semantics as real Workato
-# disabled steps): steps 9, 10 and 11 carry "skip": true in the raw recipe.
-# They are DISABLED — the executor records reached-but-skipped trace markers
-# and never runs them. In particular the no-text post f92a551d (step 10) can
-# NEVER raise 'Slack message rendered empty text', so the batch_C triage claim
-# that "the catch post is the de-facto happy path" and that "steps 11-12 are
-# dead code" is WRONG: the happy path posts one live Slack message per lookup
-# entry and then step 12 marks the Error History row resolved. The catch
-# branch is reachable only through a genuine action failure and is covered via
-# variant force_action_error (variant_04, forced on be64d30f).
-#
-# Backends: workato_db_table + lookup_table are Workato-internal mocks (seeded
-# per variant); Slack is LIVE — entry.col3 channels are non-'U' seeds that the
-# executor auto-redirects to SLACK_CHANNEL_OVERRIDE, and the literal catch DM
-# channel 'U07GCQL582H' requires seed.slack_channel_map
-# {"U07GCQL582H": "__override__"} (only the catch variant reaches it).
-# Ordinary posts are never read back/deleted -> no Slack cleanup obligation
-# (cleanup principle). The db-table update is idempotent per variant because
-# every variant fully re-seeds table 14696.
 
 _STRUCTURE_PINS_JSON = r'''
 [

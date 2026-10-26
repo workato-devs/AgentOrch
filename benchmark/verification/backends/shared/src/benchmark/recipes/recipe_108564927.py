@@ -33,34 +33,8 @@ BIND_FORMULA = (
     "='%' + _dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"91ae18f5\","
     "\"path\":[\"typeahead\",\"value\"]}').unicode_normalize.downcase + '%'"
 )
-# The bind SCHEMA declares 3 entries but data carries ONLY 'value':
-# snowflake_parameters maps data entries only, so ID / provider_name never
-# bind (inert). The verifier pins args.parameters == {'value': ...} exactly.
 BIND_SCHEMA_NAMES = ["ID", "provider_name", "value"]
 
-# slack_bot.dynamic_menu 'getproviders' (trigger payload seeded; the declared
-# 'query' parameter -- label 'query' here, 'Query' on the twin -- is NEVER
-# dereferenced; seeded for faith, provably inert):
-#   2  snowflake.run_custom_sql a96da78c (LIVE): select ID as id, NAME as
-#      name from PUBLIC.DEMOINFRA_PROVIDERS where lower(NAME) like :value
-#      with named bind parameters.data.value =
-#      '%' + typeahead.value.unicode_normalize.downcase + '%' (Ruby NFC
-#      default). The schema declares 3 bind entries (ID / provider_name /
-#      value) but data carries only value, so the extra entries never bind.
-#      dynamicPickListSelection PUBLIC.PROVIDERS_TEST + toggleCfg are inert
-#      editor metadata; the 2-part table key maps to
-#      <SNOWFLAKE_DATABASE>.PUBLIC.* inside the live adapter only.
-#   3  slack_bot.generate_menu_options 5ef91f1b: flat ____source = step-2
-#      rows, label = current_item.name, value = current_item.id (string id).
-#      Deterministic validation-only Workbot echo, no Slack API call.
-# Linear, no block branches: the only boundary is the LIKE match count
-# (0/1/N). No ORDER BY: multi-row menus are pinned as a MULTISET.
-# NEAR-TWIN of 108871514 (byte-diffed 2026-07-09): full delta = table
-# DEMOINFRA_PROVIDERS vs DEMOINFRA_APPLICATIONS, menu name getproviders vs
-# getapplications, step ids/uuids, trigger param label 'query' vs 'Query',
-# plus this recipe's 2 extra UNUSED bind-schema entries. In-batch shape-twin:
-# 109200085. Registered pattern: recipe_102760065.py; the only formula delta
-# is the extra .unicode_normalize, landed in raw_executor apply_dp_methods.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "91ae18f5", "skip": false, "input": {"dynamic_menu_name": "getproviders", "parameters": "[{\"name\":\"query\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"query\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "a96da78c", "skip": false, "input": {"output_schema": "[{\"name\":\"id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ID\"},{\"name\":\"name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"NAME\"}]", "parameters": {"data": {"value": "='%' + _dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"91ae18f5\",\"path\":[\"typeahead\",\"value\"]}').unicode_normalize.downcase + '%'"}, "schema": "[{\"name\":\"ID\",\"type\":\"integer\",\"optional\":true,\"label\":\"ID\",\"details\":{\"real_name\":\"ID\"},\"control_type\":\"integer\"},{\"name\":\"provider_name\",\"type\":\"string\",\"optional\":true,\"label\":\"Provider Name\",\"details\":{\"real_name\":\"Provider Name\"},\"control_type\":\"text\"},{\"name\":\"value\",\"type\":\"string\",\"optional\":true,\"label\":\"value\",\"details\":{\"real_name\":\"value\"},\"control_type\":\"text\"}]"}, "sql": "select ID as id, NAME as name from PUBLIC.DEMOINFRA_PROVIDERS where lower(NAME) like :value", "update_only": "false"}, "block": []}, {"number": 3, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "5ef91f1b", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"a96da78c\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"a96da78c\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"name\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"a96da78c\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}"}}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

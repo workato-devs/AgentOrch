@@ -15,12 +15,6 @@ SEED_TYPE = "exec_connection_lookup_variant"
 TRACK = "recipe_function_lookup_return"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe: given trigger parameters {first_name, last_name, company},
-# search the "Lead Genie Executive LinkedIn Connections" lookup table (id
-# 3897246) by full name (col3 = "first last"). If the search returns any entry
-# (entries.size != 0) return a recipe-function result carrying a connection
-# message plus (when present) the matched LinkedIn person URL. When no entry
-# matches, the IF is false and nothing is returned.
 LOOKUP_TABLE_ID = "3897246"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "search_entries"),

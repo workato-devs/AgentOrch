@@ -26,64 +26,16 @@ DEAD_TOP_AS = "49391591"    # skip:true editor leftover before the user lookup
 DEAD_ELSE_AS = "98084ab8"  # skip:true inside the ELSE branch (twin has no such step)
 DEAD_STEP_AS = (DEAD_TOP_AS, DEAD_ELSE_AS)
 TABLE_ID = "3770006"
-# LIVE workspace facts this recipe depends on: get_user_by_email carries the
-# TRIGGER USER ID (engine routes id -> live users.info, fail-fast) and the
-# recipe pivots on profile.email. U0B91BSRGF8 <-> jamie.lee@corp.example is the
-# proven benchmark member pair; the workspace bot U0B973TLN7N has NO profile
-# email and would resolve the col3 search parameter to nothing.
 LIVE_MEMBER_ID = "U0B91BSRGF8"
 LIVE_MEMBER_EMAIL = "jamie.lee@corp.example"
 EMAIL_COL = "col3"
-# 'BT Ops and SecOps Team' lookup columns (Computer name, Full name, Email
-# address, Managed, UDID, Serial number, Supervised, Building, Last check-in,
-# Room).
 ROW_FIELDS = tuple(f"col{i}" for i in range(1, 11))
 
-# TWIN NOTE: 119575741 is a structural twin (same trigger/steps/IF and
-# shared as-ids ff6ae1d3/2a70f21a/2c4d9486; 122-line raw diff, zero
-# control-flow delta). Exact deltas THIS module pins so twin drift is
-# caught, never papered over: lookup_table_id 3770006 (vs 3808792),
-# else-step as 271782f8 (vs cb1858ef), this recipe's block payloads (real
-# pinimg image url + workato.atlassian.net links, 3 if-branch buttons incl
-# 'Grant USB Access' 57790027 and danger 'Report Incident' 62930346), and
-# an EXTRA dead skip:true step 98084ab8 in the else branch (the twin has
-# none).
 
-# slack_bot.new_event app_home_opened (as 9b17fb0c) — the ONLY trigger pill
-# dereferenced is app_home_opened.user (users.info id + both open_bot_app_home
-# user_id inputs). Body:
-#   2  open_bot_app_home 49391591 — skip:true, DEAD (traced skipped, no tool)
-#   3  slack_bot.get_user_by_email ff6ae1d3 with id=trigger user — the engine
-#      routes an id-only input to LIVE slack users.info; profile.email feeds 4
-#   4  lookup_table.search_entries 2a70f21a (mock table 3770006): parameters
-#      col3 = ff6ae1d3 profile.email (exact match; decoy rows prove the filter)
-#   IF 5 (entries size greater_than '0'):
-#     6  open_bot_app_home 2c4d9486 — LIVE views.publish of the 16-block admin
-#        home (image + 9 dividers + section_with_text/button/fields; the
-#        branch-distinguishing buttons render via slack_live._modal_block)
-#   ELSE 7:
-#     8  open_bot_app_home 271782f8 — LIVE views.publish of the 11-block
-#        member/default home; dead skip:true 98084ab8 traced skipped after it
-#
-# Branch mapping (3 actions on EVERY path — the branches differ only in WHICH
-# home view is published):
-# - admin_home: >=1 seeded row carries the live member email in col3 -> IF
-#   true -> ADMIN_BLOCKS published (matched_entry_count pins 1 vs 2 to prove
-#   'greater_than 0', not '== 1').
-# - default_home: only decoy rows -> entries [] -> ELSE -> DEFAULT_BLOCKS.
-#
-# Backends: slack runs LIVE (users.info + views.publish; App Home publish is
-# idempotent per user, never re-read — no cleanup exists). The lookup table is
-# the Workato-internal mock, READ-ONLY here (snapshot equality pinned).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "new_event", "as": "9b17fb0c", "skip": false, "input": {"event_name": "app_home_opened"}, "block": [{"number": 2, "keyword": "action", "provider": "slack_bot", "name": "open_bot_app_home", "as": "49391591", "skip": true, "block": []}, {"number": 3, "keyword": "action", "provider": "slack_bot", "name": "get_user_by_email", "as": "ff6ae1d3", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"9b17fb0c\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "block": []}, {"number": 4, "keyword": "action", "provider": "lookup_table", "name": "search_entries", "as": "2a70f21a", "skip": false, "input": {"lookup_table_id": "3770006", "parameters": {"col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"ff6ae1d3\",\"path\":[\"profile\", \"email\"]}')}"}}, "block": []}, {"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"2a70f21a\",\"path\":[\"entries\", {\"path_element_type\": \"size\"}]}')}", "operand": "greater_than", "rhs": "0"}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "slack_bot", "name": "open_bot_app_home", "as": "2c4d9486", "skip": false, "input": {"blocks": [{"alt_text": "Security Bot", "block_type": "image", "image_title": "SECURITY BOT", "image_url": "https://i.pinimg.com/736x/f1/82/79/f1827973d062e602527b4aed79c4ed39.jpg"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "Welcome to the Security Bot!! I am here for any CyberSecurity related help. At your Service :alert-5:"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "52864867", "button_title": "Switch Profiles", "section_text": "Zscaler Switch Profiles :zscaler:", "style": "primary"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "RPA Automation Documentation for reference - https://workato.atlassian.net/wiki/x/2oCrM"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "57790027", "button_title": "Grant USB Access", "section_text": "Grant USB Exception in Sentinel One :sentinelonelogo:", "style": "primary"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "USB Exception Documentation for Reference - https://workato.atlassian.net/wiki/x/CYCVOQ"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "62930346", "button_title": "Report Incident", "section_text": "Report a Security Incident", "style": "danger"}], "user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"9b17fb0c\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "block": []}, {"number": 7, "keyword": "else", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 8, "keyword": "action", "provider": "slack_bot", "name": "open_bot_app_home", "as": "271782f8", "skip": false, "input": {"blocks": [{"alt_text": "Security Bot", "block_type": "image", "image_title": "SECURITY BOT", "image_url": "https://i.pinimg.com/736x/f1/82/79/f1827973d062e602527b4aed79c4ed39.jpg"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "Welcome to the Security Bot!! I am here for any CyberSecurity related help. At your Service :alert-5:"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "59898460", "button_title": "Request USB Access", "section_text": "Request USB Exception :sentinelonelogo:", "style": "primary"}, {"block_type": "divider"}, {"attachment_fields": [{"title": "Confluence Link", "value": "\"https://workato.atlassian.net/wiki/x/7QAFQg\""}], "block_type": "section_with_fields", "section_text": "Please find below the Confluence page to get Serial ID of USB Device"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "62930346", "button_title": "Report Incident", "section_text": "Report a Security Incident", "style": "danger"}], "user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"9b17fb0c\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "block": []}, {"number": 9, "keyword": "action", "provider": "slack_bot", "name": "open_bot_app_home", "as": "98084ab8", "skip": true, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# The exact raw Workato block payloads the two live steps carry; the executor
-# resolves them VERBATIM into args.view.blocks and the live client translates
-# them to Block Kit inside views.publish (probe-verified: 16/16 and 11/11
-# blocks translate — image, section_with_button and section_with_fields
-# included).
 ADMIN_BLOCKS: list[dict[str, Any]] = json.loads(r"""[{"alt_text": "Security Bot", "block_type": "image", "image_title": "SECURITY BOT", "image_url": "https://i.pinimg.com/736x/f1/82/79/f1827973d062e602527b4aed79c4ed39.jpg"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "Welcome to the Security Bot!! I am here for any CyberSecurity related help. At your Service :alert-5:"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "52864867", "button_title": "Switch Profiles", "section_text": "Zscaler Switch Profiles :zscaler:", "style": "primary"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "RPA Automation Documentation for reference - https://workato.atlassian.net/wiki/x/2oCrM"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "57790027", "button_title": "Grant USB Access", "section_text": "Grant USB Exception in Sentinel One :sentinelonelogo:", "style": "primary"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "USB Exception Documentation for Reference - https://workato.atlassian.net/wiki/x/CYCVOQ"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "62930346", "button_title": "Report Incident", "section_text": "Report a Security Incident", "style": "danger"}]""")
 DEFAULT_BLOCKS: list[dict[str, Any]] = json.loads(r"""[{"alt_text": "Security Bot", "block_type": "image", "image_title": "SECURITY BOT", "image_url": "https://i.pinimg.com/736x/f1/82/79/f1827973d062e602527b4aed79c4ed39.jpg"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_text", "section_text": "Welcome to the Security Bot!! I am here for any CyberSecurity related help. At your Service :alert-5:"}, {"block_type": "divider"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "59898460", "button_title": "Request USB Access", "section_text": "Request USB Exception :sentinelonelogo:", "style": "primary"}, {"block_type": "divider"}, {"attachment_fields": [{"title": "Confluence Link", "value": "\"https://workato.atlassian.net/wiki/x/7QAFQg\""}], "block_type": "section_with_fields", "section_text": "Please find below the Confluence page to get Serial ID of USB Device"}, {"block_type": "divider"}, {"block_type": "section_with_button", "bot_command": "62930346", "button_title": "Report Incident", "section_text": "Report a Security Incident", "style": "danger"}]""")
 

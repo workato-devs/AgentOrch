@@ -24,91 +24,17 @@ ACCUMULATE_AS = "64b09d22"
 RETURN_AS = "67cd7068"
 ATM_SOBJECT = "AccountTeamMember"
 ACCOUNT_TOKEN = "$ACCOUNT_ID"
-# The recipe's verbatim WHERE fragment with the trigger pill replaced by the
-# seed token (resolved to the live Account id at seed time).
 ATM_QUERY_TEMPLATE = (
     "AccountId = '$ACCOUNT_ID' AND (TeamMemberRole LIKE '%Consultant' "
     "OR TeamMemberRole = 'Partner Manager')"
 )
 
-# workato_recipe_function.execute (as 3b05163b; dereferences parameters.id
-# only -- the Account id used in the step-2 filter and the step-3 SOQL
-# fragment):
-#   2  salesforce.search_sobjects 65c57f83 (LIVE): Account, Id =
-#      parameters.id pill, limit 150, 16-column field_list (SELECT metadata
-#      only) -> salesforce.search_records {sobject, filters:[{Id, value}],
-#      limit '150'}; include_combined_attachments is NOT set, so the
-#      CombinedAttachments pill is MISSING and the return-step files
-#      ____source expands to [] (probe-verified).
-#   3  salesforce.search_sobjects_soql def5d0b7 (LIVE): AccountTeamMember,
-#      bare WHERE fragment "AccountId = '<id>' AND (TeamMemberRole LIKE
-#      '%Consultant' OR TeamMemberRole = 'Partner Manager')". The paren
-#      OR-group is STRICT-ONLY: the legacy _query_condition_groups matcher
-#      silently drops it and leaks e.g. an 'Account Executive' row in
-#      (probe-verified negative control), so every variant seeds
-#      salesforce.strict_soql_conditions true.
-#   IF 4 (=_('data.salesforce.def5d0b7.AccountTeamMember').where(
-#      TeamMemberRole: /.+Consultant$/).length greater_than 0):
-#     5  workato_list.accumulate_list_items 64b09d22 'CS Reps'
-#        (Workato-internal): solutions_consultant / automation_consultant,
-#        each a VALUE-POSITION or-chain
-#          _(A).where(R: 'Primary X Consultant').pluck('UserId').first or
-#          _(A).where(R: 'Supporting X Consultant').pluck('UserId').first
-#        Ruby or-semantics (engine fix probed 19/19 this build, both ways):
-#        the LEFT chain wins whenever it is not nil/false ("" and 0 are
-#        truthy); only a nil left falls through to the Supporting lookup.
-#   6  workato_recipe_function.return_result 67cd7068 (TERMINAL): 22-field
-#      result -- Account pills from the step-2 current_item (billing_address
-#      concatenates the 5 BillingAddress compound parts with spaces), files
-#      ____source [], partner_manager = where('Partner Manager')
-#      .pluck('UserId').first (evaluates on BOTH IF arms), and 4 CSR fields
-#      '=if RecordTypeId == <foreign RT id> skip else list_items.first.<x>
-#      end'. The == skip-arms are DEAD in the bench org: seeded Accounts
-#      read back RecordTypeId null (no visible Account record types; the
-#      foreign 18-char ids 0123l000001ha4wAAA / 012o0000000teVpAAI are org-
-#      generated and unreproducible) -- proven by live read at triage; the
-#      skip mechanics themselves are probe-verified offline (forced match
-#      -> SKIP sentinel). Every variant therefore pins record_type_id null
-#      and the else-arm values.
-#
-# Live backend: Account + AccountTeamMember both live-verified at triage
-# (Account Teams is enabled in the bench org; TeamMemberRole is a NON-
-# restricted picklist accepting custom values -- re-probed via describe
-# 2026-07-08). SF collapses AccountTeamMember to ONE row per
-# (AccountId, UserId) pair -- the last role wins (probed live), so multi-
-# role variants seed DISTINCT org users. The three pinned ACTIVE Standard
-# users below were re-probed read-only 2026-07-08 (same trio the triage
-# 3-role live create used).
-# Account custom columns ALREADY EXIST in the org as TEXT
-# (ensure_custom_field never re-types), so Go_Live_Date__c '2025-04-01'
-# and Partner_Referral_Discount__c '12.5' read back as STRINGS; the seed
-# schema section only re-ensures FLS. BillingState/BillingCountry are
-# state/country-picklist validated org-wide: seeds carry FULL NAMES
-# ('Texas' / 'United States'); 'TX'/'US' throw FIELD_INTEGRITY_EXCEPTION
-# (triage probe).
-# PhotoUrl and CombinedAttachments are outside the benchmark-owned
-# read-back set (never seeded, not declared read_fields), so their pills
-# resolve nil deterministically -- photo_url null / files [] in every
-# variant, matching the triage live end-to-end run.
-# Workato-internal mock: workato_recipe_function trigger/return +
-# workato_list accumulate (in-process).
-# Cleanup: benchmark-owned Account + AccountTeamMember seeds deleted in the
-# runner's finally (read-only recipe, but owned records must never leak);
-# schema persists by design.
 
-# Pinned ACTIVE Standard users (read-only org probe 2026-07-08; stable org
-# state like lookup-table ids). AccountTeamMember.UserId is a real
-# reference field: fabricated ids would be rejected live, and the harness
-# exposes no multi-user token, so the benchmark pins the org's own users.
 USER_ZIJIE = "005g5000006qRIPAA2"  # Zijie Liu (the CLI/integration user)
 USER_ORGFARM = "005g5000006ezEDAAY"  # OrgFarm EPIC
 USER_INTEGRATION = "005g5000006f03pAAA"  # Integration User
 ALLOWED_ATM_USER_IDS = {USER_ZIJIE, USER_ORGFARM, USER_INTEGRATION}
 
-# Roles a variant may seed. Pinned so the module-side SOQL/regex derivation
-# below can never diverge from live case-sensitivity semantics (LIKE is
-# case-insensitive, the IF regex /.+Consultant$/ is case-sensitive; every
-# allowed role behaves identically under both).
 ALLOWED_ROLES = {
     "Primary Solutions Consultant",
     "Supporting Solutions Consultant",
@@ -119,9 +45,6 @@ ALLOWED_ROLES = {
     "Consultant Lead",  # excluded: LIKE '%Consultant' is END-anchored
 }
 
-# Schema-in-seed: the 7 Account custom columns the recipe selects/returns.
-# All pre-exist in the org as Text (describe probed 2026-07-08); this
-# section is a pure idempotent FLS re-ensure.
 SF_SCHEMA: list[dict[str, str]] = [
     {"sobject": "Account", "field": "Go_Live_Date__c", "sf_type": "Text"},
     {"sobject": "Account", "field": "Partner_Status__c", "sf_type": "Text"},
@@ -131,9 +54,6 @@ SF_SCHEMA: list[dict[str, str]] = [
     {"sobject": "Account", "field": "Billing_Contact_Name__c", "sf_type": "Text"},
     {"sobject": "Account", "field": "Partner_Referral_Discount__c", "sf_type": "Text"},
 ]
-# Exact writable seed columns for the Account record (fully pinned so the
-# live read-back -- and therefore every return_result value -- is derived,
-# never guessed).
 ACCOUNT_SEED_FIELDS = (
     "Name",
     "Description",
@@ -151,12 +71,7 @@ ACCOUNT_SEED_FIELDS = (
     "Billing_Contact_Name__c",
     "Partner_Referral_Discount__c",
 )
-# Declared derived read-back columns: OwnerId / LastModifiedById are org-
-# assigned (pinned "__ANY__"), RecordTypeId reads back null (dead-RT proof),
-# BillingAddress is the compound the return step concatenates.
 ACCOUNT_READ_FIELDS = ["OwnerId", "LastModifiedById", "RecordTypeId", "BillingAddress"]
-# BillingState/BillingCountry are picklist-validated org-wide; only proven
-# combinations are seedable (triage FIELD_INTEGRITY_EXCEPTION probe).
 ALLOWED_BILLING_STATES = {"Texas", "California", "New York", "Illinois", "Washington"}
 REQUIRED_BILLING_COUNTRY = "United States"
 

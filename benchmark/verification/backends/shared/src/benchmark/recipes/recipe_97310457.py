@@ -10,15 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_97310457
 
 
-# Weekly clock trigger runs a Snowflake custom SQL aggregate --
-# count(distinct ad.account_id) (NO space, unaliased) over accounts_dim/
-# workspace_dim/team_profiles joins filtered by tp.required_auth_type LIKE
-# '%saml%' (bind-less %-literals reach Snowflake byte-exact), ORDER BY
-# ad.current_arr_usd -- then loops the single result row and appends
-# Count/LastRunAt to the live Google Sheet (sheet SAML).
-# Derived mechanically from REGISTERED recipe_97310640.py (same skeleton and
-# as-ids f71a8fa2/a41835e7/08e8617f/f28be309; deltas = SQL text, unaliased
-# count column, sheet name, repeat_mode omitted).
 RECIPE_ID = "97310457"
 SEED_TYPE = "clock_snowflake_sql_to_sheet_saml_auth_variant"
 TRACK = "live_snowflake_read_sheet_append"

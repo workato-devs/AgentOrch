@@ -12,6 +12,4 @@ PYTHONPATH=benchmark python -m verification.connector_runner \
   --backend simulated --recipe-id 64112882 --variant 0
 ```
 
-`CONNECTOR_CAPABILITIES.md` documents supported tools and external side
-effects. `SOURCE_README.md` preserves the source tree's original documentation
-for provenance.
+`CONNECTOR_CAPABILITIES.md` documents supported tools and external side effects.

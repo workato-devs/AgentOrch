@@ -26,35 +26,6 @@ TOPIC_ID = "29180"
 ACTIVITY_TYPE_IDS = 46
 _WINDOW_RENDER = "%Y-%m-%dT%H:%M:%S+00:00"
 
-# clock.scheduled_event (as 2c9e2a88; cron '0 10 * * *' Etc/UTC, comment
-# '10:00 UTC every day') — payload-less trigger, seeded as trigger {}. The
-# formulas read the job_context.job_created_at pill (seed['job_context'];
-# raw_executor job_context pill type), so EVERY variant must seed it
-# explicitly (no-fallback). Linear body, no branches:
-#   2  workato_variable.declare_variable 4d7f476d (MOCK Workato-internal):
-#      startAt = job_created_at.in_time_zone("UTC") - 2.days
-#      endAt   = job_created_at.in_time_zone("UTC")
-#      activityTypeIds = '=46' -> NATIVE INT 46
-#      PLAIN .in_time_zone chain: a nil/absent job_created_at RAISES
-#      (re-probed 2026-07-09: NonRecipeError 'unsupported datapill method
-#      chain') — that raise is NOT a recipe branch, so seeds always carry a
-#      non-empty ISO instant with an explicit offset. The UTC render is
-#      'YYYY-MM-DDTHH:MM:SS+00:00' (re-probed verbatim for -07:00, Z and
-#      +05:30 inputs).
-#   3  workato_pub_sub.publish_to_topic 4c4f4c33 topic 29180 'Marketo Export
-#      Activity': message.startAt/endAt = '#{pill}' STRING renders of the
-#      declared values; activityTypeIds = '=' FULL-PILL -> the declared INT
-#      46 passes through natively. FAITHFUL QUIRK: the step's message schema
-#      declares activityTypeIds as array-of-number, but the engine publishes
-#      the declared int 46 (schema does not coerce; re-probed trace value).
-#
-# Backends: clock trigger + workato_variable + workato_pub_sub are ALL
-# Workato-internal — full mock per backend policy (registered 104508126
-# clock->publish + 113487781 clock+declare precedents; STRUCTURE_PINS style
-# per 116340422). The pub_sub mock is stateless (result echoes topic_id +
-# message): the publish args are the observable, the declare trace row pins
-# the formula outputs. No live state, no cleanup. The only data dependence
-# is job_created_at driving the 2-day window arithmetic.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

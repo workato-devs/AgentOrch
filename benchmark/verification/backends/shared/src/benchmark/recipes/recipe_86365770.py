@@ -35,42 +35,6 @@ RAW_SELECT_SQL = (
     "AND F.OLD_VALUE = 'premium_yearly'\n\nORDER BY RIGHT(W.ID, LEN(W.ID)-1)::INT DESC"
 )
 
-# clock.scheduled_event (as 20be9af8, daily 22:00) — payload-less; the trigger
-# output is never dereferenced (the recipe reads only `now`). Body = one TRY:
-#   3  snowflake.search_rows_sql 5bdff6c3 (LIVE): 3-way join
-#      WORKSPACE_FEATURES_ADJ_LOG F x WORKSPACE_REQ_LOG W x EMPLOYEE R —
-#      Adjusted membership_id/premium_yearly rows whose request is
-#      'Pending Next Action'/'Features Adjustment'; ORDER BY
-#      RIGHT(W.ID, LEN(W.ID)-1)::INT DESC (W.ID must be letter+digits so the
-#      cast succeeds), limit 50000
-#   FOREACH 4 (e7ea675a over rows, repeat_mode simple):
-#     5  snowflake.update_rows d0df7fcd (LIVE): SET modified_at =
-#        =now.in_time_zone("Etc/UTC"), old_value = 'free' WHERE
-#        REQUEST_ID = '#{foreach.request_id}' AND STATUS = 'Adjusted' AND
-#        KEY = 'membership_id' AND OLD_VALUE = 'premium_yearly'
-#     IF 6 (d0df7fcd rows_updated not_equals_to '1'):
-#       7  STOP (stop_with_error true; reason interpolates the where clause —
-#          the engine's stop node never evaluates/records stop_reason)
-#   CATCH 8 (eb032286, max_retry_count 0):
-#     9  STOP (stop_with_error true; reason = catch.message — same
-#        unevaluated-stop semantics; the catch payload is pinned via
-#        step_outputs instead)
-#
-# ENGINE NOTE (batch-05 fix, re-probed on HEAD): snowflake_live.update_rows
-# now returns the connector field name `rows_updated` alongside the legacy
-# `updated`, so the IF at step 6 compares the REAL row count ("1" != '1' →
-# False on a clean single-row update; "2" → the duplicate-request stop path).
-#
-# Backends: Snowflake runs LIVE (create-or-replace seed of the three PUBLIC.*
-# tables; registered drops in the runner's finally). MODIFIED_AT is seeded
-# VARCHAR so the =now.in_time_zone("Etc/UTC") render ('...+00:00') is pinned
-# byte-exactly. The update WHERE uses unquoted identifiers only, so the
-# live client's double-quoted-identifier rewrite leaves it verbatim.
-#
-# VERIFIER NOTE: no tool_expectations item may target snowflake.update_rows —
-# the generic strict verifier parses single-clause WHEREs only and this
-# recipe's WHERE is a 4-way AND; the per-recipe verifier pins the update
-# call (where/columns/rows_updated) and the final live table state instead.
 
 _RAW_PIN_JSON = r"""{"as": "20be9af8", "block": [{"as": "", "block": [{"as": "5bdff6c3", "block": [], "input": {"limit": "50000", "output_schema": "[{\"name\":\"REQUEST_ID\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"REQUEST ID\"},{\"name\":\"KEY\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"KEY\"},{\"name\":\"TYPE\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"TYPE\"},{\"name\":\"OLD_VALUE\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"OLD VALUE\"},{\"name\":\"NEW_VALUE\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"NEW VALUE\"}]", "sql": "SELECT\nW.ID AS REQUEST_ID,\nF.KEY,\nF.TYPE,\nF.OLD_VALUE,\nF.NEW_VALUE\n\nFROM PUBLIC.WORKSPACE_FEATURES_ADJ_LOG F\nJOIN PUBLIC.WORKSPACE_REQ_LOG W\nON W.ID = F.REQUEST_ID\n    \nJOIN PUBLIC.EMPLOYEE R\nON W.REQUESTER_ID = R.ID\n\nWHERE F.STATUS = 'Adjusted'\nAND W.STATUS = 'Pending Next Action'\nAND W.NEXT_ACTION = 'Features Adjustment'\nAND F.KEY = 'membership_id'\nAND F.OLD_VALUE = 'premium_yearly'\n\nORDER BY RIGHT(W.ID, LEN(W.ID)-1)::INT DESC"}, "keyword": "action", "name": "search_rows_sql", "number": 3, "provider": "snowflake", "skip": false}, {"as": "e7ea675a", "block": [{"as": "d0df7fcd", "block": [], "input": {"columns": {"modified_at": "=now.in_time_zone(\"Etc/UTC\")", "old_value": "free"}, "table": "PUBLIC.WORKSPACE_FEATURES_ADJ_LOG", "where": "REQUEST_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e7ea675a\",\"path\":[\"request_id\"]}')}' AND STATUS = 'Adjusted' AND KEY = 'membership_id' AND OLD_VALUE = 'premium_yearly'"}, "keyword": "action", "name": "update_rows", "number": 5, "provider": "snowflake", "skip": false}, {"as": "", "block": [{"as": "", "block": [], "input": {"stop_reason": "Rows update failed: \nWHERE REQUEST_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e7ea675a\",\"path\":[\"request_id\"]}')}' AND STATUS = 'Adjusted' AND KEY = 'membership_id' AND OLD_VALUE = 'premium_yearly'", "stop_with_error": "true"}, "keyword": "stop", "name": "", "number": 7, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"d0df7fcd\",\"path\":[\"rows_updated\"]}')}", "operand": "not_equals_to", "rhs": "1"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 6, "provider": "", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"5bdff6c3\",\"path\":[\"rows\"]}')}"}, "keyword": "foreach", "name": "", "number": 4, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"5bdff6c3\",\"path\":[\"rows\"]}')}"}, {"as": "eb032286", "block": [{"as": "", "block": [], "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"eb032286\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "keyword": "stop", "name": "", "number": 9, "provider": "", "skip": false}], "input": {"max_retry_count": "0", "retry_interval": "2"}, "keyword": "catch", "name": "", "number": 8, "provider": "", "skip": false}], "input": {}, "keyword": "try", "name": "", "number": 2, "provider": "", "skip": false}], "input": {"time_unit": "days", "trigger_at": "22:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

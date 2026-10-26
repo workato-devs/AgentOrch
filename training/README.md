@@ -1,130 +1,56 @@
-# AgentOrch Training
+# Training for Global orchestration
 
-Fine-tune open models to raise their **Global View** (`plan_execute`) score on
-the AgentOrch benchmark. The recipe is a LoRA SFT warm-up on the 3,000-recipe
-training split, optionally followed by GRPO with a symbolic-match reward. Every
-checkpoint is scored with the frozen benchmark harness
-(`../benchmark/evaluation/full_eval.py`) under exactly the protocol used for
-the off-the-shelf models.
+AgentOrch trains models to generate a complete executable workflow from an
+SOP specification. The training corpus contains 3,000 source recipes disjoint
+from the benchmark by recipe ID. SFT uses LoRA with loss on the workflow
+response. GRPO further optimizes symbolic workflow similarity without
+executing generated workflows.
 
-## Results at a glance
+## Reported results
 
-Orchestration accuracy, Global View, all 3,220 test variants
-([`results/training.csv`](results/training.csv) has every row with CIs,
-hyperparameters and checkpoint names; the combined base / SFT / RL
-view is [`../results/combined_leaderboard.md`](../results/combined_leaderboard.md)):
+Global Orchestration Accuracy (%) on all 3,220 benchmark variants (Table 8):
 
-| Base model | Base | Selected SFT | Best recorded SFT + RL | Notes |
-|---|---:|---:|---:|---|
-| Qwen3.8-27B-FP8 | 0.286 | **0.420** (3 ep, 80k, LoRA r16) | 0.416 | 90% of claude-opus-5 (0.464); error rate 0.171 beats opus (0.192). RL flat on the strong SFT base. |
-| Qwen3-4B-Instruct-2507 | 0.138 | 0.255 (2 ep) | **0.272** (GRPO step 60) | RL +1.7 (significant) |
-| gemma-4-26B-A4B-it | 0.041 | 0.199 (2 ep) | **0.239** (TRL GRPO step 680) | largest RL gain, +4.0 |
-| gemma-4-12B-it | 0.143 | 0.179 (2 ep) | **0.217** (TRL GRPO step 460) | RL +3.7 (significant) |
-| gemma-4-31B-it | 0.127 | **0.196** (1 ep, 64k) | 0.191 | only 51% of rows fit 64k under the gemma tokenizer |
+| Model | Base | SFT | SFT + RL |
+| --- | ---: | ---: | ---: |
+| Qwen3.8-27B | 28.57 | 41.96 | 41.14 |
+| Qwen3-4B | 13.75 | 25.46 | 27.16 |
+| Gemma-4-26B-A4B | 4.05 | 19.89 | 23.93 |
+| Gemma-4-12B | 14.26 | 17.92 | 21.66 |
+| Gemma-4-31B | 12.71 | 19.55 | 19.10 |
 
-Mode transfer of the headline 27B SFT model: global +13.4, replan +12.7,
-react −2.2, local −4.2 points over the base. Global-only training helps the
-plan-shaped protocols and slightly hurts the interactive ones.
+The better of SFT and SFT + RL improves over the base by 12.18 percentage
+points on average. [training.csv](results/training.csv) records metrics,
+confidence intervals, and per-checkpoint settings. The ten merged models
+are linked in the [project README](../README.md#models).
 
-Training configurations, checkpoint sweeps, and negative results are summarized in [`results/EXPERIMENTS.md`](results/EXPERIMENTS.md).
-Transfer to three external benchmarks (WorkflowBench, Seal-Tools, tau2-bench)
-is in [`results/external/`](results/external/).
+## Data and code
 
-## Layout
+From the repository root:
 
-`input/recipes/`, `groundtruth/recipes/` and the prepared files under `data/`
-are not stored in Git; fetch them with `python scripts/download_data.py
---only training --prepared` from the repository root (see the top-level
-README, "Getting the data").
-
-```text
-training/
-  input/                        v1 prompts: the data behind every headline run
-    manifest.json  MANIFEST.sha256
-    recipes/<recipe_id>/
-      PLAN_system.txt           frozen GLOBAL_VIEW system prompt (== benchmark)
-      PLAN_user.txt             frozen-template user prompt, 64-card tool surface
-      TRAINING_PACKAGE.json     structured model-visible input
-  groundtruth/                  targets
-    recipes/<recipe_id>/
-      golden_trace.json         target golden trace (symbolic WorkflowPlan) + row metadata
-      PLAN_assistant.txt        serialized target plan = the SFT assistant turn
-  data/                         prepared training files, exactly as trained on
-    sft_v1_80k/                 train.jsonl (2,789 rows) + eval.jsonl (60), 80k-token budget
-    rl_verl_v1/                 GRPO prompts for verl (1,000 shortest v1 prompts), parquet
-    rl_trl_v1/  rl_trl_v1_31b/  GRPO prompts for TRL (gemma-4), jsonl
-    source_manifest_v{1,2}.json provenance of the two exports
-  src/
-    data/
-      organize_training_split.py   export -> input/ + groundtruth/ (how this split was written)
-      build_sft_messages.py        input/ + groundtruth/ -> chat-messages JSONL
-    sft/
-      prepare_dataset.py           messages JSONL -> length-filtered train/eval files
-      train_sft_local.py           LoRA SFT (torchrun DDP, loss masked to the assistant turn)
-      sbatch_sft.sh                Slurm launcher for train_sft_local.py
-      merge_adapter.py             LoRA -> merged model for Qwen3.8 wrapper checkpoints (with no-op guards)
-      merge_simple.py              LoRA -> merged model for standard causal LMs (gemma-4, Qwen3-4B)
-      export_textonly.py           drop the vision tower / MTP head of a Qwen3.8 checkpoint (RL input)
-      eval_checkpoint.py           quick held-out check of an adapter (parse / tool-sequence / exact match)
-      run_benchmark_eval.sbatch    full benchmark evaluation of a merged checkpoint
-      base_models.json             pinned Hugging Face revisions of the five base models
-    rl/
-      reward.py                    Tier-1 symbolic-match reward (verl signature, shared by both RL routes)
-      reward_validity.py           validity-weighted variant of the reward
-      patches/                     torch / accelerate / trl diffs the RL runs needed
-      verl/                        GRPO with verl 0.9 (Qwen): dataset builder, launcher, checkpoint conversion
-      trl_gemma/                   GRPO with TRL GRPOTrainer (gemma-4): dataset builder, trainer, launcher
-    external_eval/                 harness for the three external transfer benchmarks
-  results/
-    training.csv                 one row per checkpoint x mode, with hyper-parameters and provenance
-    ALL_RESULTS.md               AgentOrch + external-benchmark table
-    EXPERIMENTS.md               training configurations and checkpoint results
-    leaderboards/<run>__<mode>.json   archived leaderboard.json aggregate behind every row
-    external/                    WorkflowBench / Seal-Tools summary and findings
-  output/                        checkpoints and logs (created on first run, not committed)
-  scripts/env.sh.example         site settings for the launchers (copy to env.sh)
-  scripts/upload_checkpoints_hf.py   publish merged checkpoints to the Hugging Face Hub
-  requirements-sft.txt  requirements-rl.txt
+```bash
+python -m pip install huggingface_hub
+python scripts/download_data.py --only training --prepared
 ```
 
-## Data
+The download provides recipe specifications under `input/`, complete-workflow
+targets under `groundtruth/`, and prepared SFT/GRPO data under `data/`.
+The prepared files reproduce the data configuration used for the checkpoints.
+Each recipe has 64 tool cards; the targets span 1,033 tool operations across
+305 namespaces. Target validation checks workflow structure and tool interfaces
+without execution. See Appendix A.6 and [DATA_CARD.md](../DATA_CARD.md).
 
-The training split is aligned to the benchmark's Global View distribution:
+| Directory | Purpose |
+| --- | --- |
+| `src/data/` | Convert recipe specifications and reference workflows into training examples. |
+| `src/sft/` | Prepare SFT data, train LoRA adapters, merge/export checkpoints, and evaluate. |
+| `src/rl/verl/` | Qwen GRPO data preparation, training, and checkpoint conversion. |
+| `src/rl/trl_gemma/` | Gemma GRPO training and adapter export. |
+| `src/rl/patches/` | Library compatibility patches required by the training stack. |
+| `results/` | The five reported base/SFT/RL comparisons and aggregate records. |
+| `output/` | Checkpoints and logs created during training. |
 
-1. **Prompt template**: system and user prompts use the exact frozen
-   `GLOBAL_VIEW` render served by the benchmark at test time.
-2. **Tool surface**: every recipe is padded to exactly **64 tool cards**,
-   sorted by name, like the benchmark's shared catalog. Distractors are drawn
-   (seeded per recipe) from the benchmark's 64 canonical cards plus all 1,036
-   unique training tool cards.
-3. **Prompt length** is targeted at the benchmark's empirical user-prompt
-   length distribution; **workspace resources** are padded to the benchmark's
-   per-recipe counts.
-4. **Zero overlap** with the 650 test recipes (verified).
-
-Two prompt versions were built. **v1** (`input/`) keeps needed tool cards in
-their raw-recipe style; v2 rewrote every card into the canonical catalog form.
-A single-variable ablation on Qwen3-4B showed v2 *hurts* by 4.5 points, so
-every headline run uses v1 and only v1 is distributed. Targets are identical;
-`data/source_manifest_v2.json` records the v2 export settings.
-
-Only Global View is covered; Local View, ReAct and Replan have no training
-data here. Needed cards and canonical distractor cards can also have slightly
-different contract shapes, and roughly 1% of the source recipes have unusually
-large schemas; these are known residual distribution limitations.
-
-### Model versions and environments
-
-Prepared training data and the ten merged SFT / RL checkpoints are available
-through the links in the [project README](../README.md#models). The base model
-versions used for training are recorded in
-[`src/sft/base_models.json`](src/sft/base_models.json). The SFT trainer uses
-those versions by default; `--model-revision` selects a different one.
-
-The RL library patches are included in
-[`src/rl/patches/`](src/rl/patches/README.md). Training records the effective
-configuration and seeds in each output directory. Multi-GPU training can vary
-across hardware and library versions.
+Base versions are recorded in [base_models.json](src/sft/base_models.json).
+SFT defaults to those versions unless `--model-revision` is supplied.
 
 ## Set up
 
@@ -164,7 +90,7 @@ python src/data/build_sft_messages.py                 # -> data/sft_messages_v1.
 # length filter with the exact Qwen tokenizer (rows over the budget are DROPPED, never truncated)
 python src/sft/prepare_dataset.py                     # 80k budget -> data/sft_v1_80k/
 python src/sft/prepare_dataset.py --max-context 65536 --out data/sft_v1_64k
-# RL prompt sets (shortest prompts, targets scorable under the 4096 decode cap)
+# RL prompt sets (short prompts with complete-workflow targets)
 python src/rl/verl/make_rl_dataset.py --n 1000        # -> data/rl_verl_v1/
 python src/rl/trl_gemma/make_trl_dataset.py --n 500   # -> data/rl_trl_v1/
 ```
@@ -186,7 +112,7 @@ cd training
 sbatch src/sft/sbatch_sft.sh --max-rows 24                       # smoke test
 
 # headline 27B: step 474 (three passes) from a five-epoch cosine schedule
-# --model-revision defaults to the pin in src/sft/base_models.json (1d4bf0f2... for this base)
+# --model-revision defaults to the pin in src/sft/base_models.json
 sbatch src/sft/sbatch_sft.sh --model Qwen/Qwen3.8-27B \
        --epochs 5 --max-len 81920 --save-every-steps 158 \
        --lora-r 16 --lora-alpha 32 --lr 1e-4 --seed 0 \
@@ -204,7 +130,7 @@ Per-model settings behind every published row are in the `sft_*` columns of
 requests deterministic kernels (`--deterministic`) and writes
 `train_config.json` with every argument and library version next to the
 checkpoints. Multi-GPU bf16 LoRA is still not bit-exact across GPU counts or
-drivers; expect scores within the reported confidence intervals. Notable pitfalls recorded in `results/EXPERIMENTS.md`:
+drivers. Configuration requirements:
 gemma-4's head dimension exceeds FlashAttention-2's limit; flex-attention
 recompiles per sequence length; the 31B model only fits a 64k budget.
 
@@ -230,7 +156,6 @@ python src/sft/merge_simple.py --base google/gemma-4-26B-A4B-it \
 
 ```bash
 sbatch src/sft/run_benchmark_eval.sbatch output/checkpoints/merged-27b-80k-3ep sft-27b-80k-3ep-global
-sbatch src/sft/run_benchmark_eval.sbatch output/checkpoints/merged-27b-80k-3ep sft-27b-80k-3ep-react react
 ```
 
 Results land in `../benchmark/outputs/full_eval/<run_name>/`; `leaderboard.json`
@@ -238,7 +163,7 @@ there is the aggregate reported in `results/training.csv`.
 
 ## 3. Reinforcement learning (GRPO)
 
-Both routes optimise the same **Tier-1 symbolic-match reward**
+Both routes optimise the same **symbolic-match reward**
 (`src/rl/reward.py`, deterministic, CPU, milliseconds): 0.15 valid JSON plan
 + 0.25 tool-sequence LCS + 0.35 canonical-argument match + 0.15 control-node
 structure + 0.10 exact-match bonus, against the recipe's golden plan. Group
@@ -261,7 +186,7 @@ sbatch src/rl/verl/run_grpo.sbatch output/checkpoints/merged-27b-80k-3ep-textonl
        actor_rollout_ref.actor.optim.lr=3e-6 \
        actor_rollout_ref.actor.use_kl_loss=True actor_rollout_ref.actor.kl_loss_coef=0.001
 # verl checkpoint -> merged, benchmark-ready model
-sbatch src/rl/verl/convert_rl_ckpt.sbatch grpo-27b-3ep 60 output/checkpoints/merged-27b-80k-3ep merged-27b-3ep-rl-step60
+sbatch src/rl/verl/convert_rl_ckpt.sbatch grpo-27b-3ep 124 output/checkpoints/merged-27b-80k-3ep merged-27b-3ep-rl-step124
 ```
 
 **TRL GRPOTrainer (gemma-4)**. verl 0.9 cannot load gemma-4, so the gemma leg
@@ -281,25 +206,14 @@ python src/sft/merge_simple.py --base output/checkpoints/merged-gemma26b-v1 \
 
 Then score with `run_benchmark_eval.sbatch` as above. The `rl_*` columns of
 `results/training.csv` hold every published RL configuration. Finding: the
-Tier-1 reward lifts weak SFT bases (4B +1.7, gemma-26B +4.0, gemma-12B +3.7)
+symbolic-match reward lifts weak SFT bases (4B +1.7, gemma-26B +4.0, gemma-12B +3.7)
 and is flat or slightly negative on the strong 27B 3-epoch SFT.
 
-## 4. External transfer benchmarks
+## Evaluate the trained model
 
-`src/external_eval/` is a standalone harness (it imports nothing from the
-benchmark) that runs a checkpoint on WorkflowBench, Seal-Tools and tau2-bench
-with the upstream scorers. Fetch the third-party data as described in
-[`src/external_eval/README.md`](src/external_eval/README.md); the published
-numbers are in [`results/external/`](results/external/).
+Use the [canonical evaluator](../benchmark/README.md#run-an-evaluation) with
+`--model hf:<checkpoint>` and `--modes plan_execute`. Results are written under
+`benchmark/outputs/full_eval/<run>/<model>/plan_execute/`.
 
-## Reproducing the reported scores
-
-Evaluate a trained checkpoint with the
-[canonical benchmark evaluator](../benchmark/README.md#run-an-evaluation).
-Published aggregates are in `results/leaderboards/`; training settings and
-checkpoint names are recorded in `results/training.csv` and
-`results/EXPERIMENTS.md`. The `hf_repo` column identifies downloadable models.
-
-Offline re-aggregation tools operate on the `results.jsonl` files from your
-own evaluations. The maintainers' per-variant model-run archive is not
-publicly distributed.
+Reported training settings are in [training.csv](results/training.csv).
+Aggregate records are in `results/leaderboards/`.

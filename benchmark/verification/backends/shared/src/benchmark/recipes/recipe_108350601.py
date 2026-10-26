@@ -23,60 +23,7 @@ MENU_AS = "3c75f8f0"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# slack_bot.dynamic_menu 'Retrieve FV Owners' (as 4cc98c36) -> v1
-# salesforce.search_sobjects_soql 8661bd72 (sobject_name User, limit 150,
-# BARE-condition query "Email like '%<typeahead.value>%'" -- no SELECT/FROM;
-# the harness evaluates the bare string as the WHERE clause) ->
-# slack_bot.generate_menu_options 3c75f8f0 with ____source = the SOBJECT-NAMED
-# pill result['User'] (the live tool aliases records under the sobject name,
-# live_tools sf_search_records) and label == value == current_item.Email.
-#
-# EXACT TWIN of 107245433: the raw_recipe.md files differ ONLY in the title
-# line, CSV metadata (flow_id 48716877 vs 47700612, created_at, version_no
-# 3 vs 12) and the trigger `parameters` JSON WHITESPACE (this id pins the
-# pretty-printed literal; 107245433 pins the compact one -- semantically the
-# same single required fv_owner string param). Byte-diffed on the current
-# tree. verify_107245433 DELEGATES to verify_108350601 (registered
-# 88674737 -> 88676643 delegation precedent: merge this head fragment first).
-# Distinct variant data per id.
-#
-# The declared trigger parameter fv_owner is REQUIRED by the menu schema but
-# NEVER dereferenced by any step (probed: the traced search args carry only
-# sobject/query/limit) -- every variant seeds it for trigger faith and the
-# verifier pins the full search args by equality, which proves inertness.
-#
-# Backends: salesforce LIVE (read-only). The searchable User set is EXACTLY
-# the read-only current-user registration (seed.salesforce.current_user --
-# org Users cannot be created/deleted via the API; registered precedents
-# 118168683/119184209/124203347). The recipe's ~4.4k-line User
-# extended_output_schema is inert -- only Email is dereferenced and it is in
-# add_current_user's read field list. slack_bot dynamic_menu trigger +
-# generate_menu_options are Workato-internal and mockable under the backend
-# policy -- menu-option generation returns the Workato menu payload for the
-# Slack interaction and never makes a Slack API call: the trigger payload is
-# seeded and the menu is a validation-only Workbot response.
-#
-# Harness LIKE semantics (probed): the bare-condition LIKE lowers BOTH sides
-# (case-insensitive, matching live SOQL LIKE); '%' spans any run. Variants
-# therefore cover: mid-substring match, uppercased-substring match
-# (case-insensitivity pin), no-match -> pinned [] options (empty-list
-# precedent: generate_menu_options always runs), and whole-email match.
-#
-# Ref tokens resolved at seed time into trigger AND expect (longest-first so
-# $CURRENT_USER_EMAIL never clobbers the derived tokens):
-#   $CURRENT_USER_ID / $CURRENT_USER_NAME / $CURRENT_USER_EMAIL from the
-#   read-only current-user row;
-#   $CURRENT_USER_EMAIL_CORE       = email[1:-1] (strict INNER substring --
-#                                    proves both %-wildcards);
-#   $CURRENT_USER_EMAIL_CORE_UPPER = email[1:-1].upper() (case-fold pin).
-# The live email must be non-trivial (len >= 4, contains '@' and a letter)
-# and stored lowercase, else the case-fold variant would be meaningless --
-# the seeder fails fast instead of guessing.
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip
-# + verbatim raw input per node, incl. the bare-condition SOQL query pill and
-# the sobject-named ____source pill). Any upstream drift fails validation
-# instead of silently changing ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {

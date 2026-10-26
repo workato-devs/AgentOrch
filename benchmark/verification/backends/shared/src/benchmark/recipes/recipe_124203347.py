@@ -28,12 +28,6 @@ RAW_CHANNEL = "C06USNHSQ6M"  # non-U literal -> raw_executor routes to SLACK_CHA
 TEAM_ROLE = "RevOps BDE"
 ADDED_PREFIX = "Added to "
 PRESENT_PREFIX = "Current Opportunity Team Member on "
-# Schema-in-seed contract: Team Selling is disabled org-wide (an org toggle
-# the benchmark must not flip; the standard OpportunityTeamMember 404s live).
-# The stand-in custom object OpportunityTeamMember__c pre-exists live with no
-# custom fields; the three Text columns provision via ensure_custom_field on
-# every run (PHYSICAL names -- the logical standard names map through
-# SALESFORCE_FIELD_MAP/SALESFORCE_SOBJECT_MAP, harness d8498d92).
 REQUIRED_SCHEMA = [
     {"sobject": "OpportunityTeamMember__c", "field": "OpportunityId__c", "sf_type": "Text"},
     {"sobject": "OpportunityTeamMember__c", "field": "UserId__c", "sf_type": "Text"},
@@ -50,54 +44,6 @@ _SYNTHETIC_ACCOUNT_RE = re.compile(r"001[0-9A-Za-z]{12,15}")
 _SYNTHETIC_USER_RE = re.compile(r"005[0-9A-Za-z]{12,15}")
 _TS_RE = re.compile(r"\d{10}\.\d{6}")
 
-# slack_bot.bot_command_v2 (as 688055db, domain 'salesforce', command 'add';
-# dereferenced parameters: opportunity_id (both searches + create), user_id
-# (OTM search + create), message_id (advanced.ts of both slack posts)).
-# Body (no trigger filter):
-#   2  salesforce.search_sobjects 3eb6ef17 (LIVE): OpportunityTeamMember
-#      (stand-in OpportunityTeamMember__c), field filters OpportunityId=
-#      parameters.opportunity_id / TeamMemberRole 'RevOps BDE' / UserId=
-#      parameters.user_id, limit 150 (field_list is metadata, not a filter).
-#   3  salesforce.search_sobjects fbb7b395 (LIVE): Opportunity, filter Id=
-#      parameters.opportunity_id, limit 150.
-#   IF 4 (3eb6ef17 list_size equals_to '0'; member ABSENT):
-#     5  salesforce.create_custom_object 3bdf6080 (LIVE):
-#        OpportunityTeamMember {OpportunityId, TeamMemberRole 'RevOps BDE',
-#        UserId} -> stand-in row with the three mapped Text columns.
-#     6  slack_bot.post_bot_message 73e80daa: channel C06USNHSQ6M (non-U ->
-#        override), advanced.ts = parameters.message_id -> live chat.update
-#        of the seeded message; text 'Added to #{fbb7b395 Opportunity
-#        current_item Name}' (block section_text; the continue_flow button is
-#        not rendered into slack_text).
-#   IF 7 (sibling, NOT else: 3eb6ef17 list_size equals_to '1'; member
-#     PRESENT): 8 slack_bot.post_bot_message ed5b9843: same channel/ts,
-#     text 'Current Opportunity Team Member on #{Opportunity Name}'.
-#   Both IFs read the PRE-create step-2 result (state.steps is immutable
-#   after record_step), so at most one fires per run; list_size >= 2 fires
-#   NEITHER (reachable -- covered).
-#
-# Branch mapping (coverage per benmark_rules):
-# - variant_00 member_absent_add: no matching OTM seeded -> IF4 -> create +
-#   chat.update 'Added to <OppName>' (4 actions).
-# - variant_01 member_present_announce: ONE matching OTM seeded -> IF7 only
-#   -> chat.update 'Current Opportunity Team Member on <OppName>' (3 actions,
-#   no create).
-# - variant_02 role_or_user_mismatch_still_adds: an OTM for the SAME
-#   opportunity but a DIFFERENT UserId -> search 0 -> IF4 fires (proves the
-#   compound field filters bite; 4 actions).
-# - variant_03 two_members_no_action: two matching OTM rows -> list_size 2 ->
-#   BOTH IFs false -> 2 actions, no create, no slack post (proves the
-#   equals_to '1' pin; no slack seed message needed).
-#
-# Backends: salesforce LIVE (owned Opportunity + OTM stand-in rows; the
-# recipe-created row is owned by the run harness; cleanup deletes ALL owned
-# records in finally). slack LIVE: the seed live-posts a message in the
-# override channel and threads its ts through trigger parameters.message_id
-# (seed_slack_message pattern, 130740169/125515885); the recipe chat.updates
-# that ts and the updated message is the observable -- posts to the override
-# channel are not cleaned per policy. The trigger payload is seeded
-# (bot_command_v2 replay). No catch: force_action_error is not sanctioned
-# (a forced error would fail the whole run, not exercise a branch).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

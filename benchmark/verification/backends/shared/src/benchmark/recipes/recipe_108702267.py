@@ -17,28 +17,6 @@ TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "458af9a1"
 ACCOUNTS_TABLE = "product.workato_usage.accounts_dim"
-# API endpoint recipe (trigger as 458af9a1; request.typeAhead optional).
-# Body wrapped in TRY (step 2):
-#   IF (step 3): request.typeAhead blank ->
-#     4  snowflake.search_rows_sql 5a86b1ad: unfiltered accounts_dim query
-#        (orderby input 'current_arr_usd DESC' -- the executor appends it as
-#        ORDER BY, engine fix 4d133d1e; limit 200, offset 0)
-#     5  workato_api_platform.return_response 426432f0: 200, response.accounts
-#        ____source-mapped over 5a86b1ad.rows (account_id/account_name)
-#   ELSE (step 6):
-#     7  workato_variable.declare_variable 85de2cfb:
-#        account_name_lower = request.typeAhead.downcase
-#     8  snowflake.search_rows_sql 6abba683: same query +
-#        "and lower(ad.account_name) like '%<account_name_lower>%'"
-#     9  workato_api_platform.return_response c6f3354f: 200, same mapping
-# CATCH (step 10, as c96801ed, max_retry_count 0):
-#   11 workato_api_platform.return_response 1c0a9f98: 500, no body
-# Snowflake runs LIVE: the seed registers the table under the literal 3-part
-# key 'product.workato_usage.accounts_dim' so _rewrite_sql maps the verbatim
-# SQL reference to <SNOWFLAKE_DATABASE>.WORKATO_USAGE.ACCOUNTS_DIM
-# (recipe_116263482 precedent). The catch branch is exercised via
-# seed.force_action_error on step 5a86b1ad (sanctioned fault injection); the
-# recipe itself is read-only against the seeded table.
 SQL_IF = (
     "select account_name, account_id, current_arr_usd\n"
     "from product.workato_usage.accounts_dim ad\n"

@@ -21,76 +21,14 @@ TRIGGER_AS = "35a0e063"
 SEARCH_AS = "2fc09276"
 TASK_TYPES_IN = ("Email", "Call")
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName"}
-# Trigger parameters schema does NOT declare SuccessOwner_UserID (unlike the
-# byte-twin 103988481); seeding it anyway would mask the falsy-render family
-# documented below, so the seeder rejects it.
 BANNED_TRIGGER_ROW_KEYS = {"SuccessOwner_UserID"}
 TASK_SEED_FIELD_KEYS = {"Subject", "Type", "WhatId", "Closed_Date__c"}
-# Schema-in-seed contract: Task/Event custom fields live on the ACTIVITY
-# object in Salesforce; ensure_custom_field("Activity", ...) creates the field
-# once via the Tooling API and grants FLS on both Task and Event every run
-# (mdapi/tooling fields are describe-invisible until FLS -- 106603524
-# precedent; Activity handling is native to the harness).
 REQUIRED_SCHEMA = [
     {"sobject": "Activity", "field": "Closed_Date__c", "sf_type": "Date"},
 ]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
-# workato_recipe_function.execute (as 35a0e063; parameters.AccountList[]
-# {AccountID, AccountName}; [] is the in-contract empty input). Linear body,
-# no if/foreach/try -- BYTE-TWIN of 103988481 (identical as ids
-# 35a0e063/64a4fa81/2fc09276/0d2e8b10 AND step uuids; 27 leaf deltas = SOQL
-# body, result key renames, and 103988481's extra trigger-schema property
-# SuccessOwner_UserID). Same registered template family as 98802887/103939956.
-#   2  workato_variable.declare_variable 64a4fa81: account_ids_string =
-#      AccountList&.pluck("AccountID").join("','") -- feeds the SOQL;
-#      owner_ids_string = AccountList&.pluck('SuccessOwner_UserID').uniq
-#      .join("','") -- COMPUTED BUT NEVER USED (the SOQL interpolates only
-#      account_ids_string; no other step reads it).
-#   3  salesforce.search_sobjects_soql_v2 2fc09276 (LIVE, limit 2000):
-#      SELECT AccountId, MAX(Closed_Date__c) last_activity FROM Task
-#      WHERE Type IN ('Email', 'Call') AND AccountId IN ('<ids>')
-#      GROUP BY AccountId -- strict SOQL arms + MAX/GROUP BY alias evaluated
-#      by the harness over live-read-back owned Task rows (_apply_aggregates;
-#      ISO date strings compare lexicographically = chronologically). Task
-#      .AccountId is DERIVED live from WhatId (an Account id), so every Task
-#      seed declares read_fields ['AccountId'] -- without it the strict
-#      AccountId IN leaf sees no value and silently rejects the row.
-#   4  workato_recipe_function.return_result 0d2e8b10 (TERMINAL):
-#      result.LastSFDCActivity ____source-mapped over the aggregate records
-#      {AccountID<-AccountId, LastActivity<-last_activity}.
-#
-# FALSY-RENDER NOTE (documented OPEN family -- probed 2026-07-08 on HEAD
-# 07af31c2): with schema-faithful trigger rows (no SuccessOwner_UserID key)
-# the owner pluck renders owner_ids_string as the STRING 'None' where real
-# Workato yields '' ([nil].uniq.join). NON-OBSERVABLE here: owner_ids_string
-# never reaches the SOQL, the result, or any live tool call (declare-step
-# variable state only), so no variant pins it and the seeder REJECTS trigger
-# rows that add the key to mask it (probe P3/P3b: account pluck unaffected).
-#
-# Branch mapping (linear recipe: coverage = SOQL predicate arms x group
-# shapes; probe-verified end-to-end offline 2026-07-08, 15/15):
-# - variant_00 multi_account_max: A has Email 2026-06-15 + Call 2026-05-01 +
-#   a Type='Meeting' decoy (Type IN excludes), B has Call 2026-03-03, and a
-#   non-listed account C has an Email task (AccountId IN excludes) ->
-#   [{A, 2026-06-15}, {B, 2026-03-03}] (per-account MAX).
-# - variant_01 zero_match_accounts: the listed account carries ONLY a
-#   Type='Meeting' task -> records [] -> LastSFDCActivity [] (the seeded
-#   decoy proves the emptiness is the Type arm, not an empty org).
-# - variant_02 empty_account_list: AccountList [] -> account_ids_string ''
-#   (probe P4) -> AccountId IN ('') matches nothing; a seeded MATCHING Email
-#   task proves the exclusion is the IN filter.
-# - variant_03 single_task_single_account: one account, one Call ->
-#   single-row aggregate (MAX == the only date).
-#
-# GROUP BY output order = owned-record iteration order in the harness
-# (insertion-ordered dict, 103939956 precedent): seed matching Tasks grouped
-# by account in the order the expected rows are pinned. Backends: salesforce
-# LIVE (benchmark-owned Account + Task records; Closed_Date__c via
-# schema-in-seed; cleanup deletes owned seeds in a finally block -- read-only
-# recipe, but owned records must not leak); workato_variable /
-# workato_recipe_function are Workato-internal in-process.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

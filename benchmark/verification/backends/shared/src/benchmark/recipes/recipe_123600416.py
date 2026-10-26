@@ -24,20 +24,6 @@ POST_AS = "05bb94d6"
 RAW_CHANNEL = "finance-close"
 BUTTON_TITLE = "Proceed"
 TEXT_TEMPLATE = "Run Global Allocations for {month}"
-# Relative seed token resolved against the variant's PINNED time anchor
-# (fixed-timestamp rule, benmark_rules 'Simulated input variant rule': a
-# recipe that uses scheduled-event/job_context time must get a fixed
-# timestamp from the variant input — never wall-clock). Each variant input
-# pins a top-level "now" (ISO-8601 with explicit UTC offset, the 104508126
-# anchor precedent); $SCHEDULED_TICK_MINUS_<N>M = the recipe's own
-# configured monthly fire instant (days_of_month '3', 08:00:00
-# Asia/Singapore, both pinned trigger config) N whole months before the
-# ANCHOR's month in the trigger's own zone. For a clock recipe the job is
-# created at the fire instant, so the token seeds
-# job_context.job_created_at. Resolution happens IN THE SEEDER from the
-# anchor ONLY (fail-fast when the anchor is missing — no datetime.now
-# fallback), so the resolved tick and the concrete month pins in expect are
-# stable forever. Same token grammar as the in-batch twin 97126841.
 TICK_TOKEN_RE = re.compile(r"^\$SCHEDULED_TICK_MINUS_(\d+)M$")
 TICK_MAX_MONTHS_BACK = 24
 TICK_DAY = 3
@@ -48,49 +34,6 @@ MONTHS_FULL = (
     "July", "August", "September", "October", "November", "December",
 )
 
-# clock.scheduled_event (as e733a3e8; monthly, days_of_month '3', trigger_at
-# 08:00:00 Asia/Singapore, comment 'Day 3 of month end closing' — ALL node
-# metadata, inert). The trigger is PAYLOAD-LESS: no body pill reads any
-# trigger field, so trigger_input must be exactly {} (108028920 precedent)
-# and the seeded job_context supplies the only variable input
-# (raw_executor exposes seed.job_context to the _dp job_context pill).
-# Linear body, no branches:
-#   2  workato_variable.declare_variable 41b89356 (MOCK Workato-internal):
-#      Month = job_context.job_created_at.strftime("%B %Y") — literal
-#      timestamp strftime, NO timezone conversion (dry-replayed 2026-07-09:
-#      '2026-07-03T08:00:00+08:00' -> 'July 2026', November -> 'November
-#      2026', '2027-01-03T08:00:00+08:00' -> 'January 2027'; registered
-#      120099657 strftime-declare precedent). An UNSEEDED job_context raises
-#      inside the engine (probed: ValueError on the MISSING sentinel) — the
-#      seeder therefore fail-fasts on absent job_created_at.
-#   3  slack_bot.post_bot_message 05bb94d6 (LIVE): single
-#      section_with_button_with_long_action block. Rendered text =
-#      section_text ONLY 'Run Global Allocations for #{Month pill}' — the
-#      interactive Proceed button (bot_command 63660740, style primary) is
-#      DROPPED by slack_text (registered 87484821/120099657 drop precedent,
-#      re-probed via dry replay). Channel 'finance-close' does not start
-#      with 'U' -> auto-reroute to env.slack_channel_override.
-#
-# IN-BATCH TWIN of 97126841 (same clock -> declare-strftime ->
-# post_bot_message '#finance-close' skeleton; delta = formula
-# (job_created_at '%B %Y' here vs (scheduled_time - 1.months) '%b %Y'),
-# bot_command 63660740 vs 47097324, button/section wording, channel without
-# the leading '#'). Closest registered shapes: 108028920 (payload-less
-# scheduler tick + override-channel reroute), 120099657 (declare-strftime
-# pin + block-content drop).
-#
-# Branch mapping: linear, single path; the only variable input is the
-# seeded job_created_at flowing through strftime into the posted text.
-# Variants differ ONLY in the tick token offset (0/1/2 months back from the
-# pinned anchor month -> three consecutive distinct '%B YYYY' renders,
-# proving the text is formula-driven; full month names also pin %B vs the
-# twin's %b). The December->'January <Y+1>' year rollover is the same
-# literal-strftime path (probed offline, deterministic).
-#
-# Backends: slack LIVE (one chat.postMessage to the override channel — an
-# ordinary terminal observable that nothing re-reads: no cleanup per the
-# cleanup principle). The declare step is the sanctioned Workato-internal
-# variable mock. No other state anywhere -> seed sections must be empty.
 _STRUCTURE_PINS_JSON = r"""[
  {
   "keyword": "trigger",

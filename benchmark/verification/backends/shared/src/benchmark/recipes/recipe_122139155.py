@@ -22,57 +22,7 @@ _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _ISO_TS_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})$")
 
-# salesforce.new_custom_object on OpportunityFieldHistory (as 2469a89f) --
-# stage-transition history events (Field = StageName). The trigger event is a
-# MOCKED payload (OpportunityFieldHistory rows are system-generated and cannot
-# be inserted through the API); everything the recipe touches on Salesforce
-# runs LIVE against benchmark-owned records:
-#   #2  search_sobjects User where Id = trigger.CreatedById (field_list
-#       TimeZoneSidKey/Id/Name/Email, limit 150) -- served from the live
-#       current-user read-only row (seed.salesforce.current_user)
-#   IF #3 OldValue starts_with 'S0':
-#     #4  declare_variable sales_accepted_date (date, no default)
-#     IF #5 Opportunity.Type.downcase contains 'renewal':
-#       #6  search_sobjects_soql_v2 OpportunityFieldHistory (OUTPUT UNUSED
-#           downstream; the live SOQL legitimately returns 0 rows because
-#           history rows are not API-seedable -- pinned result_count 0)
-#       IF #7 Type.downcase == 'renewal with upgrade':
-#         IF #8 trigger Opportunity.Sales_Accepted_Date__c !=
-#               CreatedDate.strftime('%Y-%m-%d'):
-#           #9  update_variables sales_accepted_date =
-#               CreatedDate.in_time_zone(User.TimeZoneSidKey).to_date
-#           (when #8 is false NOTHING runs -- #8 carries no else of its own)
-#       ELSE #10 (the else of #7: raw 'else' nodes are children of the if
-#             they complement -- #10 sits in #7's block and its comment reads
-#             "any other types of 'Renewals' (except Renewal with Upgrade)"):
-#         IF #11 SAD blank:
-#           #12 update_variables (same in_time_zone formula) -- REACHABLE via
-#               plain-renewal + blank SAD (the batch triage misread #10 as the
-#               else of #8 and flagged #12 dead; the raw nesting proves it live)
-#         ELSE #13 (else of #11):
-#           #14 logger 'Do nothing. Leave the current SAD value as is.'
-#               (user_logs_enabled false; plain-renewal + present SAD)
-#     IF #15 trigger Opportunity.Sales_Accepted_Date__c blank:
-#       #16 update_variables sales_accepted_date (same formula as #9)
-#     IF #17 variable sales_accepted_date present:
-#       #18 salesforce.update_sobject Opportunity id=OpportunityId
-#           Sales_Accepted_Date__c = variable -- LIVE write
-#   IF #19 NewValue starts_with 'S0':
-#     #20 salesforce.update_sobject Opportunity Sales_Accepted_Date__c ==clear
-#         -- LIVE write (clears the date; harness maps '' -> null)
-#
-# Determinism: the variant pins trigger CreatedDate to a fixed 12:00:00Z
-# timestamp so CreatedDate.strftime('%Y-%m-%d') and any plausible org user
-# timezone (UTC-11..UTC+11) agree on the calendar date.
-#
-# Cleanup: the benchmark-owned Opportunity created in seed is updated by
-# #18/#20 and deleted by harness.salesforce.cleanup in run_122139155's
-# finally block.
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip +
-# verbatim raw input per node, incl. the trigger field_list, the #6 SOQL, the
-# #9/#12/#16 in_time_zone formula and the #20 =clear write). Any upstream
-# drift fails validation instead of silently changing ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {

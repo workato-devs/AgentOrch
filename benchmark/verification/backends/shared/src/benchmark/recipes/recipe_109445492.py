@@ -25,8 +25,6 @@ PROGRESS_HOME_AS = "4416ee0e"
 CATCH_AS = "8cf5706f"
 LOG_STEP_AS = "1cebb51a"
 TABLE_ID = "16911"
-# 'temporary credentials' table 16911 field ids (underscore-normalized, as the
-# mock rows and the engine's filter both key them).
 USER_FIELD = "af2f7fd0_ccf4_41c9_aed9_25da1e5d2a0a"
 RECORD_ID_FIELD = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 RELATION_FIELD = "ab00b946_6011_467f_b615_23efd6668fd5"
@@ -42,10 +40,6 @@ ROW_FIELDS = {
     "a5612739_5401_4ae7_bd07_782c1a6fb2d1",  # Created at
     "61aae604_a95e_4519_9091_bb0bf754a67f",  # Updated at
 }
-# The exact raw block payloads the two open_bot_app_home steps carry; the
-# executor resolves them verbatim into args.view.blocks (the live client
-# translates them to Block Kit inside views.publish — probe-verified
-# _home_view mapping actions -> {type: actions, elements: [buttons]}).
 ADMIN_BLOCKS: list[dict[str, Any]] = [
     {
         "actions": [
@@ -79,36 +73,6 @@ PROGRESS_BLOCKS: list[dict[str, Any]] = [
     }
 ]
 
-# slack_bot.new_event app_home_opened (as 58812fc4) — the ONLY trigger pill
-# dereferenced is app_home_opened.user (db filter + both open_bot_app_home
-# user_id inputs). Body = one TRY (step 2):
-#   3  workato_db_table.get_records 137a7374 (mock table 16911 'temporary
-#      credentials'): filter user eq trigger user (dash->underscore field-id
-#      normalization, probe-verified); limit/order are editor metadata the
-#      engine does not forward into args.
-#   IF 4 (records size less_than '1'):
-#     5  slack_bot.open_bot_app_home fef0c653 (LIVE views.publish): ADMIN_BLOCKS
-#     6  STOP fdc8e696 (stop_with_error false) — step 7 NEVER runs after it
-#   7  slack_bot.open_bot_app_home 4416ee0e (LIVE views.publish):
-#      PROGRESS_BLOCKS (2 buttons: primary + danger)
-#   CATCH 8 (as 8cf5706f, max_retry_count 0):
-#     9  logger.log_message 1cebb51a '#{catch.type} - #{catch.message}' —
-#        engine catch payload type = exception CLASS name, so the forced
-#        error renders 'RawRecipeExecutionError - <error>' (pinned).
-#
-# Branch mapping:
-# - admin_home: 0 matching records (decoy rows for OTHER users prove the eq
-#   filter bites) -> admin-button home publish -> STOP. 2 actions.
-# - progress_home: >=1 matching record -> IF false -> 2-button home publish.
-#   2 actions, no stop.
-# - catch_log: seed.force_action_error on 137a7374 fires BEFORE the mock ->
-#   CATCH -> logger. 1 action, ZERO registry tools.
-#
-# Backends: the db table is the Workato-internal mock (read-only here —
-# snapshot equality pinned). open_bot_app_home runs LIVE: views.publish
-# overwrites the trigger user's App Home tab, an idempotent rerun-safe
-# surface — no cleanup required; the trigger user MUST be a real benchmark
-# workspace member (App Home enabled) or Slack rejects the publish.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "new_event", "as": "58812fc4", "skip": false, "input": {"event_name": "app_home_opened"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "workato_db_table", "name": "get_records", "as": "137a7374", "skip": false, "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "2d71aeb8-dd53-4b30-b575-7474eb515d11": "string", "5d328e77-69e4-48f5-89d2-58f81a8b20c0": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "a696728c-30b6-46bb-bf03-a580c6f98462": "string", "ab00b946-6011-467f-b615-23efd6668fd5": "relation", "af2f7fd0-ccf4-41c9-aed9-25da1e5d2a0a": "string", "dcacbe8f-976e-4201-89e0-716b168b1887": "string", "e93a33b6-657e-4c96-9388-e8e7daeb2d27": "string", "filters": [{"field_id": "af2f7fd0-ccf4-41c9-aed9-25da1e5d2a0a", "op_default": "eq", "value_default": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"58812fc4\",\"path\":[\"app_home_opened\", \"user\"]}')}"}], "limit": "100", "order_direction": "asc", "table_id": "16911"}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"137a7374\",\"path\":[\"records\", {\"path_element_type\": \"size\"}]}')}", "operand": "less_than", "rhs": "1"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "slack_bot", "name": "open_bot_app_home", "as": "fef0c653", "skip": false, "input": {"blocks": [{"actions": [{"bot_command": "56203945", "button_title": "Admin - New Credentials", "style": "primary", "type": "button"}], "block_type": "actions"}], "user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"58812fc4\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "block": []}, {"number": 6, "keyword": "stop", "provider": "", "name": "", "as": "fdc8e696", "skip": false, "input": {"stop_with_error": "false"}, "block": []}]}, {"number": 7, "keyword": "action", "provider": "slack_bot", "name": "open_bot_app_home", "as": "4416ee0e", "skip": false, "input": {"blocks": [{"actions": [{"bot_command": "56251179", "button_title": "My Progress", "style": "primary", "type": "button"}, {"bot_command": "56280498", "button_title": "Delete Progress", "style": "danger", "type": "button"}], "block_type": "actions"}], "user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"58812fc4\",\"path\":[\"app_home_opened\", \"user\"]}')}"}, "block": []}, {"number": 8, "keyword": "catch", "provider": "", "name": "", "as": "8cf5706f", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 9, "keyword": "action", "provider": "logger", "name": "log_message", "as": "1cebb51a", "skip": false, "input": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"8cf5706f\",\"path\":[\"type\"]}')} - #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"8cf5706f\",\"path\":[\"message\"]}')}", "user_logs_enabled": "false"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

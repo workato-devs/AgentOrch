@@ -71,7 +71,7 @@ def primary_metrics_for_row(row: dict[str, Any]) -> dict[str, float]:
 
     ``execution_trace_accuracy`` weights the five binary components equally;
     a component that is not applicable to the task (``*_checked`` false)
-    passes vacuously, matching the public scorer in examples/smoke_adapter/cal_acc.py.
+    passes vacuously.
     ``side_effect_accuracy`` is the row's binary side-effect verdict,
     ``orchestration_accuracy`` weights trace and side effect equally, and
     ``final_accuracy`` requires the side effect AND the normalized terminal

@@ -15,14 +15,6 @@ SEED_TYPE = "demo_request_intake_variant"
 TRACK = "api_platform_demo_request_pub_sub"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API Platform demo-request intake endpoint. Wrapped in a try/catch:
-#   - IF the lead is a "test" lead (request.data.email == the flagged test
-#     address OR job_context.user_name contains "Test") -> stop gracefully
-#     (stop_with_error=false); nothing is published or returned.
-#   - IF request.data is present -> publish the lead to the "Demo Request"
-#     pub/sub topic (id 30404) via interpolated fields; ELSE publish via
-#     whole-request bracket access. Then return_response 200 {queued:true}.
-#   - On any error the catch returns_response 422 with the error message.
 TOPIC_ID = "41537"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_pub_sub", "publish_to_topic"),

@@ -10,13 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_77368937
 
 
-# Recipe-function "execute(quote_record_id, approval_status, opportunity_id,
-# quote_number, owner_email, opportunity_name)": look up the quote owner in
-# Slack by email (owner_email with ".invalid" stripped); IF the lookup returned
-# an id, DM that user a Block Kit section message. The section text links the
-# quote and opportunity through the 'Salesforce Base URL' account property and
-# renders the approval status with the inline ternary
-# `_dp(approval_status) == "Pending" ? "Submitted" : _dp(approval_status)`.
 RECIPE_ID = "77368937"
 SEED_TYPE = "recipe_function_quote_approval_dm_variant"
 TRACK = "live_slack_recipe_function_quote_dm"

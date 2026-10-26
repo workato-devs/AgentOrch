@@ -15,14 +15,6 @@ SEED_TYPE = "recipe_function_grading_criteria_variant"
 TRACK = "workato_recipe_function_build_grading_criteria"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe function that builds a "grading_criteria" text block. It
-# declares an empty grading_criteria variable (step 2), reads every row of the
-# "[IV] Ticket grading criteria" Workato data table (id 20712, step 3), then in
-# a foreach (step 4) appends each factor/description and its 1-5 point rubric to
-# the accumulating variable (update_variables, step 5). Step 6 logs the final
-# text; step 7 returns {grading_criteria: <accumulated text>}. The only branch
-# is the foreach cardinality (0 / 1 / many rows). get_records only reads the
-# table, so there is no persistent write and no cleanup requirement.
 GET_RECORDS_TABLE_ID = "20712"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_variable", "declare_variable"),

@@ -24,57 +24,11 @@ SQL_STEP_AS = "41c16eb0"
 CATCH_AS = "9e7ca880"
 MENU_STEP_AS = "a20f9927"
 LOOKUP_TABLE_ID = "355280"
-# The SQL text the trace must carry after pill interpolation: the lookup
-# entry's col2 (display field) lands in the SELECT alias position, the trigger
-# `type` lands in the FROM clause, and the connector's SEPARATE Order-by input
-# ('display_name') is APPENDED by the engine (raw_executor
-# snowflake_search_rows_sql; re-probed on this tree). :search_term stays a
-# bind. The connector limit '10000' rides along and the live client appends
-# it AFTER the appended ORDER BY (LIMIT-last, valid Snowflake).
 RESOLVED_SQL_TEMPLATE = (
     "select\n  {col2} display_name,\n  id\nfrom salesforce.{type}\n"
     "where lower(display_name) like lower(:search_term) ORDER BY display_name"
 )
 
-# slack_bot.dynamic_menu 'List of Records' (as 6f2a4ce9): parameters {type
-# required} + typeahead.value. Body:
-#   TRY (2):
-#     3 lookup_table.get_entry 7345c7be (mock table 355280 '[SFBOT] Objects',
-#       cols col1=Object..col6=Object Detail SQL) parameters
-#       {col1: #{parameters.type}} -> entry.col2 = the object's display field.
-#     4 snowflake.search_rows_sql 41c16eb0 (LIVE): DYNAMICALLY COMPOSED SQL
-#       'select #{entry.col2} display_name, id from salesforce.#{type} where
-#       lower(display_name) like lower(:search_term)' + connector orderby
-#       'display_name' (appended) + limit '10000'; bind search_term =
-#       '%#{typeahead.value}%' (case preserved - lower() runs in Snowflake).
-#       display_name in the WHERE is a Snowflake LATERAL column alias
-#       (triage-verified live).
-#   CATCH 5 (as 9e7ca880, max_retry_count 3):
-#     6 stop (stop_with_error true, stop_reason #{catch.9e7ca880.message}).
-#       The engine records only the bare stop marker {number 6, stopped true}
-#       (stop_reason is never evaluated; re-probed) and `stopped` prevents
-#       step 7.
-#   7 slack_bot.generate_menu_options a20f9927 (AFTER the try): options
-#     ____source over rows; label <- rows[current_item].display_name_431ff3ca,
-#     value <- rows[current_item].id_b497e547 - HASH-SUFFIXED pill names that
-#     resolve over the live row keys only via the `_<8-hex>` strip +
-#     case-insensitive retry (raw_executor; re-probed).
-#
-# Branch mapping (offline dry-replay re-probed on this tree, 2026-07-08):
-# - happy (3 actions): get_entry -> live SELECT -> menu; the appended ORDER BY
-#   display_name pins EXACT option order (seed display values must be distinct
-#   ASCII so Python sort == Snowflake binary collation); zero matches -> [].
-# - catch_stop (1 action): seed.force_action_error on 41c16eb0 raises BEFORE
-#   the live adapter -> catch payload {type RawRecipeExecutionError, message}
-#   -> stop; generate_menu_options NEVER executes; the variant owns NO live
-#   state (no snowflake seed, no snapshots, no cleanup call).
-#
-# Backends: Snowflake runs LIVE (create-or-replace seed of the single
-# 2-part-named table salesforce.<type> -> <DB>.SALESFORCE.<TYPE>, dropped in
-# the runner's finally; READ-ONLY - no writes). lookup_table 355280 is
-# Workato-internal (mock). The SQL uses no time functions, so current_time
-# must NOT be declared. Same hash-suffix + orderby-append class as the
-# registered precedent recipe_122406899.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "6f2a4ce9", "skip": false, "input": {"dynamic_menu_name": "List of Records", "parameters": "[\n  {\n    \"name\": \"type\",\n    \"type\": \"string\",\n    \"optional\": false,\n    \"control_type\": \"text\",\n    \"label\": \"Type\"\n  }\n]"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "lookup_table", "name": "get_entry", "as": "7345c7be", "skip": false, "input": {"lookup_table_id": "355280", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"6f2a4ce9\",\"path\":[\"parameters\", \"type\"]}')}"}}, "block": []}, {"number": 4, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "41c16eb0", "skip": false, "input": {"limit": "10000", "orderby": "display_name", "output_schema": "[{\"name\":\"display_name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Display name\"},{\"name\":\"id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ID\"}]", "parameters": {"data": {"search_term": "%#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"6f2a4ce9\",\"path\":[\"typeahead\", \"value\"]}')}%"}, "schema": "[{\"name\":\"search_term\",\"type\":\"string\",\"optional\":true,\"label\":\"search_term\",\"control_type\":\"text\"}]"}, "sql": "select\n  #{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"7345c7be\",\"path\":[\"entry\", \"col2\"]}')} display_name,\n  id\nfrom salesforce.#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"6f2a4ce9\",\"path\":[\"parameters\", \"type\"]}')}\nwhere lower(display_name) like lower(:search_term)"}, "block": []}, {"number": 5, "keyword": "catch", "provider": "", "name": "", "as": "9e7ca880", "skip": false, "input": {"max_retry_count": "3", "retry_interval": "1"}, "block": [{"number": 6, "keyword": "stop", "provider": "", "name": "", "as": "", "skip": false, "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"9e7ca880\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "block": []}]}]}, {"number": 7, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "a20f9927", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"41c16eb0\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"41c16eb0\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"display_name_431ff3ca\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"41c16eb0\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"id_b497e547\"]}')}"}, "use_option_groups": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -111,12 +65,7 @@ _EXPECT_VALUE_KEYS = {
     "args_contains", "result_count", "response_contains", "result_contains",
     "created", "http_status_code", "text_fragments", "options_contains",
 }
-# `type` interpolates into the FROM clause and must equal the seeded 2-part
-# table's second component; keep it a plain lowercase identifier.
 _TYPE_RE = re.compile(r"^[a-z][a-z0-9_]*$")
-# typeahead.value feeds the LIKE bind as '%<value>%': quotes, backslashes and
-# LIKE wildcards (%/_) are rejected so groundtruth stays a plain substring
-# match; ASCII-only so Python ordering == Snowflake binary collation.
 _TYPEAHEAD_RE = re.compile(r"^[A-Za-z0-9 .@\-]+$")
 _ASCII_VALUE_RE = re.compile(r"^[\x20-\x7e]+$")
 LOOKUP_COLUMNS = ("col1", "col2", "col3", "col4", "col5", "col6")

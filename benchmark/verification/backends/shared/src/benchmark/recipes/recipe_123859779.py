@@ -27,16 +27,7 @@ STOP_NUMBER = 7
 CATCH_AS = "18f2fc6d"
 RETURN_ERR_AS = "78bb8c52"
 FORCEABLE_STEPS = {SEARCH_AS}
-# Phase spacing for CreatedDate DESC determinism: SF audit timestamps have 1s
-# granularity, so every response-order-sensitive call is seeded in its OWN
-# phase spaced > 1s apart (89731033 precedent -- a tie would make the strict
-# ORDER BY response order nondeterministic).
 CREATED_DATE_SPACING_SECONDS = 1.2
-# Schema-in-seed contract: the Gong managed-package stand-in Gong_Call__c was
-# mdapi-deployed 2026-07-07 (batch 05) with four Text(255) columns; mdapi
-# fields are describe-invisible until FLS, so every run re-ensures FLS via
-# ensure_custom_field on the PHYSICAL names (106603524 precedent). The
-# logical Gong__* names map through SALESFORCE_FIELD_MAP.
 REQUIRED_SCHEMA = [
     {"sobject": "Gong_Call__c", "field": "Primary_Account__c", "sf_type": "Text"},
     {"sobject": "Gong_Call__c", "field": "Call_Brief__c", "sf_type": "Text"},
@@ -55,56 +46,6 @@ _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SYNTHETIC_ACCOUNT_RE = re.compile(r"001[0-9A-Za-z]{12,15}")
 _ABS_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
-# workato_api_platform.receive_request (as 7c9bdd0d; request.sfdcAccountId is
-# the only dereferenced trigger field -- interpolated into the SOQL text).
-# Body: TRY (step 2) >
-#   3  salesforce.search_sobjects_soql 9126ea78 (LIVE, strict_soql):
-#      sobject Gong__Gong_Call__c (stand-in Gong_Call__c), limit 20, query
-#      "Gong__Primary_Account__c = '#{request.sfdcAccountId}' AND CreatedDate
-#      = LAST_N_DAYS:90 ORDER BY CreatedDate DESC". Under strict_soql the
-#      LAST_N_DAYS:90 leaf evaluates the record's live CreatedDate read-back
-#      (window = start of day 90 days ago through now, UTC) and ORDER BY
-#      CreatedDate DESC is honored (SalesforceRun.search_records sort).
-#   IF 4 (Gong__Gong_Call__c size > 0):
-#     5  workato_api_platform.return_response a58e05ea (TERMINAL): 200,
-#        response.data ____source-mapped over the DESC-ordered records
-#        {meeting_brief, next_steps}, response.rawSources {title/snippet=Name,
-#        tool='gong_meetings', url='https://app.gong.io/call?id=<Call_ID>'},
-#        success 'true' (engine-canonical STRING rendering of the raw input).
-#   ELSE 6 > 7 STOP e64c4396 (stop_with_error true, stop_reason 'No records
-#     found' -- the engine trace records stopped:true; stop_reason is not
-#     rendered).
-#   CATCH 8 (as 18f2fc6d, max_retry_count 0) >
-#     9  workato_api_platform.return_response 78bb8c52 (TERMINAL): 200,
-#        {error: #{catch.18f2fc6d.message}, success: 'false'}.
-#
-# Branch mapping (coverage per benmark_rules):
-# - variant_00 records_found_200: two owned calls for the trigger account
-#   seeded in SEPARATE phases (insertion order != response order) + an owned
-#   decoy call for a different account -> IF true -> 200 with data[2]/
-#   rawSources[2] in CreatedDate DESC order; the decoy proves the account
-#   equality leaf bites and the phase spacing proves the ORDER BY.
-# - variant_01 no_records_stop: the trigger account owns no calls (a decoy
-#   call for another owned account proves the search ran against live data)
-#   -> ELSE -> STOP 7 after exactly 1 action.
-# - variant_02 catch_error_200: sanctioned force_action_error on 9126ea78
-#   (raised BEFORE arg resolution -- no salesforce trace row, no live seed)
-#   -> CATCH -> 200 {error: <message>, success: 'false'}. The catch is not
-#   naturally reachable from seedable state.
-#
-# DEAD SEED PATH (proven, not forced): an ELSE reached via an out-of-window
-# call for the SAME account is org-unrepresentable -- CreatedDate is
-# system-set at insert (audit-field writes are disabled in the benchmark
-# org) and the harness fails fast on seeding it ("Salesforce field
-# Gong_Call__c.CreatedDate is not createable", probe 2026-07-08). Run-seeded
-# records are always inside the LAST_N_DAYS:90 window; the ELSE branch is
-# reached through account mismatch instead, and the seeder REJECTS any
-# CreatedDate key in seed fields.
-#
-# Backends: salesforce LIVE (benchmark-owned stand-in records; cleanup
-# deletes owned records in finally -- read-only recipe, but owned seeds must
-# not leak); workato_api_platform trigger/return_response are
-# Workato-internal (mockable per backend policy).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

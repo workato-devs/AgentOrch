@@ -16,33 +16,6 @@ TRACK = "workato_recipe_function_office_location_default_apps"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 OFFICE_TABLE = "PUBLIC.OFFICE_LOCATION"
-# Callable recipe function (trigger as fda95828, parameters.office_location_id).
-# Sibling of 23562709, without try/catch:
-#   declare_list "Default App IDs" (step 2, as 6eff2236) — declared EMPTY, no
-#     initial items and no insert anywhere targets it
-#   snowflake.search_rows_sql OFFICE_LOCATION (step 3, as 6a22d653):
-#     WHERE OL.ID = :office_location_id (named bind from the trigger), limit 1
-#   IF rows.size != 1 OR rows.first.status != 'Active' (step 4, compound OR)
-#     -> STOP with error at step 5 (stop_reason is a multi-line =if/else/end
-#        formula over list_meta ____Size; the executor records the stop without
-#        resolving the reason text)
-#   declare_list "Final Apps List" (step 6, as a140d0a9)
-#   IF Default App IDs size > 0 (step 7):
-#     snowflake.search_rows_sql APP (step 8, as f4e2fedc, limit 50000)
-#     workato_smart_list.create_list APP_OFFICE_LOCATION (step 9, as 6b293114)
-#     FOREACH Default App IDs (step 10, as 29267032):
-#       query_list SELECT * FROM #{list_name} WHERE APP_ID='<app_id>' (step 11)
-#       IF status != 'Active' -> STOP at step 13
-#       insert_to_list into Final Apps List (step 14)
-#   return_result {apps: Final Apps List with `.presence or nil` firsts} (15)
-# REACHABILITY (verified by offline replay probe): because "Default App IDs"
-# is declared empty and never written, IF #7 is false on every input, so steps
-# 8-14 (including stop #13) are unreachable in the raw recipe itself — in
-# production Workato as well, not just in this harness. The reachable paths
-# are exactly: stop #5 (0 rows / inactive office) and the empty-apps return.
-# Snowflake runs LIVE (legacy `snowflake` seed section, provisioned lazily by
-# the tool registry); variable lists and the recipe-function return are
-# deterministic Workato-internal mocks.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_variable", "declare_list"),
     ("snowflake", "search_rows_sql"),

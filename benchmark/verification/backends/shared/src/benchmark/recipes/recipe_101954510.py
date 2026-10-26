@@ -23,37 +23,6 @@ COMPOSITE_AS = "a9df1a62"
 USER_SOBJECT = "Workato_User__c"
 TABLE_KEY = "EDW_DB.SALESFORCE.WORKATO_USER"
 
-# TRUE TWIN of 115850922 (scale batch 07, batch_D) — recipe 101954510 is the
-# 2024-08-28 original (flow 43771832 v5); 115850922 is the 2025-03-07 re-issue
-# (flow 43592055 v15). The raw diff is 106 lines of CSV metadata + extended-
-# schema noise ONLY (Domain__c / Is_AHQ_Admin__c / Last_Login_Date__c /
-# Logins_Last_30_Days__c schema entries and parse_output/render_input
-# null-vs-{} formatting); every executable input is BYTE-IDENTICAL across all
-# 5 nodes, including the as-ids 364d5c88/57ccff6f/73109306/d4ab6d55/a9df1a62
-# (re-proved 2026-07-08 on the working tree via key-by-key node comparison).
-# This module is derived mechanically from the registered head module and
-# validates the SAME STRUCTURE_PINS; verify_101954510 delegates to
-# verify_115850922 (twin precedent verify_117564458 -> verify_118162473).
-# Twin-specific groundtruth lives in this recipe's OWN variant inputs
-# (own Account/user names, OEM ids 313/528/664, own timestamps — nothing
-# byte-shared with the head's 777/812/941 variants) and its OWN live lanes.
-#
-# See recipe_115850922.py for the full shape/backends/branch documentation;
-# everything there applies verbatim (seeded __History event, live SF search
-# alias, NULL-EXCLUDING plain '!=' Snowflake WHERE — live-probed on the head,
-# evidence transfers because the executable inputs are byte-identical —
-# single-batch foreach, constant-value composite update). The physical
-# Snowflake table EDW_DB.SALESFORCE.WORKATO_USER is SHARED by the trio:
-# never run family variants concurrently.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 relink_admin_children: old-OEM child relinked; NULL-OEM child
-#   EXCLUDED by the plain '!=' and pinned untouched; already-new + wrong-DC
-#   decoys excluded -> 1 row -> composite single-record arm.
-# - variant_01 no_children_noop: already-new + NULL-OEM + wrong-OEM decoys ->
-#   0 rows -> foreach zero iterations -> composite never traces.
-# - variant_02 multi_child_batch: two old-OEM children -> one batch -> 2 live
-#   updates with the SAME constant Account id (id SET compare, no ORDER BY).
 TABLE_COLUMNS = {
     "id": "string",
     "account__c": "string",

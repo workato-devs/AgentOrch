@@ -1,7 +1,7 @@
 """GRPO on AgentOrch plan generation for gemma-4 models via TRL.
 
 verl 0.9 does not support gemma-4 (no fused/ulysses registry entries; two
-smoke attempts died in worker init — see EXPERIMENTS.md), so the gemma RL leg
+model initialization is unsupported by the pinned verl stack), so the gemma RL leg
 uses the public TRL GRPOTrainer instead. Same Tier-1 symbolic-match reward as
 the verl runs (rl/reward.py), same v1 prompts, LoRA r16/a32 on the v1-SFT
 merged checkpoint.

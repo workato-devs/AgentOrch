@@ -18,24 +18,6 @@ TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
 SERVICE_NAME = "Clear Cached Person Data that are created more than 5 mins ago v2"
 LOOKUP_TABLE_ID = "3298516"
-# Callable service "Clear Cached Person Data that are created more than 5 mins
-# ago v2". The trigger declares request.start (boolean) but NO step ever
-# dereferences it (dead input; variants still carry the request shape).
-# Faithful full-scale flow per run:
-#   log (now-1h).to_i epoch anchor -> smart list CREATE TABLE Temp ->
-#   workato_list create_list size=360 -> foreach__3 x360 INSERT 10 rows each ->
-#   SELECT rowid (3600 rows) -> foreach x3600: lookup_table 3298516
-#   search_entries col5 == per-second LA-timezone strftime of (epoch+index) ->
-#   foreach__1 accumulates {entry_id, created_date} per matched entry ->
-#   log accumulated list -> foreach__2: IF created_date < now-5.minutes ->
-#   delete_entry (ignore_not_found=true) -> IF delete_entry.id present ->
-#   send_reply {any_person_cleared: "true"} + graceful stop, else trailing
-#   send_reply {any_person_cleared: "false"} + graceful stop.
-# NOTE (engine semantics, proven at build time): when NO lookup entry matches
-# any scanned second the accumulate step never runs, foreach__2's source pill
-# is MISSING and execute_raw_recipe raises "foreach source missing at step 13".
-# The zero-match sweep is therefore an error path, not a buildable variant; the
-# reply=false branch is covered via in-window entries younger than 5 minutes.
 LOG1_FORMULA = "=(now-1.hours).to_i"
 SQL_CREATE = "CREATE TABLE Temp (\n    ID int\n);"
 SQL_INSERT = "INSERT INTO Temp VALUES (1),(1),(1),(1),(1),(1),(1),(1),(1),(1)"

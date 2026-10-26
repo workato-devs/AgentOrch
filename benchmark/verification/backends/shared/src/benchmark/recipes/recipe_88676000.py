@@ -15,13 +15,6 @@ SEED_TYPE = "base_timer_unit_variant"
 TRACK = "workato_service_base_timer"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# "Base Timer Unit" callable service. The request carries an integer `secs`.
-# The recipe is a ladder of `if secs == N` (N = 1..10) blocks that each open a
-# try whose body is a single hard `stop` (stop_with_error=true), then a final
-# `if secs > 10` that replies success (step 43) and stops, and a trailing
-# top-level `send_reply` (step 45) reached only when no branch above matched.
-# Static action list found by _collect_actions, in tree order:
-#   send_reply (43, inside `if secs > 10`) then send_reply (45, top level).
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

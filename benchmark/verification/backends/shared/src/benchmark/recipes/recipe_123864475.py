@@ -26,63 +26,11 @@ RAW_SOURCE_SNIPPET = "BlueBirds Compelling Events"
 RAW_SOURCE_TITLE = "BlueBirds"
 RAW_SOURCE_TOOL = "bluebirds"
 URL_PREFIX = "https://workato.salesforce.com/"
-# Schema-in-seed contract (128901328 precedent): the recipe dereferences
-# Account.Bluebirds_Signal_Summary__c; ensure_custom_field provisions it once
-# as real org schema (idempotent; no collision with the org's Bizible
-# stand-ins -- different developer name).
 REQUIRED_SCHEMA = [
     {"sobject": "Account", "field": "Bluebirds_Signal_Summary__c", "sf_type": "LongTextArea"},
 ]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_api_platform.receive_request (as 7c9bdd0d; request schema exactly
-# {sfdcAccountId: string, required}; one declared 200 'Success' response).
-# Body:
-#   2  TRY:
-#      3  salesforce.get_custom_object a495f9f5 (LIVE): Account by
-#         id = request.sfdcAccountId, no field projection -> the whole live
-#         record flows through; maps to salesforce.search_records
-#         filters [{Id eq}] limit 1. Since engine fidelity fix f01d3363 the
-#         get returns EMPTY output ({ok: true}, no Id) for a missing record
-#         (Workato parity) -- it does NOT error the job.
-#      4  IF a495f9f5.Id present:
-#         5  workato_api_platform.return_response 252ace50 (TERMINAL):
-#            200 {data: [{events: Bluebirds_Signal_Summary__c}],
-#                 rawSources: [{snippet 'BlueBirds Compelling Events',
-#                               title 'BlueBirds', tool 'bluebirds',
-#                               url 'https://workato.salesforce.com/<Id>'}],
-#                 success: 'true'}
-#      6  ELSE:
-#         7  STOP cf26d231 (stop_with_error=true, 'No records found') -- a
-#            stop is recipe CONTROL FLOW, not an action error: it ends the
-#            job immediately and is NOT routed to the catch block (the job is
-#            simply marked failed; no HTTP response is returned).
-#   8  CATCH 86806634 (max_retry_count=0):
-#      9  workato_api_platform.return_response edfa1c85 (TERMINAL):
-#         200 {error: <catch message>, success: 'false'} -- the endpoint
-#         answers 200 even on failure; only body.success flags it.
-#
-# Branch mapping (per benmark_rules; coordinator decision on f01d3363: the
-# else-stop branch is REACHABLE and built as a real variant):
-# - variant_00 account_found_success: live Account seeded with a Bluebirds
-#   summary; request.sfdcAccountId = its live Id ($ACCOUNT_ID threading,
-#   64106452 / 97967767 precedent) -> IF true -> 200 success:'true' with the
-#   seeded events text and the live-Id URL.
-# - variant_01 account_not_found_stop: valid-shaped but NONEXISTENT id
-#   (001000000000000AAA can never exist live) -> get returns EMPTY -> IF
-#   false -> ELSE -> STOP 7 with error, NO response. A live decoy Account is
-#   still seeded so the 0-match is attributable to the requested id, not an
-#   empty org.
-# - variant_02 forced_catch_error: seed.force_action_error on a495f9f5 (the
-#   only deterministic live-safe way to reach the catch since not-found no
-#   longer raises) -> catch payload carries the pinned literal error bytes ->
-#   200 success:'false' with body.error = those bytes. No salesforce seed:
-#   the get raises before any live call.
-#
-# Backends: salesforce LIVE (benchmark-owned Account; custom field via
-# schema-in-seed); workato_api_platform is Workato-internal (deterministic
-# mock trigger payload + return_response echo). Cleanup: required whenever the
-# variant live-seeds records -- harness cleanup in a finally block.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

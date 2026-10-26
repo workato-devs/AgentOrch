@@ -29,47 +29,6 @@ RAW_SQL = (
     "ORDER BY updated_at DESC "
 )
 
-# workato_api_platform.receive_request (as 7e04a37a; NO request field is ever
-# dereferenced — the SQL is static). Body = one TRY (same READY class as the
-# registered precedent 122809739 / walnutiq.outputs, plus a catch.message
-# pill):
-#   3  snowflake.run_custom_sql 24986ee3 (LIVE Snowflake): RAW_SQL — the
-#      2-part walnutiq.companies name maps to the WALNUTIQ schema of the
-#      live database; the trailing 'ORDER BY updated_at DESC ' passes
-#      through the rewrite verbatim
-#   4  IF rows size > 0 -> 5 return_response 1801d6d0 http 200
-#      {results: source-mapped rows {id, company_name, zoominfo_id,
-#       updated_at}}
-#   6  ELSE -> 7 STOP fc3279e9 (stop_with_error 'No results found')
-#   8  CATCH c7cc2a1d (max_retry_count 0) -> 9 return_response 618a4cc1
-#      http 500 {message: catch.c7cc2a1d.message}
-#
-# Branch mapping:
-# - variant_00 rows_200_ordered: rows seeded OUT of updated_at order -> the
-#   live ORDER BY must produce DESC order in the 200 response. 2 actions.
-# - variant_01 empty_table_stop: table seeded EMPTY (columns only) -> IF
-#   false -> ELSE stop after 1 action. Engine stop semantics (pinned): the
-#   stop ends the job immediately with a stopped:true trace row; it is NOT
-#   routed through the CATCH and no response is returned (return_value null).
-# - variant_02 catch_500: seed.force_action_error on 24986ee3 -> CATCH ->
-#   500 {message: <forced error>}. 1 action; the forced error raises before
-#   the tool call, so the trace has NO snowflake row. The SQL and table are
-#   static, so no trigger-controllable live failure exists; the forced error
-#   is the deterministic catch path.
-#
-# ENGINE FIDELITY NOTES:
-# - updated_at renders as snowflake_live._json_value isoformat of the live
-#   TIMESTAMP_NTZ read-back (naive, e.g. '2026-06-28T11:05:33'); seeds use
-#   'YYYY-MM-DD HH:MM:SS' literals so the rendered form is stable.
-# - id / zoominfo_id are NUMBER columns: live Decimals render as ints for
-#   whole values (_json_value); expects pin ints.
-# - the response 'results' array is a ____source mapping over rows: one
-#   object per row with exactly the four mapped keys.
-#
-# Backends: Snowflake runs LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally). The API platform
-# trigger/responses are deterministic Workato-internal mocks. The recipe is
-# READ-ONLY on Snowflake (snapshot equality verifier-pinned).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

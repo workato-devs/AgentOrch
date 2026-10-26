@@ -19,55 +19,6 @@ TRACK = "live_salesforce_campaign_history_service"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
 SERVICE_NAME = "Get campaign history"
-# Callable service "Get campaign history" (trigger as a3b34dfa; request
-# {opportunity_id?, contact_id?, lead_id?} — all optional, all dereferenced):
-#   IF (step 2) all three request ids blank -> send_reply error (step 3,
-#     220127b3) + graceful STOP (step 4, stop_with_error=false).
-#   TRY (step 5):
-#     IF (step 6) opportunity_id present -> salesforce.search_sobjects
-#       OpportunityContactRole (step 7, a7f4d089; IsPrimary='true',
-#       OpportunityId=request pill, field_list ContactId).
-#     salesforce.search_sobjects CampaignMember (step 8, eeeeef41;
-#       LeadOrContactId = or-chain over OCR.first.ContactId /
-#       request.contact_id / request.lead_id; field_list
-#       'Campaign$Campaign ID.Name\nCreatedDate\nCampaignId'; table_list
-#       Campaign -> each record carries nested Campaign.Name).
-#     IF (step 9) CampaignMember size > 0:
-#       workato_smart_list.query_list CREATE TABLE campaigns (step 10,
-#         76a4de75); FOREACH CampaignMember (step 11, as 29ce44a1):
-#         logger.log_message Campaign.Name with single quotes doubled
-#         (step 12, f72e383e) then query_list INSERT INTO campaigns VALUES
-#         (CampaignId, logger message, CreatedDate) (step 13, 57f474f6);
-#       query_list SELECT name, joined FROM campaigns ORDER BY joined ASC
-#         (step 14, 9f1ef503).
-#     send_reply success (step 15, 09861141; num_campaigns = rows size pill,
-#       campaign_history = multi-line if + pluck('name').smart_join(" > "),
-#       campaigns = ____source mapping of the SELECT rows). This step runs on
-#       the zero-campaign path too, dereferencing the never-executed 9f1ef503:
-#       engine ground truth is num_campaigns null / campaign_history null /
-#       campaigns [] (probed).
-#   CATCH (step 16, cdf7ba50, max_retry_count=0) -> send_reply error with the
-#     catch message pill (step 17, d33df715).
-#
-# Live backend: Salesforce (Campaign / CampaignMember / OpportunityContactRole
-# / Contact / Lead / Opportunity seeds; benchmark-owned, deleted in cleanup).
-# Workato-internal (deterministic mock): workato_service reply, workato_smart
-# list ad-hoc SQL table, logger.
-#
-# Live-faithfulness notes:
-# - CampaignMember.LeadOrContactId is a REAL Salesforce derived column
-#   (describe: createable=false, present on every CampaignMember). The generic
-#   owned-record read-back only fetches seeded field names + a small derived
-#   whitelist, so the seeder pins LeadOrContactId into the owned CampaignMember
-#   field_names explicitly — the value is still read back live, never
-#   fabricated.
-# - CampaignMember.CreatedDate is org-assigned (audit-field create is DISABLED
-#   in the benchmark org: describe createable=false). The recipe ORDER BYs on
-#   it, so variants needing TWO members with strictly increasing CreatedDate
-#   seed the second member in a separate provisioning call after a real pause
-#   (seed.salesforce_phase2). Expected `joined` values are therefore live
-#   read-backs, asserted as "__ANY__" in expects and cross-checked against the
-#   CampaignMember search trace by the verifier.
 REQUEST_SCHEMA_JSON = (
     '[{"name":"opportunity_id","type":"string","optional":true,"control_type":"text"},'
     '{"name":"contact_id","type":"string","optional":true,"control_type":"text"},'
@@ -196,8 +147,6 @@ ALLOWED_TOOLS: list[str] = [
     "salesforce.search_records",
     "workato_service.send_reply",
 ]
-# CampaignMember.CreatedDate has whole-second precision; a >1s pause between
-# the phase-1 and phase-2 member creates guarantees strictly increasing values.
 CREATED_DATE_SPACING_SECONDS = 2.0
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 

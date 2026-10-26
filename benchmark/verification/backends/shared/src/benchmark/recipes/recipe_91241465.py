@@ -21,51 +21,7 @@ TRIGGER_AS = "d0dbce8e"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# slack_bot.dynamic_menu 'sfDataList' (as d0dbce8e) -- Slack typeahead menu fed
-# from live Salesforce. Member of the 4-recipe IDENTICAL family 91339479 / 91241465 / 119184209 / 118168683
-# (bodies byte-identical; only CSV metadata and the trigger `parameters`
-# whitespace literal differ -- this id pins trigger parameters literal "[]").
-#
-# TRY (step 2) wraps three SIBLING IFs (not elsif) on trigger typeahead.name:
-#   IF #3 == 'User':    #4  search_sobjects_soql_v2 146dcac6
-#                           select id, name from user where name like '<typeahead.value>%' (limit 2000)
-#                       #5  generate_menu_options 8a836e8a
-#   IF #6 == 'Account': #7  search 2284ebd6 (account, same LIKE) + #8 menu 6c4a1f08
-#   IF #9 == 'Contact': #10 search 7942ec9f (contact, same LIKE) + #11 menu 54230477
-#   CATCH (step 12, as 5968e436, max_retry_count 0):
-#     #13 logger 52c21140 '#{catch.type} : #{catch.message}' (user_logs_enabled false)
-#
-# generate_menu_options uses the legacy option_groups list-mode mapping: the
-# group's `label` slot binds the WHOLE <search>.records pill and the option
-# template iterates current_item over it (one option {label: Name, value: Id}
-# per record). The executor (edd3ccc8) expands the group and the tool call args
-# carry {"options": [flattened], "option_groups": [{"options": [...]}]} --
-# probe-verified against these exact step-5/8/11 nodes.
-#
-# An unmatched typeahead.name (e.g. 'Lead') leaves all three IFs false: the try
-# body runs ZERO actions -- a legal dynamic-menu outcome ('none' variant).
-#
-# Backends: salesforce LIVE. Account/Contact menus read benchmark-owned seeded
-# records; the User menu is served from the read-only current-user registration
-# (seed.salesforce.current_user -- Users cannot be created via the API; the
-# live user id/name are intentionally part of the benchmark input). The harness
-# LIKE match is chunk-substring over owned/read-only rows only, so every seed
-# keeps the typeahead prefix out of non-matching record Names.
-# slack_bot.generate_menu_options and logger are Workato-internal and
-# mockable under the backend policy -- menu-option generation returns the
-# Workato menu payload for the Slack interaction and never makes a Slack
-# API call. The recipe is READ-ONLY on Salesforce: snapshots
-# must not drift; cleanup deletes the seeded records for rerun safety.
-#
-# Ref tokens resolved at seed time into trigger AND expect: $<REF>_ID per owned
-# seeded record (seed order), $CURRENT_USER_ID / $CURRENT_USER_NAME from the
-# read-only current-user row.
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip +
-# verbatim raw input per node, incl. the three SOQL LIKE queries with their
-# trigger pills, the option_groups pill payloads, the catch retry input and the
-# logger catch-pill message). Any upstream drift fails validation instead of
-# silently changing ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {

@@ -15,16 +15,6 @@ SEED_TYPE = "city_list_variant"
 TRACK = "workato_service_city_list"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Callable "City" service. When request.City is present (if step 2): logs a
-# fixed comma-separated "COUNTRY: City" catalogue (step 3), creates a Workato
-# list sized to that catalogue via .split(',').length (step 4), then loops
-# (foreach step 5) logging each entry by index (step 6) and accumulating it
-# into CityList (step 7). Then (if step 8, list non-empty) it loops the
-# accumulated items (foreach step 9): a request equal to "springfield" replies
-# "US: Springfield" (send_reply step 11); otherwise the first catalogue entry
-# whose city (":"-suffix) is contained in the request is echoed back
-# (send_reply step 14); if none match it replies "Others" (send_reply step 16).
-# Every reply branch stops the recipe.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("logger", "log_message"),
     ("workato_list", "create_list"),

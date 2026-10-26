@@ -31,30 +31,6 @@ ACCOUNT_TABLE = "salesforce.account"
 USER_TABLE = "salesforce.user"
 SEED_TABLES = [OPPORTUNITY_TABLE, ACCOUNT_TABLE, USER_TABLE]
 
-# Daily 07:00 clock trigger (timezone '<anon>Europe/London</anon>' is
-# schedule-only config, no runtime deref; payload-less seed.trigger = {}):
-#   2  snowflake.search_rows_sql 0fc36612 (LIVE): Non-Payment churn
-#      opportunity join — SELECT 11 aliased columns FROM SALESFORCE.OPPORTUNITY
-#      O JOIN SALESFORCE.ACCOUNT A (INNER, on O.ACCOUNTID) LEFT JOIN
-#      SALESFORCE.USER AO (account owner) LEFT JOIN SALESFORCE.USER SO
-#      (expansion CSM — the USER table joins TWICE under aliases) WHERE
-#      O.TYPE = 'Churn' AND O.CHURN_TYPE__C = 'Non Payment'; limit 50000.
-#      2-part SALESFORCE.* names map to <SNOWFLAKE_DATABASE>.SALESFORCE.*
-#      (re-probed verbatim on HEAD 07af31c2, both USER join arms).
-#   3  FOREACH e421eda4 over rows (repeat_mode simple):
-#   4    workato_db_table.upsert_record 34efd203 (Workato-internal MOCK)
-#        table 29282 '[FCA] Non Payment Churn Tracking', primary_field_id
-#        7282605a-… (DASHED 'Opp ID' vs UNDERSCORED record keys — re-probed
-#        insert->update), 10 pill parameters (the table also has an unused
-#        Message ID column the recipe never writes — pre-seeded values must
-#        survive updates untouched).
-# Mock write semantics (re-probed): _clean stringifies the DAYS_PAST_DUE
-# integer (12 -> '12') and DROPS None params — LEFT-JOIN NULL owner/CSM
-# emails never reach the stored record on insert, and on the update arm the
-# absent key leaves the previous stored value.
-# The SELECT has no ORDER BY: multi-row variants pin upserts and the final
-# table as MULTISETS keyed by Opp ID (batch-07 rule); final_table_records
-# exclude _row_id.
 
 SQL = (
     "SELECT\nO.ID AS OPPTY_ID,\nO.NAME AS OPPTY_NAME,\nO.STAGENAME AS OPPTY_STAGE,\n"
@@ -71,7 +47,6 @@ SQL = (
 _RAW_PIN_JSON = r"""{"as": "923e5d87", "block": [{"as": "0fc36612", "block": [], "input": {"limit": "50000", "output_schema": "[{\"name\":\"OPPTY_ID\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"OPPTY ID\"},{\"name\":\"OPPTY_NAME\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"OPPTY NAME\"},{\"name\":\"OPPTY_STAGE\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"OPPTY STAGE\"},{\"name\":\"ACCOUNT_ID\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ACCOUNT ID\"},{\"name\":\"ACCOUNT_NAME\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ACCOUNT NAME\"},{\"name\":\"SALES_TEAM\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"SALES TEAM\"},{\"name\":\"SAVE_OUTREACH\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"SAVE OUTREACH\"},{\"name\":\"DAYS_PAST_DUE\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\",\"label\":\"DAYS PAST DUE\",\"parse_output\":\"integer_conversion\"},{\"name\":\"ACCOUNT_OWNER_NAME\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"ACCOUNT OWNER NAME\"},{\"name\":\"ACCOUNT_OWNER_EMAIL\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"ACCOUNT OWNER EMAIL\"},{\"name\":\"SUCCESS_OWNER_EMAIL\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"SUCCESS OWNER EMAIL\"}]", "sql": "SELECT\nO.ID AS OPPTY_ID,\nO.NAME AS OPPTY_NAME,\nO.STAGENAME AS OPPTY_STAGE,\nA.ID AS ACCOUNT_ID,\nA.NAME AS ACCOUNT_NAME,\nA.SALES_TEAM__C AS SALES_TEAM,\nO.SAVE_OUTREACH__C AS SAVE_OUTREACH,\nO.DAYS_PAST_DUE__C AS DAYS_PAST_DUE,\nAO.NAME AS ACCOUNT_OWNER_NAME,\nAO.EMAIL AS ACCOUNT_OWNER_EMAIL,\nSO.EMAIL AS SUCCESS_OWNER_EMAIL\n\nFROM SALESFORCE.OPPORTUNITY O\nJOIN SALESFORCE.ACCOUNT A\nON O.ACCOUNTID = A.ID\n\nLEFT JOIN SALESFORCE.USER AO\nON A.OWNERID = AO.ID\n\nLEFT JOIN SALESFORCE.USER SO\nON A.EXPANSION_CSM__C = SO.ID\n\nWHERE O.TYPE = 'Churn'\nAND O.CHURN_TYPE__C = 'Non Payment'"}, "keyword": "action", "name": "search_rows_sql", "number": 2, "provider": "snowflake", "skip": false}, {"as": "e421eda4", "block": [{"as": "34efd203", "block": [], "input": {"parameters": {"7282605a_5019_4d32_9bca_ad22eee221a6": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"oppty_id\"]}')}", "7886e8f6_1cb4_408a_9f96_933976459847": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"account_owner_email\"]}')}", "7e5da151_7500_495d_beba_04a2d895478d": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"oppty_name\"]}')}", "9f4dbf40_39f9_4855_9e54_00b0867ffa0a": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"account_owner_name\"]}')}", "a5d268ff_d69a_4e5f_b76d_64dc19c4fdc3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"days_past_due\"]}')}", "c47d31af_656f_4ec0_bbaf_6def70bf4931": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"sales_team\"]}')}", "c8e6f121_228e_41a6_8c7b_ba124d427f7a": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"account_name\"]}')}", "ce590e2a_eec4_4dc2_bde2_321f102f3b1d": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"oppty_stage\"]}')}", "d4bf8c6b_fdad_492d_a51e_de59b8bb7896": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"save_outreach\"]}')}", "fc98a645_e702_48a3_9d7c_8a15be5b5b61": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e421eda4\",\"path\":[\"success_owner_email\"]}')}"}, "primary_field_id": "7282605a-5019-4d32-9bca-ad22eee221a6", "table_id": "29282"}, "keyword": "action", "name": "upsert_record", "number": 4, "provider": "workato_db_table", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"0fc36612\",\"path\":[\"rows\"]}')}"}, "keyword": "foreach", "name": "", "number": 3, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"0fc36612\",\"path\":[\"rows\"]}')}"}], "input": {"time_unit": "days", "timezone": "<anon>Europe/London</anon>", "trigger_at": "07:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# upsert parameter uuid -> SELECT alias (lowercase pill name).
 PARAM_TO_ALIAS = {
     "7282605a_5019_4d32_9bca_ad22eee221a6": "oppty_id",
     "7886e8f6_1cb4_408a_9f96_933976459847": "account_owner_email",

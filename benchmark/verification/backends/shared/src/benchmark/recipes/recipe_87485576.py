@@ -28,28 +28,6 @@ EMPLOYEE_TABLE = "EMPLOYEE"
 SEED_TABLES = [MOVEMENT_TABLE, EMPLOYEE_TABLE]
 PENDING_STATUSES = ("Pending Apps Exchange", "Pending Staff Movement", "Pending")
 
-# Hourly clock trigger (payload-less, seed.trigger = {}):
-#   2  snowflake.search_rows_sql 7e1c2e4f (LIVE): SELECT DISTINCT E.EMAIL FROM
-#      STAFF_MOVEMENT_LOG EML JOIN EMPLOYEE E ON EML.EMPLOYEE_ID = E.ID WHERE
-#      EML.STATUS IN ('Pending Apps Exchange','Pending Staff Movement',
-#      'Pending'); limit 50000. The recipe uses BARE 1-part table names — the
-#      engine's bare-name from/join rewrite maps both to
-#      <SNOWFLAKE_DATABASE>.BENCH.* (snowflake_live._rewrite_sql :437-460,
-#      re-probed verbatim on HEAD 07af31c2); _append_limit_offset adds
-#      'limit 50000'.
-#   3  FOREACH 6693f032 over rows (repeat_mode simple; zero rows -> zero
-#      iterations, N rows -> N publishes):
-#   4    workato_pub_sub.publish_to_topic 3ff46377 topic 28798 message
-#        {email: foreach['email']} — the pill resolves the _fetch_rows
-#        lowercase alias of the live 'EMAIL' column. publish_to_topic is the
-#        DETERMINISTIC Workato-internal mock echo {ok, topic_id, message}
-#        (live_tools.py pub_sub_publish_to_topic) — allowed mock per backend
-#        policy; snowflake stays live.
-# The SELECT has no ORDER BY: multi-row variants pin the published emails as
-# a MULTISET (batch-07 no-ORDER-BY rule), never positionally. DISTINCT and
-# the INNER JOIN are proven by dedicated variants (duplicate pending rows for
-# one employee collapse to one publish; an orphan movement row publishes
-# nothing).
 SQL = (
     "SELECT DISTINCT\nE.EMAIL\n\nFROM STAFF_MOVEMENT_LOG EML\nJOIN EMPLOYEE E\n"
     "ON EML.EMPLOYEE_ID = E.ID\n\n"

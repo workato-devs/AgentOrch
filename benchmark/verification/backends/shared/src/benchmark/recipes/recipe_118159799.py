@@ -28,7 +28,6 @@ TRIGGER_PARAMETERS = (
     "event_log_table",
     "sql_script_for_adding_fields",
 )
-# The interpolated ALTER template, verbatim from the raw recipe (4 pills).
 RAW_SQL_TEMPLATE = (
     "ALTER TABLE #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\","
     "\"line\":\"8b893097\",\"path\":[\"parameters\", \"event_log_database\"]}')}."
@@ -39,53 +38,12 @@ RAW_SQL_TEMPLATE = (
     "\nADD #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\","
     "\"line\":\"8b893097\",\"path\":[\"parameters\", \"sql_script_for_adding_fields\"]}')}"
 )
-# Deterministic live Snowflake duplicate-column error (batch_D live probe,
-# 2026-07-08): the connector surfaces exactly this text for ALTER ... ADD of
-# an existing column.
 DUPLICATE_COLUMN_ERROR = (
     "001430 (42601): SQL compilation error:\ncolumn '{column}' already exists"
 )
 _SCRIPT_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s+\S.*$", flags=re.S)
 _IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
-# workato_recipe_function.execute (as 8b893097): 4 required string
-# parameters — event_log_database/schema/table + sql_script_for_adding_fields.
-# Cousin of the 1181624xx AUTOMATION_COMPASS family (same try/catch skeleton
-# + catch-pill idiom, different provider pair); NOT a byte twin of anything
-# in batch 06 (384 lines). Body = one TRY (step 2):
-#   3  snowflake.run_custom_sql 17ed1d04 (LIVE DDL): sql = 'ALTER TABLE
-#      <db>.<schema>.<table>\nADD <script>' interpolated VERBATIM from the
-#      trigger parameters (update_only 'false'). The assembled 3-part name
-#      must BYTE-MATCH the registered snowflake_live table key — that is
-#      what _rewrite_sql maps onto the benchmark database, so the
-#      event_log_database parameter is env-isolated by construction. A
-#      successful ALTER returns rows [{status: 'Statement executed
-#      successfully.'}] and the run_custom_sql wrapper reports
-#      rows_affected 1 (live-probed).
-#   4  workato_recipe_function.return_result a029e8b7 (mock, TERMINAL):
-#      result.success = 'true' — the raw input literal STRING (the engine
-#      applies no boolean_conversion on return_result; probe-verified).
-#   CATCH 09d0de88 (max_retry_count 0):
-#   6  return_result 0f4503dd (TERMINAL): result.success = 'false',
-#      result.error_message = catch.message — for a duplicate column the
-#      LIVE deterministic Snowflake error (DUPLICATE_COLUMN_ERROR).
-#
-# Branch mapping (both branches are LIVE-natural; force_action_error is
-# deliberately NOT allowed):
-# - added_column_true: the script adds a column the seeded table lacks ->
-#   {success: 'true'}; the post-run snapshot proves the column exists (the
-#   seeded rows read back with the new NULL column key).
-# - duplicate_column_false: the script names an EXISTING seeded column ->
-#   live '001430 (42601)...' error -> {success: 'false', error_message};
-#   the table is unchanged (snapshot equality).
-#
-# CLEANUP IS MANDATORY: ALTER TABLE PERSISTS on the seeded table — the
-# runner drops the create-or-replace table in its finally on EVERY path.
-#
-# Backends: Snowflake runs LIVE; the recipe-function trigger/returns are
-# deterministic Workato-internal mocks. Each variant uses its own
-# recipe-suffixed physical table (no state shared with the
-# AUTOMATION_COMPASS family lanes).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

@@ -10,12 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data, variant
 from ..verifier import verify_80850459
 
 
-# Slack bot command `rerun_job` (domain financebot, scope
-# activated_salesforce_order, allow_dialog) with one required text parameter
-# job_id: rerun that job of recipe 24999439 ("[QTC] LF | Subscription | 2.
-# Process Salesforce Order") via workato_app.rerun_jobs (controlled
-# Workato-internal mock), then post_bot_reply_v2 with delete_original=true
-# deletes the original interactive Slack message. Linear, no control flow.
 RECIPE_ID = "80850459"
 SEED_TYPE = "slack_bot_command_rerun_job_delete_original_variant"
 TRACK = "live_slack_workato_rerun_delete_original"

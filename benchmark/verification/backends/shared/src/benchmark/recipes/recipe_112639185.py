@@ -15,37 +15,6 @@ SEED_TYPE = "recipe_function_heatmap_city_lookup_sheets_bulk_variant"
 TRACK = "live_google_sheets_recipe_function_heatmap_contacts_bulk"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe function (trigger as 46f1feda; parameters Owner_Name,
-# Sheet_id, City, Region — ALL dereferenced):
-#   declare_variable City = parameters.City (step 2, as 58abf69a)
-#   declare_list "Heatmap results" 10-col schema (step 3, as b2992d26)
-#   SIX independent city IF blocks (NOT elsif; operand = contains on the
-#   anonymization tokens <anon>City_1</anon>..<anon>City_6</anon>): each block
-#   runs lookup_table.search_entries (col1 = parameters.Owner_Name) against its
-#   city's "… Heatmap Invite List (Q3)" table, then FOREACH entries:
-#     Chicago 3667208 / Austin 3667207 / LA 3667209: IF entry.col8 contains
-#       "IT" -> insert_to_list;
-#     Denver 3667213: IF entry.col8 contains "GTM" -> insert_to_list;
-#     Boston 3667140 / New York 3667146: insert_to_list UNCONDITIONALLY.
-#   workato_smart_list.create_list "#{Owner_Name} - Heatmap Contacts" from the
-#   Heatmap results list (step 32, as 3f26a6d5)
-#   workato_smart_list.query_list SELECT * FROM <list_name> ORDER BY Company
-#   ASC (dashed list name; result_schema_json renames Owner->Account_Owner by
-#   index; step 33, as 967cf3aa)
-#   TRY { google_sheets.add_row_v4_bulk to spreadsheet_id=parameters.Sheet_id,
-#   sheet_name=parameters.Region (step 35, as 1c727c37; col_City <- City
-#   VARIABLE; "Who will own invite? <16 tabs>" column never mapped -> blank) }
-#   CATCH (as 58b0935d, max_retry_count=0) { return_result {Success: false,
-#   Error: "#{catch.type} - #{catch.message}"} — terminal }
-#   return_result {Success: true} (step 38, as 2c3c9900).
-# Google Sheets runs LIVE (harness redirects writes to the configured
-# benchmark sheet/tab); lookup tables, variables, smart list and the
-# recipe-function return are deterministic Workato-internal mocks.
-#
-# Cleanup: the only live side effect is rows appended to the benchmark sheet
-# tab; harness.google_sheets.seed_rows fully overwrites the tab on every seed
-# (headers + empty rows), so reruns are deterministic without a separate
-# cleanup step (cleanup principle: seed fully overwrites the state used).
 LOOKUP_TABLES: list[tuple[str, str]] = [
     ("3667208", "Chicago Heatmap Invite List (Q3)"),
     ("3667207", "Austin Heatmap Invite List (Q3)"),
@@ -66,9 +35,6 @@ CITY_VARIABLE_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\","
     "\"line\":\"58abf69a\",\"path\":[\"City\"]}')}"
 )
-# All IF rhs literals in document order: the six city tokens interleaved with
-# the persona filters (Chicago IT, Austin IT, Denver GTM, LA IT; Boston and
-# New York have NO inner persona IF).
 EXPECTED_IF_RHS: list[str] = [
     "<anon>City_1</anon>",
     "IT",
@@ -104,9 +70,6 @@ QUERY_RESULT_SCHEMA_JSON = (
     '{"name":"Exec_Connect","type":"string","optional":false,"control_type":"text","label":"Exec connect"},'
     '{"name":"Num_Invites","type":"string","optional":false,"control_type":"text","label":"Num invites"}]'
 )
-# The last sheet column header carries 16 trailing tab characters VERBATIM in
-# the raw recipe ("Who will own invite? " + 16 tabs); it is never mapped by
-# the bulk rows template and therefore stays blank in every appended row.
 SHEET_HEADER_TRAILING_TABS = "Who will own invite? " + "\t" * 16
 SHEET_HEADERS: list[str] = [
     "Owner",

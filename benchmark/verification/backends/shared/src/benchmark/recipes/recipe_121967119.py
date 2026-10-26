@@ -31,60 +31,6 @@ FIELD_LOADED = "dc03d5e3_96f1_4b45_8e35_e1f1c675abfc"
 SNOW_TABLE = "edw_db.workato_usage.flows_snapshot"
 SNOW_COLUMNS = {"ENTRY_DATE": "date"}
 
-# workato_webhooks.new_event (as 7f0d10a3, suffix 'workato_usage and plg_data
-# schema completed running', webhook_type rawdatatxt) -- the payload is a RAW
-# JSON STRING (seed.trigger MUST be {'payload': '<json string>'}; a
-# schema-shaped object would be unfaithful to rawdatatxt). The recipe reads
-# ONLY payload. Body:
-#   2  json_parser.parse_json 9d3ba345: document = #{payload} -> parses the
-#      raw string into document.* (workato_runtime adapter, no registry tool)
-#   3  IF document.data.runStatus equals_to 'Success' ->
-#      4  workato_db_table.get_records f32d35bd (MOCK table 16848 '[CHI]
-#         entry dates loaded'): filter loaded op_boolean istrue, order_by
-#         entry_date (dashed id in the node) DESC, limit 1 -- honored ONLY
-#         under the opt-in seed flag seed.workato_db_table.
-#         honor_order_and_limit: true (REQUIRED by the seeder; the whole
-#         point of this recipe is 'latest LOADED entry_date'). The engine
-#         normalizes the dashed order_by_field_id to the underscored record
-#         key in the trace args.
-#      5  snowflake.search_rows_sql 91e97e92 (LIVE): select entry_date from
-#         edw_db.workato_usage.flows_snapshot where entry_date >
-#         '<latest loaded>' group by all -- the executor appends the node's
-#         separate orderby input, so the executed SQL ends with
-#         'group by all ORDER BY entry_date ASC' (deterministic row order);
-#         'group by all' dedupes duplicate dates live; the 3-part name maps
-#         to <BENCH_DB>.WORKATO_USAGE.FLOWS_SNAPSHOT; DATE renders bare
-#         isoformat.
-#      6  FOREACH 3ebb9454 over rows (simple; 0..N) ->
-#      7  workato_db_table.upsert_record fa765093 (table 16848, primary
-#         entry_date 1bfbff0a-... dashed): entry_date = #{foreach.entry_date},
-#         loaded = 'true' -- the LITERAL STRING 'true' (custom-value toggle),
-#         while seeded rows carry the JSON boolean true; snapshots pin both.
-#   8  STOP 282ae64d (stop_with_error false) -- top-level sibling AFTER the
-#      IF: it runs on EVERY path (success and not), ending the job without
-#      error; return_value stays null.
-#
-# Branch mapping (all reachable paths covered):
-# - variant_00 success_two_new_dates: 2 loaded rows + 1 UNLOADED decoy DATED
-#   NEWER than both (a broken filter->order interplay would pick it);
-#   get_records must return EXACTLY the single latest LOADED row (the fixed
-#   order+limit gap); snowflake has 1 older + 2 newer + 1 duplicate date ->
-#   group by all dedupes -> 2 upserts (created:true, loaded STRING 'true').
-# - variant_01 success_no_new_dates: every snowflake date <= latest loaded ->
-#   SQL 0 rows -> foreach 0 iterations -> 3 actions then stop; table
-#   byte-identical.
-# - variant_02 success_existing_date_update: one snowflake date equals an
-#   EXISTING (unloaded) table row -> upsert matches on the entry_date primary
-#   key -> UPDATE path (created:false) flipping loaded to the string 'true'.
-# - variant_03 run_status_not_success: runStatus 'Errored' -> IF false ->
-#   ONLY parse_json runs (1 action), then the unconditional stop.
-#
-# Backends: Snowflake LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally -- READ-ONLY recipe,
-# snapshot equality verifier-pinned); workato_db_table 16848 MOCK
-# (Workato-internal, per-variant seeded, honor_order_and_limit opt-in);
-# webhooks trigger + json_parser deterministic mocks. No current_time seed:
-# the SQL never references current date/time.
 
 _RAW_PIN_JSON = r"""{"as": "7f0d10a3", "block": [{"as": "9d3ba345", "block": [], "input": {"document": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"7f0d10a3\",\"path\":[\"payload\"]}')}", "sample_document": "{\"accountId\":139136,\"eventId\":\"wev_2YBoHtS7KlvmYY04QGiqzFpocmg\",\"timestamp\":\"<anon>2024-01-01T10:00:00.000000000Z</anon>\",\"eventType\":\"job.run.started\",\"webhookId\":\"wsu_2YBnj2uT2XAvH7mwzNJWmQyVN6O\",\"webhookName\":\"EDW_staging_deployment\",\"data\":{\"jobId\":\"452823\",\"jobName\":\"Ad hoc deploy\",\"runId\":\"216792841\",\"environmentId\":\"228594\",\"environmentName\":\"EDW_STAGING Deployment\",\"dbtVersion\":\"1.6.0-latest\",\"projectName\":\"EDW - Enteprise Data Warehouse\",\"projectId\":\"266836\",\"runStatus\":\"Running\",\"runStatusCode\":3,\"runStatusMessage\":\"None\",\"runReason\":\"Kicked off from the UI by <anon>john.smith@company.com</anon>\",\"runStartedAt\":\"<anon>2024-01-01T10:00:00Z</anon>\"}}"}, "keyword": "action", "name": "parse_json", "number": 2, "provider": "json_parser", "skip": false}, {"as": "", "block": [{"as": "f32d35bd", "block": [], "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "1bfbff0a-6438-4de9-86f1-e02ba0ead9e0": "date", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "dc03d5e3-96f1-4b45-8e35-e1f1c675abfc": "boolean", "filters": [{"field_id": "dc03d5e3-96f1-4b45-8e35-e1f1c675abfc", "op_boolean": "istrue"}], "limit": "1", "order_by_field_id": "1bfbff0a-6438-4de9-86f1-e02ba0ead9e0", "order_direction": "desc", "table_id": "16848"}, "keyword": "action", "name": "get_records", "number": 4, "provider": "workato_db_table", "skip": false}, {"as": "91e97e92", "block": [], "input": {"orderby": "entry_date ASC", "parameters": {"schema": "[{\"name\":\"entry_date\",\"type\":\"date\",\"optional\":true,\"label\":\"entry_date\",\"details\":{\"real_name\":\"entry_date\"},\"control_type\":\"date\"}]"}, "sql": "select entry_date \nfrom edw_db.workato_usage.flows_snapshot\nwhere entry_date > '#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"f32d35bd\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"1bfbff0a_6438_4de9_86f1_e02ba0ead9e0\"]}')}'\ngroup by all"}, "keyword": "action", "name": "search_rows_sql", "number": 5, "provider": "snowflake", "skip": false}, {"as": "3ebb9454", "block": [{"as": "fa765093", "block": [], "input": {"parameters": {"1bfbff0a_6438_4de9_86f1_e02ba0ead9e0": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"3ebb9454\",\"path\":[\"entry_date\"]}')}", "dc03d5e3_96f1_4b45_8e35_e1f1c675abfc": "true"}, "primary_field_id": "1bfbff0a-6438-4de9-86f1-e02ba0ead9e0", "table_id": "16848"}, "keyword": "action", "name": "upsert_record", "number": 7, "provider": "workato_db_table", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"91e97e92\",\"path\":[\"rows\"]}')}"}, "keyword": "foreach", "name": "", "number": 6, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"91e97e92\",\"path\":[\"rows\"]}')}"}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"json_parser\",\"line\":\"9d3ba345\",\"path\":[\"document\", \"data\", \"runStatus\"]}')}", "operand": "equals_to", "rhs": "Success"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 3, "provider": "", "skip": false}, {"as": "282ae64d", "block": [], "input": {"stop_with_error": "false"}, "keyword": "stop", "name": "", "number": 8, "provider": "", "skip": false}], "input": {"request": {"headers_schema": "[{\"control_type\":\"text\",\"label\":\"Accept encoding\",\"type\":\"string\",\"name\":\"accept_encoding\"},{\"control_type\":\"text\",\"label\":\"Authorization\",\"type\":\"string\",\"name\":\"authorization\"},{\"control_type\":\"text\",\"label\":\"Content length\",\"type\":\"string\",\"name\":\"content_length\"},{\"control_type\":\"text\",\"label\":\"Content type\",\"type\":\"string\",\"name\":\"content_type\"},{\"control_type\":\"text\",\"label\":\"User agent\",\"type\":\"string\",\"name\":\"user_agent\"},{\"control_type\":\"text\",\"label\":\"X amzn trace ID\",\"type\":\"string\",\"name\":\"x_amzn_trace_id\"},{\"control_type\":\"text\",\"label\":\"X correlation ID\",\"type\":\"string\",\"name\":\"x_correlation_id\"},{\"control_type\":\"text\",\"label\":\"X forwarded for\",\"type\":\"string\",\"name\":\"x_forwarded_for\"},{\"control_type\":\"text\",\"label\":\"X forwarded port\",\"type\":\"string\",\"name\":\"x_forwarded_port\"},{\"control_type\":\"text\",\"label\":\"X forwarded proto\",\"type\":\"string\",\"name\":\"x_forwarded_proto\"},{\"control_type\":\"text\",\"label\":\"X request ID\",\"type\":\"string\",\"name\":\"x_request_id\"}]", "query_params": "[]", "webhook_type": "rawdatatxt"}, "webhook_suffix": "workato_usage and plg_data schema completed running"}, "keyword": "trigger", "name": "new_event", "number": 1, "provider": "workato_webhooks", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

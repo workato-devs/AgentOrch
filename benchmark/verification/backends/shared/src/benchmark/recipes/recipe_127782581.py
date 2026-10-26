@@ -26,33 +26,6 @@ WARN_LOG_AS = "9e7ca601"
 WARN_STOP_AS = "7bbe0728"
 FALLTHROUGH_LOG_AS = "8ea3ffbc"
 
-# workato_webhooks.new_event (as 2866ff93, suffix 'Crawl-log', json payload;
-# schema event_type/org_id/datasource_name/level/message/timestamp/
-# logger_name/metadata.additional_options -- the recipe dereferences ONLY
-# payload.level and payload.message):
-#   IF 2 (payload.level.downcase equals_to 'info'):
-#     3  logger.log_message b91c6491 (INFO, message = payload.message)
-#     4  STOP 449a142b (stop_with_error 'false')
-#   IF 5 (payload.level.downcase equals_to 'error'):
-#     6  logger.log_message e1dd5675 (ERROR, same message pill)
-#     7  STOP 53bbd031
-#   IF 8 (payload.level.downcase equals_to 'warn'):
-#     9  logger.log_message 9e7ca601 (WARN, same message pill)
-#     10 STOP 7bbe0728
-#   11 logger.log_message 8ea3ffbc (fallthrough, same message pill,
-#      user_logs_enabled 'false') -- reachable ONLY when no IF matched,
-#      because a matched IF's stop halts execute_nodes.
-#
-# Engine semantics pinned by variants (probed on HEAD 80d400ce):
-# - .downcase makes the match case-insensitive ('INFO'/'Warn' route).
-# - stop traces as {stopped: true} WITHOUT evaluating stop_with_error or a
-#   stop_reason -- trace as-ids + executed_action_count pin the branch, and
-#   ALL FOUR log steps carry the byte-identical message pill, so branch
-#   identity must come from the log step's as-id, never its message text.
-# - logger is a Workato-internal mock: the engine records only the resolved
-#   message (log_level/user_logs_enabled are dropped from args) and the run
-#   makes ZERO registry tool calls on every branch.
-# Pure-mock recipe (webhooks trigger + logger): no cleanup, no live lane.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_webhooks", "name": "new_event", "as": "2866ff93", "skip": false, "input": {"request": {"payload_schema": "[{\"name\":\"event_type\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Event type\"},{\"name\":\"org_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Org ID\"},{\"name\":\"datasource_name\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Datasource name\"},{\"name\":\"level\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Level\"},{\"name\":\"message\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Message\"},{\"name\":\"timestamp\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Timestamp\"},{\"name\":\"logger_name\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Logger name\"},{\"name\":\"metadata\",\"type\":\"object\",\"optional\":true,\"properties\":[{\"control_type\":\"text\",\"label\":\"Additional options\",\"name\":\"additional_options\",\"type\":\"string\",\"optional\":true}],\"label\":\"Metadata\"}]", "webhook_type": "json"}, "webhook_suffix": "Crawl-log"}, "block": [{"number": 2, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\",\"level\"]}').downcase", "operand": "equals_to", "rhs": "info"}], "operand": "and", "type": "compound"}, "block": [{"number": 3, "keyword": "action", "provider": "logger", "name": "log_message", "as": "b91c6491", "skip": false, "input": {"log_level": "INFO", "message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\", \"message\"]}')}", "user_logs_enabled": true}, "block": []}, {"number": 4, "keyword": "stop", "provider": "", "name": "", "as": "449a142b", "skip": false, "input": {"stop_with_error": "false"}, "block": []}]}, {"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\",\"level\"]}').downcase", "operand": "equals_to", "rhs": "error"}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "logger", "name": "log_message", "as": "e1dd5675", "skip": false, "input": {"log_level": "ERROR", "message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\", \"message\"]}')}", "user_logs_enabled": true}, "block": []}, {"number": 7, "keyword": "stop", "provider": "", "name": "", "as": "53bbd031", "skip": false, "input": {"stop_with_error": "false"}, "block": []}]}, {"number": 8, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\",\"level\"]}').downcase", "operand": "equals_to", "rhs": "warn"}], "operand": "and", "type": "compound"}, "block": [{"number": 9, "keyword": "action", "provider": "logger", "name": "log_message", "as": "9e7ca601", "skip": false, "input": {"log_level": "WARN", "message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\", \"message\"]}')}", "user_logs_enabled": true}, "block": []}, {"number": 10, "keyword": "stop", "provider": "", "name": "", "as": "7bbe0728", "skip": false, "input": {"stop_with_error": "false"}, "block": []}]}, {"number": 11, "keyword": "action", "provider": "logger", "name": "log_message", "as": "8ea3ffbc", "skip": false, "input": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"2866ff93\",\"path\":[\"payload\", \"message\"]}')}", "user_logs_enabled": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -67,8 +40,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
     "workato_runtime.log_message",
 ]
 ALLOWED_TOOLS: list[str] = []
-# level.downcase -> (log step, stop step) the recipe routes to; anything else
-# falls through to the unconditional step-11 log with no stop.
 LEVEL_ROUTES = {
     "info": (INFO_LOG_AS, INFO_STOP_AS),
     "error": (ERROR_LOG_AS, ERROR_STOP_AS),

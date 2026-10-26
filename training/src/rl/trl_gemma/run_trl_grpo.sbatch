@@ -7,7 +7,7 @@
 #SBATCH --output=output/logs/trl-%j.out
 
 # TRL GRPOTrainer for gemma-4 (verl 0.9 does not support gemma-4; see
-# results/EXPERIMENTS.md). Colocated vLLM, LoRA r16/a32, Tier-1 reward.
+# results/training.csv). Colocated vLLM, LoRA r16/a32, Tier-1 reward.
 # Usage (from training/):
 #   sbatch src/rl/trl_gemma/run_trl_grpo.sbatch [--accel-config <yaml>] [train_grpo_gemma.py args...]
 # accelerate_fsdp2.yaml wraps Gemma4TextDecoderLayer (26B/31B);

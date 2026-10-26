@@ -23,8 +23,6 @@ UPDATE_STEP_AS = "69ebf583"
 CATCH_STEP_AS = "36d3b7d0"
 ERROR_STOP_STEP = 10
 FORCEABLE_STEPS = {SEARCH_STEP_AS}
-# The 22 raw column headers exactly as every sheets step declares them in
-# column_headers (the benchmark tab is seeded with these).
 SHEET_HEADERS = [
     "ID",
     "Status",
@@ -58,53 +56,6 @@ REQUEST_MKTO_KEYS = (
     "utm_campaign", "utm_source", "utm_medium", "utm_content", "utm_term", "partner_referral",
 )
 
-# workato_service.receive_request (as 22b103c4, service 'Update Master
-# Registration Sheet'): request {lead_id*, status*, event_name*, Lead{first_
-# name,last_name,email,phone,job_title}, Company{company,tools,tech_stack,
-# city,country,company_size,region,account_type}, MKTO{utm_campaign,utm_
-# source,utm_medium,utm_content,utm_term,partner_referral}}. Body (one TRY,
-# catch 36d3b7d0 max_retry_count=1/10s -- the engine runs the try body once
-# and the catch once; a forced error is deterministic so retrying could not
-# change the outcome, retry config is pinned at validate time only):
-#   3  google_sheets.search_spreadsheet_rows_v4_new 4cd73a31 (LIVE, raw
-#      spreadsheet 'LE-2020-03-12 Redpoint'/'Main' env-redirected to the
-#      benchmark tab): data col_ID = request.lead_id AND col_'Event Name' =
-#      request.event_name, count 2000. The search args keep the RAW col_
-#      encoded keys; the live client decodes the col_ prefix against the
-#      actual tab headers and the result carries the 'sheet' output field the
-#      raw pills dereference.
-#   4  IF rows size < 1 -> 5 add_spreadsheet_row_v4 fb8e9257: 20 label-mapped
-#      columns (Attended? and 'Who should follow up?' are NOT mapped and read
-#      back as ""); col_Phone is "'#{request.Lead.phone}" -- the recipe's own
-#      leading-apostrophe guard, so USER_ENTERED stores literal text and a
-#      +-prefixed phone reads back WITH the + (without the guard Sheets would
-#      parse "+123..." as a formula; the args pin the exact "'+..." bytes and
-#      expect.final_sheet_rows pins the rendered read-back).
-#   6  IF rows size > 0 -> 7 update_row_v4_new 69ebf583: row_number =
-#      rows.current_item.row_number (current_item outside a foreach = first
-#      matched row), data = col_Status + col_'Account Type' ONLY (all other
-#      columns keep their seeded values).
-#   Exactly one of IF-4 / IF-6 fires per run (rows size < 1 vs > 0 is an
-#   exact complement); the success path sends NO service reply.
-#   CATCH 8 (as 36d3b7d0) -> 9 workato_service.send_reply 50073cae
-#      reply_type=error message=catch message (sets the job return_value)
-#      -> 10 STOP stop_with_error=true stop_reason=catch message.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 row_missing_add: no row matches lead_id+event_name (decoy row
-#   seeded) -> IF-4 add path appends the 20-column row (incl. the rendered
-#   '+ phone guard bytes).
-# - variant_01 row_exists_update: the seeded registrant row matches ->
-#   IF-6 update path rewrites ONLY Status + Account Type at its row_number.
-# - variant_02 catch_error_reply: forced error on the 4cd73a31 search ->
-#   catch: error send_reply (return_value) + STOP 10 with error; the sheets
-#   tab is never touched (no seed.sheets on this variant).
-#
-# Backends: google_sheets LIVE (env-redirected benchmark tab; the seed fully
-# overwrites the tab per run -> deterministic reruns, no cleanup step needed
-# per the cleanup principle); workato_service is the Workato-internal
-# deterministic reply mock (send_reply echoes its args and sets the job
-# return_value).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

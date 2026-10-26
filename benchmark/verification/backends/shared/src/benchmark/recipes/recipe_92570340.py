@@ -27,37 +27,6 @@ DATE_COL = "col5"
 CUTOFF_DAYS = 180
 ROW_COLS = ("col1", "col2", "col3", "col4", "col5")
 
-# clock.scheduled_event 73e5c27a (weekly Mon-Fri 06:00 America/Los_Angeles,
-# payload-less) ->
-#   2 lookup_table.get_entries a39f8379 (mock table 3417234 '[GTM] Chatter -
-#     Log'; entries expose id + nested entry.col1..col5 + flat colN copies)
-#   3 FOREACH e89b1cf4 over a39f8379.entries (simple; zero entries -> zero
-#     iterations)
-#     4 IF =_('data.foreach.e89b1cf4.entry.col5').to_date less_than
-#         =180.days.ago
-#       5 lookup_table.delete_entry c66fb912 (id = foreach.id pill,
-#         ignore_not_found 'true', table 3417234)
-#
-# FULL MOCK (Workato-internal only): the lookup table is per-variant seeded
-# mock state; the clock trigger is payload-less and determinism comes from the
-# REQUIRED seed['now'] (=180.days.ago fail-fasts without it). No live lane,
-# no cleanup (the mock table is rebuilt from the variant seed on every run —
-# rerun-identical, probe-verified).
-#
-# Probe findings pinned by seeder/variants (current tree, 2026-07-08):
-# - delete ids are the integer _row_ids the mock assigns in seed order
-#   (0-based); the variants pin them per run via expect.deleted_ids.
-# - BOUNDARY IS CLOCK-COUPLED: the IF compares '.to_date' (renders
-#   'YYYY-MM-DD') against the ago cutoff rendered as a UTC ISO datetime
-#   string; a row dated exactly the cutoff DATE compares less_than (deleted,
-#   probe-verified 2025-09-11 vs cutoff 2025-09-11T06:00). The seeder
-#   therefore requires every date to sit >= 2 days clear of the cutoff date.
-# - BLANK col5 would silently DELETE (''.to_date -> '' -> '' less_than
-#   '<cutoff>' is a string compare -> true) where real Workato errors the job
-#   on ''.to_date — the seeder forbids blank col5 (probe-verified).
-# - non-ISO col5 raises ValueError fail-fast (probe-verified) — the seeder
-#   requires strict YYYY-MM-DD.
-# - a missing seed['now'] fail-fasts inside =180.days.ago (probe-verified).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "73e5c27a", "skip": false, "input": {"days_of_week": "1,2,3,4,5", "time_unit": "weeks", "timezone": "America/Los_Angeles", "trigger_at": "06:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "lookup_table", "name": "get_entries", "as": "a39f8379", "skip": false, "input": {"lookup_table_id": "3417234"}, "block": []}, {"number": 3, "keyword": "foreach", "provider": "", "name": "", "as": "e89b1cf4", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"a39f8379\",\"path\":[\"entries\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"a39f8379\",\"path\":[\"entries\"]}')}", "block": [{"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_('data.foreach.e89b1cf4.entry.col5').to_date", "operand": "less_than", "rhs": "=180.days.ago"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "lookup_table", "name": "delete_entry", "as": "c66fb912", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e89b1cf4\",\"path\":[\"id\"]}')}", "ignore_not_found": "true", "lookup_table_id": "3417234"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

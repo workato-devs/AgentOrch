@@ -316,10 +316,7 @@ def revise_round(k: int, ids: list[str], plans: dict[str, dict[str, Any]],
         messages = build_revision_messages(context, current, feedback)
         requests.append((recipe_id, (context["system"], messages)))
 
-    # Generate in chunks: a single 650-prompt scheduler batch wedged the
-    # Qwen3.8-27B engine for 13 h with no output (2026-08-29), and chunking
-    # also gives progress visibility and finer resume granularity (each
-    # chunk's plans are written as soon as it returns).
+    # Generate in chunks and save each completed chunk for resumable evaluation.
     chunk = max(1, args.llm_chunk)
     raws: list[Any] = []
     for start in range(0, len(requests), chunk):

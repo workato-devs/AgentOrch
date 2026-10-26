@@ -23,64 +23,10 @@ DECLARE_STEP_AS = "36bf1d17"
 SEARCH_STEP_AS = "85f2b107"
 MENU_STEP_AS = "aab14ffe"
 UPDATE_STEP_AS = "d719ef1b"
-# The literal 3-part name the SQL interpolates; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.SALESFORCE.ACCOUNT).
 SNOWFLAKE_TABLE = "WORKATO_BUSINESS_SYSTEMS.SALESFORCE.ACCOUNT"
 TABLE_COLUMNS = {"NAME": "string"}
-# The catch update's ANONYMIZED target, pinned verbatim: the anonymizer
-# replaced BOTH the recipe uuid and the step id with placeholder tokens.
 ANON_UPDATE_TARGET = "<anon>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</anon>:<anon>bbbbbbbb</anon>:job_report"
 
-# TWIN NOTE: byte-twin of 94382842 (diff verified against both raw_recipe.md
-# files): only the column/table (NAME / …SALESFORCE.ACCOUNT vs COMPANY_NAME /
-# …FRESHDESK.product_support_ticket_export), the menu name, and the catch
-# update's ANONYMIZED target differ. Each module pins ITS OWN table, SQL and
-# target shape so twin drift between the deployed recipes is caught by
-# validation, never papered over.
-#
-# slack_bot.dynamic_menu 'List of Salesforce Company Names' (as bd069835;
-# parameters company_name/report are declared optional and NEVER
-# dereferenced — only typeahead.value feeds the SQL):
-#   2  workato_variable.declare_variable 36bf1d17 job_report='OK' (mock)
-#   TRY 3:
-#     4  snowflake.search_rows_sql 85f2b107 (LIVE): SELECT DISTINCT NAME
-#        FROM WORKATO_BUSINESS_SYSTEMS.SALESFORCE.ACCOUNT WHERE LOWER(NAME)
-#        LIKE LOWER('%<typeahead.value>%'), limit '2000' (appended by
-#        _append_limit_offset). No ORDER BY: multi-row results are
-#        UNORDERED and must be verified as a multiset
-#        (expect.menu_options_ordered false).
-#     5  slack_bot.generate_menu_options aab14ffe: vestigial
-#        `option_groups [{}]` + use_option_groups 'false' routes to the
-#        FLAT options path (engine fix 88467916, re-probed on this recipe
-#        verbatim); options ____source = step-4 rows, label = value =
-#        current_item name (live rows carry both NAME and the lowercase
-#        alias; the pill reads the lowercase key).
-#   CATCH 6 (as 31cbad55, max_retry_count 0):
-#     7  workato_variable.update_variables d719ef1b job_report='Failed' —
-#        target name is the ANONYMIZED placeholder token pinned in
-#        ANON_UPDATE_TARGET. The anonymizer replaced the step id itself
-#        (stripping <anon> tags yields 'bbbbbbbb', NOT the declared
-#        36bf1d17), so verbatim/stripped resolution both miss;
-#        the engine's _resolve_variable_step_id (engine fix
-#        80d400ce) resolves placeholder-token targets by the updated
-#        field's UNIQUE declaring step (job_report -> 36bf1d17 here) and
-#        fails fast on ambiguity or no owner — RE-PROBED verbatim on this
-#        recipe: the declared variable flips to 'Failed', no phantom step.
-#
-# Live semantics pinned by variants (same family as the 94382842 twin):
-# - LOWER() on BOTH sides: mixed-case typeahead matches mixed-case rows.
-# - LIKE '%%' (blank typeahead) matches every NON-NULL account name;
-#   LOWER(NULL) LIKE … is NULL -> NULL rows are excluded by SQL.
-# - DISTINCT collapses duplicate account names.
-# - The CATCH branch is exercised via seed.force_action_error on 85f2b107;
-#   it never touches Snowflake, so catch variants must NOT provision live
-#   tables (nothing to clean up).
-#
-# Typeahead charset guard: the value interpolates into a single-quoted SQL
-# LIKE literal. Quotes/backslashes would break the literal and %/_ are LIKE
-# wildcards that silently change match semantics — the seeder rejects them
-# so groundtruth stays a plain case-insensitive substring match.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "bd069835", "skip": false, "input": {"dynamic_menu_name": "List of Salesforce Company Names", "parameters": "[\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Company\",\n    \"name\": \"company_name\",\n    \"type\": \"string\",\n    \"optional\": true\n  },\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Report\",\n    \"name\": \"report\",\n    \"type\": \"string\",\n    \"optional\": true\n  }\n]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "36bf1d17", "skip": false, "input": {"variables": {"data": {"job_report": "OK"}, "schema": "[{\"name\":\"job_report\",\"type\":\"string\",\"optional\":true,\"label\":\"Job Report\",\"details\":{\"real_name\":\"Job Report\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 4, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "85f2b107", "skip": false, "input": {"limit": "2000", "parameters": {"schema": "[]"}, "sql": "SELECT DISTINCT NAME FROM WORKATO_BUSINESS_SYSTEMS.SALESFORCE.ACCOUNT WHERE LOWER(NAME) LIKE LOWER('%#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"bd069835\",\"path\":[\"typeahead\", \"value\"]}')}%')"}, "block": []}, {"number": 5, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "aab14ffe", "skip": false, "input": {"option_groups": [{}], "options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"85f2b107\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"85f2b107\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"name\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"85f2b107\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"name\"]}')}"}, "use_option_groups": "false"}, "block": []}, {"number": 6, "keyword": "catch", "provider": "", "name": "", "as": "31cbad55", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 7, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "d719ef1b", "skip": false, "input": {"job_report": "Failed", "name": "<anon>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</anon>:<anon>bbbbbbbb</anon>:job_report"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

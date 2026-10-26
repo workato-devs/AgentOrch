@@ -30,10 +30,6 @@ TRACK = "recipe_function_snowflake_subscription_log_insert"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 LOG_TABLE = "PUBLIC.SUBSCRIPTION_LOG"
-# Physical column order of PUBLIC.SUBSCRIPTION_LOG. The recipe builds its
-# INSERT from SHOW COLUMNS output (ordinal order) zipped against a VALUES
-# tuple whose order is hardcoded in step 9, so the seeded table MUST declare
-# exactly these columns in exactly this order.
 LOG_COLUMNS = (
     "RECORD_ID",
     "SALESFORCE_ORDER_ID",
@@ -83,21 +79,6 @@ ALLOWED_TOOLS: list[str] = [
     "workato_recipe_function.return_result",
 ]
 
-# --- module-local engine extensions -----------------------------------------
-# Two formula shapes in this raw recipe are not handled by the shared engine
-# (harness files are frozen for this batch; fold these into raw_executor when
-# the engine is next extended):
-#   1. update_variables with a multi-line name (one "uuid:step:field" target
-#      per line): variable_target() splits the whole multi-line string on ":"
-#      and writes a single garbage key instead of every named field.
-#   2. the nested multi-line `=if ... if ... else ... end ... else ... end`
-#      formula for New Record ID: eval_if_formula is flat/line-based and
-#      silently returns the wrong branch for nested ifs.
-#   3. the date ternary `=_dp(P).present? ? "'#{_dp(P).in_time_zone("Etc/UTC")
-#      .strftime("%Y-%m-%d %H:%M:%S.%L")}'" : "NULL"`: eval_dp_formula's
-#      quote tracking desyncs on the mixed quoting and raises.
-# All three are handled here, fail-closed, reusing engine leaf evaluation
-# (eval_formula) for every condition and value expression.
 
 _DATE_TERNARY_RE = re.compile(
     r"_dp\('(?P<pill>[^']+)'\)\.present\?\s*\?\s*"

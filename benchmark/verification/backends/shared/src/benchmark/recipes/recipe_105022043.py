@@ -15,10 +15,6 @@ SEED_TYPE = "nps_outreach_cleanup_variant"
 TRACK = "workato_lookup_table_outreach_cleanup"
 TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
-# Daily cleanup: search the "Contact Outreach List" lookup table (3093481) for
-# distributed NPS surveys (col2 in ["NPS End User Survey 2.0","Relationship NPS"]
-# and col6 == "yes"), then for each entry whose col4 (date_added) is older than
-# 6 months, delete it. Actions in _collect_actions (DFS) order:
 LOOKUP_TABLE_ID = "3093481"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "search_entries"),

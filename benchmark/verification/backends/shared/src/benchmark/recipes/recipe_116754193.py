@@ -15,34 +15,6 @@ SEED_TYPE = "recipe_function_business_process_upsert_variant"
 TRACK = "workato_recipe_function_db_table_business_process_upsert"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe function (trigger as d3f421ab). Mock-only backends: six
-# Workato db tables + recipe-function trigger/return (Workato-internal).
-#   step 2  (9863f1f6) get_records 20690 '[AC] Process Types'
-#            filter Level(54a5b952) eq parameters.process_hierarchy_level
-#   step 3  IF records.size == 0 -> step 4 STOP with error (hierarchy not found)
-#   step 5  IF level == '3' AND blank?-chain over the 5 level names + status
-#            -> step 6 STOP with error (Level 3 key attributes missing)
-#   step 7  IF current_automation_level_name present ->
-#     step 8  (eed748db) get_records 20687 '[AC] Process Automation Levels'
-#     step 9  IF records.size == 0 -> step 10 STOP with error
-#   step 11 IF workato_integration_level_name present ->
-#     step 12 (37e44cee) get_records 20686 '[AC] Workato Integration Level'
-#     step 13 IF records.size == 0 -> step 14 STOP with error
-#   step 15 IF target_automation_level_name present ->
-#     step 16 (3e5c56ce) get_records 20687 again (target automation)
-#     step 17 IF records.size == 0 -> step 18 STOP with error
-#   step 19 IF current_ai_involvement_level_name present ->
-#     step 20 (e51f429d) get_records 20688 '[AC] AI Involvement Levels'
-#     step 21 IF records.size == 0 -> step 22 STOP with error
-#   step 23 IF ai_impact_level_name present ->
-#     step 24 (58f0cc3d) get_records 20689 '[AC] AI Impact Levels'
-#     step 25 IF records.size == 0 -> step 26 STOP with error
-#   step 27 (9244094c) upsert_record 22921 '[AC] BUSINESS_PROCESS'
-#            primary field 'Primary Key' = "#{business_unit_code}-#{row_number}";
-#            optional integer levels map '.presence || skip' pills over the
-#            level-lookup records (current_item OUTSIDE foreach = first record),
-#            Parent Id is '=skip', Project/Page URL is '.presence || skip'.
-#   step 28 (97ae4bd6) return_result with empty input -> {}
 TABLE_PROCESS_TYPES = "20690"
 TABLE_AUTOMATION_LEVELS = "20687"
 TABLE_INTEGRATION_LEVELS = "20686"
@@ -93,7 +65,6 @@ ALLOWED_TOOLS: list[str] = [
     "workato_db_table.upsert_record",
     "workato_recipe_function.return_result",
 ]
-# (step number as authored, "as" id, table id, filter field uuid, filter value pill parameter)
 EXPECTED_GET_STEPS: list[tuple[int, str, str, str, str]] = [
     (2, "9863f1f6", TABLE_PROCESS_TYPES, "54a5b952-caba-4bc4-8f47-58798ec6e8f2", "process_hierarchy_level"),
     (8, "eed748db", TABLE_AUTOMATION_LEVELS, "ec706781-ea7e-4000-aed0-5e448031ae56", "current_automation_level_name"),
@@ -102,9 +73,6 @@ EXPECTED_GET_STEPS: list[tuple[int, str, str, str, str]] = [
     (20, "e51f429d", TABLE_AI_INVOLVEMENT_LEVELS, "e31c020f-d50c-4fe5-a0db-fb4a3cb3b25d", "current_ai_involvement_level_name"),
     (24, "58f0cc3d", TABLE_AI_IMPACT_LEVELS, "018b63d6-d871-4a1f-8572-a3b251f95164", "ai_impact_level_name"),
 ]
-# Five distinct not-found stop branches + the level-3 attribute guard; the
-# stop reasons are pinned verbatim (parameter pills included) so a raw-recipe
-# drift is caught at validate time.
 EXPECTED_STOP_REASONS: dict[int, str] = {
     4: "'Process Hierarchy Level' not found: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"process_hierarchy_level\"]}')}",
     6: "Key attributes for a Level 3 item is missing. Please set values accordingly.\n\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"business_unit_code\"]}')}-#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"row_number\"]}')}\nItem Name: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"process_name\"]}')}",
@@ -114,8 +82,6 @@ EXPECTED_STOP_REASONS: dict[int, str] = {
     22: "'AI Involvement' level not found: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"current_ai_involvement_level_name\"]}')}",
     26: "'AI Impact Level' not found: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"ai_impact_level_name\"]}')}",
 }
-# Level-3 guard (step 5): parameters.process_hierarchy_level == '3' AND the
-# '.blank? ||' chain over the five level names + status is true.
 LEVEL3_BLANK_CHAIN_FORMULA = (
     "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\",\"current_automation_level_name\"]}').blank? "
     "|| _dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\",\"workato_integration_level_name\"]}').blank? "
@@ -124,9 +90,6 @@ LEVEL3_BLANK_CHAIN_FORMULA = (
     "|| _dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\",\"ai_impact_level_name\"]}').blank? "
     "|| _dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\",\"status\"]}').blank?"
 )
-# Upsert (step 27) field mapping, pinned verbatim: '.presence || skip' pills
-# read the level-lookup records via current_item OUTSIDE any foreach
-# (first-record semantics), Parent Id is a literal '=skip'.
 EXPECTED_UPSERT_PARAMETERS: dict[str, str] = {
     "00a309e4_fa30_4e54_9bd7_75f2708eeacb": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"d3f421ab\",\"path\":[\"parameters\", \"row_number\"]}')}",
     "19f02441_97bd_4c5e_afda_a7f1674832ea": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3e5c56ce\",\"path\":[\"records\",{\"path_element_type\":\"current_item\"},\"513681c9_cff7_4ff6_94a3_85465d2633cc\"]}').presence || skip",

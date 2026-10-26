@@ -43,10 +43,6 @@ ALLOWED_TOOLS: list[str] = [
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# --- Verbatim raw-recipe pins. The trigger is replayed from the seeded payload
-# and the lookup table is a Workato-internal mock, so these literals never
-# reach a live Workato runtime; they are pinned verbatim so any upstream change
-# to the raw recipe fails validation instead of silently drifting. ---
 _TRIGGER_ID_PILL = '''#{_dp('{"pill_type":"output","provider":"salesforce","line":"f2178d9f","path":["Id"]}')}'''
 _TRIGGER_NAME_PILL = '''#{_dp('{"pill_type":"output","provider":"salesforce","line":"f2178d9f","path":["Name"]}')}'''
 _TRIGGER_FAMILY_PILL = '''#{_dp('{"pill_type":"output","provider":"salesforce","line":"f2178d9f","path":["Family"]}')}'''

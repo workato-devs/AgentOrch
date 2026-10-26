@@ -26,23 +26,11 @@ DEAD_STEP_AS = ("6db82a50", "38168b5e", "b4374a34", "00c04c9d")
 RAW_SPREADSHEET_ID = "1zB6BMnNrUJng_Xrlh73W4IUbXZOOP1LirxyWGGUdH1E"
 RAW_SHEET_NAME = "Not Interested"
 SHEET_HEADERS = ("USER_NAME", "WORKSPACE_ID", "WORKSPACE_EMAIL", "ACCOUNT_OWNER_EMAIL", "TIMESTAMP")
-# The lookup email is seeded as a resolvable workspace member.  Its provider
-# user id is deliberately not pinned: that id is environment state and the
-# lookup output feeds only disabled steps, so exact-id scoring would measure
-# fixture dialect rather than orchestration.
 LIVE_LOOKUP_EMAIL = "jamie.lee@corp.example"
-# 3-part physical seed keys, incl. the reserved word USER (safe via the live
-# client's quoted create-or-replace rewrite -- LIVE-VERIFIED by triage).
 WORKSPACE_DIM_TABLE = "product.workato_usage.workspace_dim"
 ACCOUNT_TABLE = "product.salesforce.account"
 USER_TABLE = "product.salesforce.user"
 SNOWFLAKE_TABLES = (WORKSPACE_DIM_TABLE, ACCOUNT_TABLE, USER_TABLE)
-# Rendered from the verbatim step-2 SQL: both pills sit INSIDE single quotes,
-# so an absent/blank current_team renders '' (empty string, NEVER NULL) and
-# the ifnull(...) user_id fallback arm is UNREACHABLE as written (re-probed on
-# this tree 2026-07-08: ifnull('','u-77') for an absent pill). Variants
-# therefore always carry a non-empty current_team and route the branch lever
-# through the workspace_dim match instead.
 RESOLVED_SQL_TEMPLATE = (
     "select u.* from product.workato_usage.workspace_dim wd\n"
     "join product.salesforce.account a\n"
@@ -52,45 +40,6 @@ RESOLVED_SQL_TEMPLATE = (
     "where workspace_id = ifnull('{current_team}','{user_id}')"
 )
 
-# workato_webhooks.new_event 'Not Interested in Agentic' (as 97425b71):
-# payload {name, account, user_id, current_team, email, server, timestamp}.
-#   2 snowflake.search_rows_sql 2d42fc76 (LIVE): 3-table join workspace_dim ->
-#     account -> USER (reserved word, quoted rewrite) selecting u.*;
-#     where workspace_id = ifnull('#{payload.current_team}','#{payload.user_id}').
-#     NO time functions -> current_time must NOT be seeded. No ORDER BY and no
-#     connector orderby -> seeds keep the match set at <=1 row (2+ rows would
-#     make `rows current_item` = rows[0] nondeterministic live).
-#   3 IF rows[current_item].email present>
-#       4 slack.get_user_by_email d10ecead (provider 'slack' routes to the
-#         slack_bot handler; email input -> LIVE users.lookupByEmail).
-#   5 slack_bot.post_bot_message 6db82a50 skip:true DEAD.
-#   6 google_sheets.add_spreadsheet_row_v4 9666ca53 (LIVE, redirected to the
-#     benchmark sheet; args keep the recipe's raw spreadsheet id): data col_1..
-#     col_5 relabelled USER_NAME=name, WORKSPACE_ID=account, WORKSPACE_EMAIL=
-#     user_id, ACCOUNT_OWNER_EMAIL=current_team, TIMESTAMP=email -- the
-#     label/value mismatches are verbatim recipe truth. Runs on BOTH branches.
-#   7/8/9 post_bot_message 38168b5e + gmail.send_mail b4374a34/00c04c9d
-#     skip:true DEAD (slack lookup output feeds only these dead steps).
-#
-# LOAD-BEARING seed typing: current_team follows the source webhook's numeric
-# contract. The simulator preserves that numeric value for tool arguments,
-# while Snowflake comparison and final Sheet snapshots normalize their storage
-# representations independently. Payload strings interpolated into quoted SQL
-# (including user_id) must not carry single quotes or backslashes.
-#
-# Branch mapping (offline dry-replay re-probed on this tree 2026-07-08):
-# - owner_found_lookup_and_row (3 actions): current_team matches 1 workspace
-#   -> 1 u.* row -> IF true -> live lookup (pinned member) -> sheet row.
-# - no_workspace_match_row_only (2 actions): rows [] -> current_item pill nil
-#   -> present false -> slack skipped -> sheet row still appended.
-# - owner_without_email_row_only (2 actions): 1 row with NULL/'' email ->
-#   present false (the IF guards the FIELD, not the row) -> sheet row only.
-#
-# Backends: snowflake LIVE (create-or-replace 3 seed tables, dropped in the
-# runner's finally; READ-ONLY -- snapshot equality pinned); slack LIVE
-# lookupByEmail (read-only); google_sheets LIVE (benchmark tab seed-cleared
-# per variant -- replace_rows -- so the appended row lands at row_number 2 and
-# reruns are deterministic; no post-run cleanup needed, the seed overwrites).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_webhooks", "name": "new_event", "as": "97425b71", "skip": false, "input": {"request": {"headers_schema": "[{\"control_type\":\"text\",\"label\":\"Accept\",\"type\":\"string\",\"name\":\"accept\"},{\"control_type\":\"text\",\"label\":\"Accept encoding\",\"type\":\"string\",\"name\":\"accept_encoding\"},{\"control_type\":\"text\",\"label\":\"Accept language\",\"type\":\"string\",\"name\":\"accept_language\"},{\"control_type\":\"text\",\"label\":\"Cache control\",\"type\":\"string\",\"name\":\"cache_control\"},{\"control_type\":\"text\",\"label\":\"Upgrade insecure requests\",\"type\":\"string\",\"name\":\"upgrade_insecure_requests\"},{\"control_type\":\"text\",\"label\":\"User agent\",\"type\":\"string\",\"name\":\"user_agent\"},{\"control_type\":\"text\",\"label\":\"X amzn trace ID\",\"type\":\"string\",\"name\":\"x_amzn_trace_id\"},{\"control_type\":\"text\",\"label\":\"X correlation ID\",\"type\":\"string\",\"name\":\"x_correlation_id\"},{\"control_type\":\"text\",\"label\":\"X forwarded for\",\"type\":\"string\",\"name\":\"x_forwarded_for\"},{\"control_type\":\"text\",\"label\":\"X forwarded port\",\"type\":\"string\",\"name\":\"x_forwarded_port\"},{\"control_type\":\"text\",\"label\":\"X forwarded proto\",\"type\":\"string\",\"name\":\"x_forwarded_proto\"},{\"control_type\":\"text\",\"label\":\"X request ID\",\"type\":\"string\",\"name\":\"x_request_id\"}]", "payload_schema": "[{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"name\"},{\"control_type\":\"text\",\"label\":\"Account\",\"type\":\"string\",\"name\":\"account\"},{\"control_type\":\"text\",\"label\":\"User ID\",\"type\":\"string\",\"name\":\"user_id\"},{\"control_type\":\"number\",\"label\":\"Current team\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"current_team\"},{\"control_type\":\"text\",\"label\":\"Email\",\"type\":\"string\",\"name\":\"email\"},{\"control_type\":\"text\",\"label\":\"Server\",\"type\":\"string\",\"name\":\"server\"},{\"control_type\":\"number\",\"label\":\"Timestamp\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"timestamp\"}]", "query_params": "[]", "webhook_type": "json"}, "webhook_suffix": "Not Interested in Agentic"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "2d42fc76", "skip": false, "input": {"parameters": {"schema": "[]"}, "sql": "select u.* from product.workato_usage.workspace_dim wd\njoin product.salesforce.account a\non wd.sales_account_id = a.id\njoin product.salesforce.user u\non a.owner_id = u.id\nwhere workspace_id = ifnull('#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"current_team\"]}')}','#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"user_id\"]}')}')"}, "block": []}, {"number": 3, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"2d42fc76\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"email\"]}')}", "operand": "present", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 4, "keyword": "action", "provider": "slack", "name": "get_user_by_email", "as": "d10ecead", "skip": false, "input": {"email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"2d42fc76\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"email\"]}')}"}, "block": []}]}, {"number": 5, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "6db82a50", "skip": true, "block": []}, {"number": 6, "keyword": "action", "provider": "google_sheets", "name": "add_spreadsheet_row_v4", "as": "9666ca53", "skip": false, "input": {"data": {"col_1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"name\"]}')}", "col_2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"account\"]}')}", "col_3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"user_id\"]}')}", "col_4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"current_team\"]}')}", "col_5": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_webhooks\",\"line\":\"97425b71\",\"path\":[\"payload\", \"email\"]}')}"}, "is_top_left": "false", "sheet": "Not Interested", "spreadsheet": "1zB6BMnNrUJng_Xrlh73W4IUbXZOOP1LirxyWGGUdH1E", "team_drives": "my_drive"}, "block": []}, {"number": 7, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "38168b5e", "skip": true, "block": []}, {"number": 8, "keyword": "action", "provider": "gmail", "name": "send_mail", "as": "b4374a34", "skip": true, "block": []}, {"number": 9, "keyword": "action", "provider": "gmail", "name": "send_mail", "as": "00c04c9d", "skip": true, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -149,13 +98,8 @@ _EXPECT_VALUE_KEYS = {
     "argument_equivalence",
 }
 PAYLOAD_KEYS = ("name", "account", "user_id", "current_team", "email", "server", "timestamp")
-# current_team lands (quoted) in the SQL AND as a sheet cell: digits only.
-# user_id also interpolates into the quoted SQL fallback arm: no quotes,
-# backslashes or non-printable characters.
 _SQL_SAFE_RE = re.compile(r"^[A-Za-z0-9 ._@\-]+$")
 _ASCII_RE = re.compile(r"^[\x20-\x7e]*$")
-# Join columns each seed table must declare (u.* passes every USER column
-# through; EMAIL is the one live steps dereference).
 REQUIRED_COLUMNS = {
     WORKSPACE_DIM_TABLE: ("WORKSPACE_ID", "SALES_ACCOUNT_ID"),
     ACCOUNT_TABLE: ("ID", "OWNER_ID"),

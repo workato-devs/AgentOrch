@@ -22,78 +22,7 @@ CALL_SERVICE_FLOW_ID = "14673208"
 CATCH_STEP_AS = "58737439"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# salesforce.sobject_batch_created on Lead (as sobject_created_bulk, batch
-# size 100; the trigger payload is a MOCKED Lead batch -- the block
-# dereferences the Lead list and per-item Id / IsConverted / Email):
-#   #2  lookup_table.get_entries 1492777 'Freemail providers' (as 034f4dc9)
-#   #3  declare_list 'Free Mail Domain' {domain} from entries col1 (d445e8cf)
-#   #4  smart_list.create_list 'Free Mail Domain' (3d9aee30)
-#   #5  declare_list 'Leads' {id,email,domain,account,domain_2,converted}
-#       (bc3b39b5)
-#   #6  insert_to_list_batch (c80ec445): ____source = trigger Lead list;
-#       converted = IsConverted ? 1 : 0; domain / domain_2 = multi-line
-#       if/else/end formulas taking the last TWO labels of the email domain
-#       when it has >2 dot-labels (computed [length-2]/[length-1] subscripts),
-#       else the whole domain (domain_2 has NO else arm -> engine renders "")
-#   IF #7 Leads list size > 0:
-#     #8  smart_list.create_list 'Leads' (as create_list, primary_index id)
-#     #9  query_list (0b82595d): SELECT id,email,domain,account FROM Leads
-#         WHERE converted = 0 AND NOT (domain IN (SELECT domain FROM Free
-#         Mail Domain))
-#     IF #10 rows size > 0:
-#       #11 logger (log_message): rows.pluck('domain').uniq
-#           .format_map(\'%s\').join(",")  -- feeds the live SOQL IN clause
-#       #12 salesforce.search_sobjects_soql Domain__c (Domain__c/Account__c,
-#           query "Domain__c IN (<logger message>)", limit 150) -- LIVE
-#       IF #13 Domain__c size > 0:
-#         FOREACH #14 (foreach__1) over Domain__c rows:
-#           #15 query_list (query_list): UPDATE Leads SET account =
-#               '<Account__c>' WHERE domain = '<Domain__c>'
-#         #16 query_list (query_list__1): SELECT * FROM Leads WHERE account
-#             IS NOT NULL
-#         FOREACH #17 (foreach__2) over #16 rows:
-#           TRY #18: #19 workato_service.call_service flow 14673208 'Convert
-#               Salesforce Lead' {account_id, create_opportunity: "false",
-#               lead_id} -- Workato-internal mock; reply is seeded
-#               deterministic state (workato_service_replies) and unused
-#           CATCH #20 (as 58737439, EMPTY, max_retry_count 0): swallows
-#               conversion errors and the loop continues
-#
-# Live backend: Salesforce Domain__c custom object (DEPLOYED: Domain__c Text,
-# Account__c Lookup(Account)) + benchmark-owned Accounts referenced by the
-# seeded Domain__c rows ($REF threading). The trigger Lead batch is a mocked
-# payload (leads are never live). seed.salesforce.relationship_expansion true
-# for uniform owned-record read-back; seed schema declares both Domain__c
-# custom fields for FLS (ensure_custom_field early-exits into the FLS grant
-# because the fields are deployed).
-# seed.salesforce.strict_soql_conditions stays OFF for this recipe: its only
-# SOQL condition is a bare "Domain__c IN (...)" clause, which the legacy
-# evaluator handles exactly (IN is not a strict-gated op); the seed shape is
-# pinned to strict-off so groundtruth semantics stay byte-stable with the
-# verified dry-replay.
-# Workato-internal (deterministic mock): lookup table 1492777, smart lists,
-# variable lists, logger, call_service reply.
-#
-# Branch-mapping notes (recorded per benmark_rules):
-# - The domain/domain_2 length>2 arm (3-part TLD emails, e.g. *.co.uk) is
-#   exercised by the dedicated three_part_tld variant (variant_06); the
-#   computed-subscript formula arm runs on the arithmetic engine (the
-#   bracket-index dispatch fix landed centrally in 3b7736da).
-# - domain_2 divergence: Workato renders a false if-without-else as nil; the
-#   engine renders "". domain_2 is never consumed downstream (only echoed in
-#   the #16 SELECT * rows), so ground truth pins the engine's "".
-# - call_service_error_swallowed: force_action_error on step_as call_service
-#   proves the EMPTY catch swallows per-iteration errors (no call_service
-#   trace rows; the run completes; the catch payload records the message).
-#
-# Cleanup: variants that seed live Domain__c/Account records delete them via
-# harness.salesforce.cleanup in run_107292896's finally block. Lookup/smart-list
-# state is per-run in-memory mock state, fully overwritten by every seed.
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip +
-# verbatim raw input per node, incl. the #6 domain formulas, the #9/#15/#16
-# SQL, the #11 format_map formula and the #12 SOQL). Any upstream drift fails
-# validation instead of silently changing ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {
@@ -412,9 +341,6 @@ ALLOWED_TOOLS: list[str] = [
     "salesforce.search_records",
     "workato_service.call_service",
 ]
-# Domain__c custom fields the recipe reads (schema-in-seed for the FLS grant;
-# both fields are already deployed live -- Account__c is a Lookup(Account) in
-# the org, the Text sf_type below is never used to create it).
 REQUIRED_DOMAIN_SCHEMA: dict[str, str] = {
     "Domain__c": "Text",
     "Account__c": "Text",

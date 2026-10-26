@@ -16,22 +16,6 @@ TRACK = "workato_api_platform_packages_by_type"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "b28165b1"
-# API Platform endpoint: list packages of a package type. Step map:
-#   auth get_records (Workspaces, access_profile.id + workspace_user_id +
-#   enabled istrue) -> IF size==0 return 401 (terminal). TRY: package-type
-#   get_records by request.package_type_id, declare_list packages,
-#   declare_variable page_token, REPEAT [packages get_records (type relation
-#   eq first type-record id + deleted isfalse, limit 200,
-#   continuation_token=page_token), update page_token, IF size>0
-#   insert_to_list_batch (id/description/name), WHILE page_token present]
-#   -> return 200 {packages}. CATCH -> 400 {error: "Unexpected Error"}.
-#   An unknown package_type_id nil-PROPAGATES the relation-filter pill
-#   (first record of the EMPTY type result -> nil, faithful Workato datapill
-#   semantics since the 2026-07-14 engine nil-propagation pass): the packages
-#   read runs with a null filter that matches only null/empty relation cells,
-#   so the natural outcome is 200 with an empty packages array (variant_04).
-#   The catch 400 arm is entered via force_action_error on the packages read
-#   (variant_05).
 AUTH_TABLE_ID = "9009"
 TYPES_TABLE_ID = "9003"
 PACKAGES_TABLE_ID = "9006"
@@ -82,10 +66,6 @@ EXPECTED_CONTROL_FLOW: list[dict[str, Any]] = [   {   'input': {   'conditions':
         'keyword': 'while_condition',
         'number': 14},
     {'input': {'max_retry_count': '0', 'retry_interval': '2'}, 'keyword': 'catch', 'number': 16}]
-# Raw trigger + per-action inputs pinned verbatim from
-# dataset/input_recipes/109892684/raw_recipe.md (key formulas: db-table filter pills,
-# the pagination continuation_token / page_token pills, the list mappings
-# and the return_response bodies). Any drift raises at validate time.
 PINNED_TRIGGER_INPUT: dict[str, Any] = {   'request': {   'content_type': 'json',
                    'schema': '[{"name":"workspace_user_id","type":"integer","optional":false,"control_type":"integer","label":"Workspace '
                              'user '

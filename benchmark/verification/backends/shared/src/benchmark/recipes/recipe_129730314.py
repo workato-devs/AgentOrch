@@ -16,19 +16,6 @@ TRACK = "workato_api_platform_client_store"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "11cb6620"
-# API Platform "dynamic client store" endpoint (twin pair 129730314/129750406;
-# raw bodies identical except table_id 53976 vs 54016). Request
-# {action, client_name, client_id?}. TRY: get_records (table 53976,
-# filter client_name eq request.client_name, limit 100, order desc) ->
-# IF action=='register' [IF size>0 -> STOP 'Client name must be unique'
-# (step 6); add_record client_name/client_id; return 200 {success:true}
-# (terminal)] -> IF action=='fetch' [IF size==0 -> STOP 'Client not found'
-# (step 11); return 200 {client_id: first record, success:true} (terminal)]
-# -> STOP 'Unsupported action' (step 13; reachable ONLY via a third action
-# value because both success returns are terminal). CATCH -> return 200
-# {success:false}. Stop trace rows drop stop_reason/stop_with_error, so
-# verification pins stops by step number/as, never by text (the reasons are
-# still pinned at validate time via EXPECTED_CONTROL_FLOW).
 TABLE_ID = "53976"
 REQUIRED_TRIGGER_REQUEST_FIELDS = ("action", "client_name")
 EXPECTED_ACTIONS: list[tuple[str, str]] = [   ('workato_db_table', 'get_records'),
@@ -80,10 +67,6 @@ EXPECTED_CONTROL_FLOW: list[dict[str, Any]] = [   {'input': {}, 'keyword': 'try'
         'keyword': 'stop',
         'number': 13},
     {'input': {'max_retry_count': '0', 'retry_interval': '2'}, 'keyword': 'catch', 'number': 14}]
-# Raw trigger + per-action inputs pinned verbatim from
-# dataset/input_recipes/129730314/raw_recipe.md (key formulas: the client_name eq filter
-# pill, the add_record request pills, the fetch response current_item pill
-# and the three return_response bodies). Any drift raises at validate time.
 PINNED_TRIGGER_INPUT: dict[str, Any] = {   'request': {   'content_type': 'json',
                    'schema': '[{"control_type":"text","label":"Action","type":"string","name":"action"},{"control_type":"text","label":"Client '
                              'name","type":"string","name":"client_name"},{"control_type":"text","label":"Client '

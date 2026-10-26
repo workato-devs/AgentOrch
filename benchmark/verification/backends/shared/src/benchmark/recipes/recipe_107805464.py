@@ -25,70 +25,6 @@ STOP_STEP_NUMBER = 9
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# workato_recipe_function.execute trigger (as 898bfe38) with parameters
-# {AccountList: [{AccountID, AccountName}]}; returns {WorkatoStudents:
-# [{AccountID, Students}]}. Body:
-#   2  declare_variable dcc1fecc: account_ids_string =
-#      parameters.AccountList&.pluck("AccountID").join("','")
-#   3  declare_variable 05393b49: id = '000000000000000' (keyset cursor)
-#   4  declare_list 2743d463 'students' {id, name, num_certs, account_id}
-#   5  REPEAT c112b2bf (do-while):
-#      6  TRY:
-#         7  salesforce.search_sobjects_soql_v2 586b2c78 (LIVE):
-#            SELECT Id, Name, No_of_Certificates__c, Account__c
-#            FROM skilljar__Student__c WHERE No_of_Certificates__c > 0
-#            AND Account__c IN ('<ids>') AND Id > '<cursor>' ORDER BY Id,
-#            limit 2000 -- REQUIRES seed.salesforce.strict_soql_conditions
-#            true (quoted-string keyset compare + ORDER BY + totalSize all
-#            live only under the strict flag)
-#         8  CATCH dec4c31c (max_retry_count 3, retry_interval 10):
-#            9  STOP stop_with_error=true, reason "#{catch.type} :
-#               #{catch.message}" (the engine executes the try body once and
-#               the catch once -- retry config is pinned at validate time
-#               only; precedent recipe_119259283/recipe_74627281)
-#      10 IF 586b2c78.totalSize > 0:
-#         11 insert_to_list_batch 96773734 records -> students
-#         12 update_variables 026e2c09 id = records[-1]["Id"] (cursor)
-#      13 WHILE 586b2c78.totalSize > 0
-#   14 smart_list.create_list 5c5a11d0 'Students' (primary_index account_id)
-#   15 smart_list.query_list bb6d3c01: SELECT account_id,
-#      GROUP_CONCAT(name || ' (' || num_certs || ')', ';') as Students
-#      FROM Students GROUP BY account_id (schema by index -> AccountID,
-#      Students)
-#   16 return_result 336cdc69 {WorkatoStudents: ____source rows}
-#
-# Live backend: Salesforce skilljar__Student__c -> Student__c stand-in
-# (SALESFORCE_SOBJECT_MAP, mdapi-deployed 2026-07-07). The recipe fields
-# No_of_Certificates__c (Number) and Account__c (Text) are provisioned via
-# schema-in-seed ensure_custom_field. Trigger AccountIDs and student
-# Account__c values thread $<REF>_ID tokens of seeded live Accounts.
-#
-# Branch-mapping notes (recorded per benmark_rules):
-# - variant_00 two accounts / three matching students (+ a certs-0 decoy and
-#   an other-account decoy): loop iter 1 collects 3 rows and advances the
-#   cursor to the last ORDER-BY-Id row; iter 2 returns totalSize 0 -> exit.
-# - variant_01 single account, two students -> one grouped row.
-# - variant_02 zero matches: first query totalSize 0 -> IF false, while
-#   false -> create_list over the EMPTY students list (declared schema
-#   columns keep the SQLite table creatable) -> query returns 0 rows ->
-#   WorkatoStudents [].
-# - variant_03 forced SOQL failure -> catch -> STOP step 9 with error after
-#   exactly the three declare actions.
-# - Keyset determinism: live Salesforce assigns monotonically increasing ids
-#   within a run, so ORDER BY Id == seed creation order; the GROUP_CONCAT
-#   member order and the GROUP BY row order pin that seed order.
-# - FLAGGED (probe-proven, /tmp/probe_107805464.py): the live read-back of a
-#   Number(18,2) custom field is a FLOAT (e.g. 2.0), and the engine applies
-#   no output_schema integer_conversion to salesforce search records, so
-#   GROUP_CONCAT renders "Alice (2.0)" where real Workato (whose
-#   search_sobjects_soql_v2 output_schema declares No_of_Certificates__c
-#   integer + integer_conversion) renders "Alice (2)". The expects pin the
-#   FAITHFUL integer rendering; live-green is blocked on the central
-#   integer_conversion fix in raw_executor.salesforce_search.
-#
-# Cleanup: every live record is benchmark-owned; run_107805464 calls
-# harness.salesforce.cleanup in finally and fails on leftovers. The recipe
-# never writes to Salesforce (read-only SOQL), pinned via snapshot equality.
 
 _STRUCTURE_PINS_JSON = r'''
 [
@@ -337,8 +273,6 @@ ALLOWED_TOOLS: list[str] = [
     "salesforce.search_records",
     "workato_recipe_function.return_result",
 ]
-# skilljar__Student__c custom fields the recipe reads (schema-in-seed
-# provisioning via ensure_custom_field on the Student__c stand-in).
 REQUIRED_STUDENT_SCHEMA: dict[str, str] = {
     "No_of_Certificates__c": "Number",
     "Account__c": "Text",

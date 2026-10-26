@@ -28,12 +28,6 @@ CATCH_STEP_AS = "02087b2a"
 STOP_STEP_AS = "17a5ef93"
 LIST_NAME = "Troubleshooting"
 MAX_ELIGIBLE_ROWS = 1
-# Seed key discipline (LIVE-verified end-to-end by triage and re-probed on
-# HEAD 80d400ce): the update action's literal table string is
-# 'PUBLIC.EMPLOYEE_APP_ACCESS_LEVEL' — register EXACTLY that key so the
-# search rewrite's bare-name fallback (FROM EMPLOYEE_APP_ACCESS_LEVEL) and
-# the update resolve the SAME physical table; the other three tables are
-# referenced bare in JOIN position and registered under bare keys.
 EAAL_TABLE = "PUBLIC.EMPLOYEE_APP_ACCESS_LEVEL"
 AAL_TABLE = "APP_ACCESS_LEVEL"
 APP_TABLE = "APP"
@@ -62,42 +56,6 @@ TABLE_COLUMNS: dict[str, dict[str, str]] = {
     },
 }
 
-# clock.scheduled_event (as 43e3382a, daily 10:00) — payload-less trigger;
-# the ONLY time source is the pinned seed 'now' (modified_at formula):
-#   TRY 2:
-#     3  snowflake.search_rows_sql 064546a3 (LIVE, limit 50000): SELECT
-#        DISTINCT EAAL.* aliases + EA.DEPROVISION_DATE::DATE AS
-#        EA_DEPROVISION_DATE + CASE(EA inactive AND EAAL not-inactive) AS
-#        UPDATE_RECORD FROM EMPLOYEE_APP_ACCESS_LEVEL EAAL JOIN
-#        APP_ACCESS_LEVEL AAL JOIN APP A JOIN EMPLOYEE_APP EA ON a
-#        CASE-in-JOIN match ladder (employee_id -> app_user_id -> username)
-#        WHERE UPDATE_RECORD = TRUE (alias-in-WHERE, Snowflake lateral
-#        alias semantics — triage LIVE-verified the verbatim SQL).
-#     FOREACH 4 (as 4e6f4cf6, repeat_mode simple) over the rows:
-#       5  workato_variable.declare_variable 596027f1 where_clause =
-#          3-arm if/elsif/else (probed on HEAD): employee_id.present? ->
-#          "...EMPLOYEE_ID = '<id>'..."; elsif app_user_id.present? ->
-#          "...APP_USER_ID = '<id>'..."; else "...USERNAME = '<name>'..."
-#          — each arm prefixed APP_ACCESS_LEVEL_ID = '<id>' AND … AND
-#          STATUS NOT IN ('Inactive').
-#       6  snowflake.update_rows 44918af6 (LIVE): table
-#          PUBLIC.EMPLOYEE_APP_ACCESS_LEVEL, where = #{where_clause},
-#          columns {deprovision_date = foreach.ea_deprovision_date,
-#          modified_at = =now.in_time_zone("Etc/UTC"), status 'Inactive'}.
-#       7  workato_list.accumulate_list_items 34ff45c2 'Troubleshooting'
-#          (mock): where_clause + 8 foreach fields (employee_id stays a
-#          live INT, app_user_id/username may be null — pinned verbatim).
-#   CATCH 8 (as 02087b2a, max_retry_count 0):
-#     9  STOP 17a5ef93 (stop_with_error 'true', reason = catch.message) —
-#        the engine traces {stopped: true} WITHOUT rendering stop_reason
-#        (probed on HEAD); the catch payload is pinned via step_outputs.
-#
-# Determinism rule: SELECT DISTINCT has no ORDER BY, so every variant seeds
-# AT MOST ONE eligible row (the seeder enforces it via expect.eligible_rows)
-# — multi-row foreach order would be live-nondeterministic.
-# Cleanup: create-or-replace seed + registered drop of all four tables in
-# the runner's finally (updates land in benchmark-owned tables). Catch
-# variants never reach Snowflake and must not seed live state.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "43e3382a", "skip": false, "input": {"time_unit": "days", "timezone": "<anon>Europe/London</anon>", "trigger_at": "10:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "064546a3", "skip": false, "input": {"limit": "50000", "output_schema": "[{\"control_type\":\"text\",\"label\":\"APP ACCESS LEVEL ID\",\"name\":\"APP_ACCESS_LEVEL_ID\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"APP ACCESS LEVEL NAME\",\"name\":\"APP_ACCESS_LEVEL_NAME\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"integer\",\"label\":\"EMPLOYEE ID\",\"parse_output\":\"integer_conversion\",\"name\":\"EMPLOYEE_ID\",\"type\":\"integer\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"APP USER ID\",\"name\":\"APP_USER_ID\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"USERNAME\",\"name\":\"USERNAME\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"EAAL STATUS\",\"name\":\"EAAL_STATUS\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"EA STATUS\",\"name\":\"EA_STATUS\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"date\",\"label\":\"EA DEPROVISION DATE\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\",\"name\":\"EA_DEPROVISION_DATE\",\"type\":\"date\",\"optional\":false},{\"name\":\"UPDATE_RECORD\",\"type\":\"boolean\",\"optional\":false,\"control_type\":\"checkbox\",\"label\":\"UPDATE RECORD\",\"render_input\":{},\"parse_output\":{},\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"UPDATE RECORD\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"UPDATE_RECORD\",\"type\":\"boolean\",\"optional\":false}}]", "sql": "SELECT DISTINCT\nEAAL.APP_ACCESS_LEVEL_ID,\nAAL.NAME AS APP_ACCESS_LEVEL_NAME,\nEAAL.EMPLOYEE_ID,\nEAAL.APP_USER_ID,\nEAAL.USERNAME,\nEAAL.STATUS AS EAAL_STATUS,\nEA.STATUS AS EA_STATUS,\nEA.DEPROVISION_DATE::DATE AS EA_DEPROVISION_DATE,\nCASE\nWHEN EA.STATUS = 'Inactive' AND EAAL.STATUS NOT IN ('Inactive')\nTHEN TRUE\nELSE FALSE\nEND AS UPDATE_RECORD\n\nFROM EMPLOYEE_APP_ACCESS_LEVEL EAAL\nJOIN APP_ACCESS_LEVEL AAL\nON EAAL.APP_ACCESS_LEVEL_ID = AAL.ID\n\nJOIN APP A\nON AAL.APP_ID = A.ID\n\nJOIN EMPLOYEE_APP EA\nON AAL.APP_ID = A.ID\nAND\nCASE\nWHEN EAAL.EMPLOYEE_ID IS NOT NULL\nTHEN EAAL.EMPLOYEE_ID = EA.EMPLOYEE_ID\nELSE \n  CASE\n  WHEN EAAL.APP_USER_ID IS NOT NULL\n  THEN EAAL.APP_USER_ID = EA.APP_USER_ID\n  ELSE EAAL.USERNAME = EA.USERNAME\n  END\nEND\nAND A.ID = EA.APP_ID\n\nWHERE UPDATE_RECORD = TRUE"}, "block": []}, {"number": 4, "keyword": "foreach", "provider": "", "name": "", "as": "4e6f4cf6", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"064546a3\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"064546a3\",\"path\":[\"rows\"]}')}", "block": [{"number": 5, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "596027f1", "skip": false, "input": {"variables": {"data": {"where_clause": "=if _dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"employee_id\"]}').present?\n  \"APP_ACCESS_LEVEL_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_access_level_id\"]}')}' AND EMPLOYEE_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"employee_id\"]}')}' AND STATUS NOT IN ('Inactive')\"\nelsif _dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_user_id\"]}').present?\n  \"APP_ACCESS_LEVEL_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_access_level_id\"]}')}' AND APP_USER_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_user_id\"]}')}' AND STATUS NOT IN ('Inactive')\"\nelse\n  \"APP_ACCESS_LEVEL_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_access_level_id\"]}')}' AND USERNAME = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"username\"]}')}' AND STATUS NOT IN ('Inactive')\"\nend"}, "schema": "[{\"name\":\"where_clause\",\"type\":\"string\",\"optional\":true,\"label\":\"WHERE Clause\",\"details\":{\"real_name\":\"WHERE Clause\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 6, "keyword": "action", "provider": "snowflake", "name": "update_rows", "as": "44918af6", "skip": false, "input": {"columns": {"deprovision_date": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"ea_deprovision_date\"]}')}", "modified_at": "=now.in_time_zone(\"Etc/UTC\")", "status": "Inactive"}, "table": "PUBLIC.EMPLOYEE_APP_ACCESS_LEVEL", "where": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"596027f1\",\"path\":[\"where_clause\"]}')}"}, "block": []}, {"number": 7, "keyword": "action", "provider": "workato_list", "name": "accumulate_list_items", "as": "34ff45c2", "skip": false, "input": {"list_item": {"data": {"Username": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"username\"]}')}", "app_access_level_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_access_level_id\"]}')}", "app_access_level_name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_access_level_name\"]}')}", "app_user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"app_user_id\"]}')}", "deprovision_date": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"ea_deprovision_date\"]}')}", "ea_status": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"ea_status\"]}')}", "eaal_status": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"eaal_status\"]}')}", "employee_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"4e6f4cf6\",\"path\":[\"employee_id\"]}')}", "where_clause": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"596027f1\",\"path\":[\"where_clause\"]}')}"}, "schema": "[{\"control_type\":\"text\",\"label\":\"WHERE Clause\",\"name\":\"where_clause\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"WHERE Clause\"}},{\"control_type\":\"text\",\"label\":\"App Access Level ID\",\"name\":\"app_access_level_id\",\"type\":\"string\",\"optional\":true,\"details\":{\"real_name\":\"App Access Level ID\"}},{\"name\":\"app_access_level_name\",\"type\":\"string\",\"optional\":true,\"label\":\"App Access Level Name\",\"details\":{\"real_name\":\"App Access Level Name\"},\"control_type\":\"text\"},{\"name\":\"employee_id\",\"type\":\"string\",\"optional\":true,\"label\":\"Employee ID\",\"details\":{\"real_name\":\"Employee ID\"},\"control_type\":\"text\"},{\"name\":\"app_user_id\",\"type\":\"string\",\"optional\":true,\"label\":\"App User ID\",\"details\":{\"real_name\":\"App User ID\"},\"control_type\":\"text\"},{\"name\":\"Username\",\"type\":\"string\",\"optional\":true,\"label\":\"Username\",\"details\":{\"real_name\":\"Username\"},\"control_type\":\"text\"},{\"name\":\"eaal_status\",\"type\":\"string\",\"optional\":true,\"label\":\"EAAL Status\",\"details\":{\"real_name\":\"EAAL Status\"},\"control_type\":\"text\"},{\"name\":\"ea_status\",\"type\":\"string\",\"optional\":true,\"label\":\"EA Status\",\"details\":{\"real_name\":\"EA Status\"},\"control_type\":\"text\"},{\"name\":\"deprovision_date\",\"type\":\"string\",\"optional\":true,\"label\":\"Deprovision Date\",\"details\":{\"real_name\":\"Deprovision Date\"},\"control_type\":\"text\"}]"}, "name": "Troubleshooting"}, "block": []}]}, {"number": 8, "keyword": "catch", "provider": "", "name": "", "as": "02087b2a", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 9, "keyword": "stop", "provider": "", "name": "", "as": "17a5ef93", "skip": false, "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"02087b2a\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -131,7 +89,6 @@ REQUIRED_EXPECT_KEYS = (
     "stopped",
 )
 _DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2})?$")
-# Values that interpolate into the single-quoted where_clause SQL literal.
 _SQL_LITERAL_RE = re.compile(r"^[A-Za-z0-9@._ \-]+$")
 
 

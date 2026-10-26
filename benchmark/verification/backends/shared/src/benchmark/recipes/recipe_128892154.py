@@ -33,9 +33,6 @@ ALLOWED_TOOLS: list[str] = [
     "slack.delete_message",
 ]
 
-# Variant trigger inputs on the delete_original branch bind the live seeded
-# message via these tokens (the clicked message's ts/channel ARE the lookup
-# search keys and the delete target in the raw recipe).
 _SEED_MESSAGE_TOKEN_PREFIX = "$SEED_MESSAGE_"
 _SEED_MESSAGE_TOKENS = {"$SEED_MESSAGE_TS": "ts", "$SEED_MESSAGE_CHANNEL": "channel"}
 

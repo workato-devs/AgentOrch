@@ -15,8 +15,6 @@ SEED_TYPE = "ae_pod_coverage_service_variant"
 TRACK = "ae_pod_coverage_service"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# try body: get_entry (3f231ab3) + success reply (6a87c20f); catch body: error
-# reply (e3bab9d0).
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "get_entry"),
     ("workato_service", "send_reply"),

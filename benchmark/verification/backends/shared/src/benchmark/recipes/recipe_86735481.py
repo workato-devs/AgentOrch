@@ -15,9 +15,6 @@ SEED_TYPE = "workato_app_job_error_rerun_variant"
 TRACK = "workato_app_job_error_rerun"
 TRIGGER_PROVIDER = "workato_app"
 TRIGGER_NAME = "job_error"
-# Trigger fires on a job error; a trigger-level filter only lets rate-limit
-# errors through ("You have exceeded the limit of requests"). When matched the
-# recipe waits an hour then reruns the failed job.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("clock", "wait_for_interval"),
     ("workato_app", "rerun_jobs"),

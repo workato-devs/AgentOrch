@@ -27,9 +27,6 @@ DB_TABLE_ID = "1670"
 PRIMARY_FIELD_DASH = "1e5fd270-2211-4c58-8dfa-95b6ee3b7b9c"
 PRIMARY_FIELD = "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c"
 PROJECT_PROPERTY = "Salesforce Environment"
-# Registered snowflake_live keys. SALESFORCE."ACCOUNT" MUST keep its quotes:
-# _rewrite_sql matches the literal SQL text and the unquoted key does NOT
-# match the quoted reference (probe-verified on this tree).
 INVOICE_TABLE = "NETSUITE.FLAT_INVOICE"
 CUSTOMER_TABLE = "NETSUITE.FLAT_CUSTOMER"
 CURRENCY_TABLE = "NETSUITE.CURRENCY"
@@ -61,9 +58,6 @@ ACCOUNT_COLUMNS = {
     "current_arr__c": "float",
     "active_subscription__c": "boolean",
 }
-# Upsert field map: live search row key (lowercase alias) -> record field id.
-# 'ad862ef9_...' (Churn Oppty ID) is '=skip' in the raw recipe -> the SKIP
-# sentinel drops it from resolved_parameters (never reaches args or table).
 FIELD_MAP = {
     "past_due": "028d15b9_ac99_401c_b25f_c44a1ce7c5db",
     "current_arr": "0be8c260_33ba_4646_862c_ec74b765350a",
@@ -84,46 +78,6 @@ FIELD_MAP = {
 }
 MONEY_COLUMNS = ("subtotal", "tax_total", "amount_remaining")
 
-# clock.scheduled_event (as 4e415de5, daily 06:00) -- payload-less trigger
-# (trigger_input must be exactly {}); determinism comes from
-# seed.snowflake_live.current_time (CURRENT_DATE() rewrite, fail-fast when
-# missing). Body:
-#   2  snowflake.search_rows_sql fe9c844d (LIVE, limit 50000): open-invoice
-#      SQL -- DATEDIFF(DAYS, DUE_DATE, CURRENT_DATE()) PAST_DUE,
-#      (SUBTOTAL+IFNULL(TAX_TOTAL,0))::FLOAT AMOUNT, CASE 'Paid In Full'
-#      IS_PAID, two CONCAT urls rendering the 'Salesforce Environment'
-#      project_property pill (seed.project_properties, fail-fast when
-#      missing), JOIN FLAT_CUSTOMER (COMPANY_NAME NOT LIKE 'I/C%'), JOIN
-#      CURRENCY, LEFT JOIN SALESFORCE."ACCOUNT"; WHERE AMOUNT_REMAINING > 0
-#      AND IS_PAID = FALSE AND (ACTIVE = TRUE OR IS NULL) AND PAST_DUE IS
-#      NOT NULL AND STATUS NOT IN ('Pending Approval')
-#   3  workato_variable.declare_variable 1ea22b2c (mock): new_records
-#      integer '0' -> coerced int 0 (schema integer_conversion)
-#   FOREACH 833485bd over rows:
-#     5  workato_db_table.upsert_record 33761e42 (mock table 1670, primary
-#        NetSuite Invoice ID dash-form) -- 16 mapped foreach fields, Churn
-#        Oppty ID '=skip' dropped
-#     IF 6 (33761e42.created is_true):
-#       7  workato_variable.update_variables e2b913ff: new_records =
-#          =_dp(1ea22b2c.new_records) + 1 (declared-int coercion)
-#
-# Backends: Snowflake runs LIVE (create-or-replace seeds + drop in the
-# runner's finally; READ-ONLY -- snapshot equality pinned). workato_db_table
-# 1670 and workato_variable are Workato-internal mocks.
-#
-# GROUNDTRUTH DISCIPLINE:
-# - money columns (subtotal/tax_total/amount_remaining/current_arr__c) are
-#   FLOAT seeds on .25 quarters: NUMBER(38,0) would silently round
-#   (triage-probed 100.5 -> 101) and quarter fractions keep Python-side
-#   amount arithmetic binary-exact.
-# - the SELECT has NO ORDER BY: live row order across >1 qualifying invoice
-#   is unspecified. expect.upserts is keyed by invoice id (order-free), the
-#   registry tool-name sequence is order-invariant by construction (variants
-#   never mix created:true/false pinning at a trace index), and
-#   final_table_rows are compared as a canonical multiset.
-# - the seeder REPLICATES the WHERE clause over the seeded tables and
-#   fail-fasts unless expect.sql_row_count/new_records_final/upserts match
-#   the recomputation exactly.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "4e415de5", "skip": false, "input": {"time_unit": "days", "trigger_at": "06:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "fe9c844d", "skip": false, "input": {"limit": "50000", "output_schema": "[{\"control_type\":\"integer\",\"label\":\"PAST DUE\",\"parse_output\":\"integer_conversion\",\"name\":\"PAST_DUE\",\"type\":\"integer\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"INVOICE ID\",\"name\":\"INVOICE_ID\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"INVOICE NO\",\"name\":\"INVOICE_NO\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"date\",\"label\":\"INVOICE DATE\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\",\"name\":\"INVOICE_DATE\",\"type\":\"date\",\"optional\":false},{\"control_type\":\"date\",\"label\":\"INVOICE DUE DATE\",\"render_input\":\"date_conversion\",\"parse_output\":\"date_conversion\",\"name\":\"INVOICE_DUE_DATE\",\"type\":\"date\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"PAYMENT TERMS\",\"name\":\"PAYMENT_TERMS\",\"type\":\"string\",\"optional\":false},{\"name\":\"CURRENCY\",\"type\":\"string\",\"optional\":false,\"label\":\"CURRENCY\",\"control_type\":\"text\"},{\"control_type\":\"number\",\"label\":\"SUBTOTAL\",\"parse_output\":\"float_conversion\",\"name\":\"SUBTOTAL\",\"type\":\"number\",\"optional\":false},{\"control_type\":\"number\",\"label\":\"AMOUNT\",\"parse_output\":\"float_conversion\",\"name\":\"AMOUNT\",\"type\":\"number\",\"optional\":false},{\"control_type\":\"checkbox\",\"label\":\"IS PAID\",\"render_input\":{},\"parse_output\":{},\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"IS PAID\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"IS_PAID\",\"type\":\"boolean\",\"optional\":false},\"name\":\"IS_PAID\",\"type\":\"boolean\",\"optional\":false},{\"control_type\":\"number\",\"label\":\"BALANCE\",\"parse_output\":\"float_conversion\",\"name\":\"BALANCE\",\"type\":\"number\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"SALESFORCE INVOICE ID\",\"name\":\"SALESFORCE_INVOICE_ID\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"SALESFORCE INVOICE URL\",\"name\":\"SALESFORCE_INVOICE_URL\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"CUSTOMER ID\",\"name\":\"CUSTOMER_ID\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"CUSTOMER NAME\",\"name\":\"CUSTOMER_NAME\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"SALESFORCE ACCOUNT ID\",\"name\":\"SALESFORCE_ACCOUNT_ID\",\"type\":\"string\",\"optional\":true},{\"name\":\"ACCOUNT_OWNER\",\"type\":\"string\",\"optional\":true,\"label\":\"ACCOUNT_OWNER\",\"control_type\":\"text\"},{\"control_type\":\"text\",\"label\":\"SALESFORCE ACCOUNT URL\",\"name\":\"SALESFORCE_ACCOUNT_URL\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"number\",\"label\":\"CURRENT ARR\",\"parse_output\":\"float_conversion\",\"name\":\"CURRENT_ARR\",\"type\":\"number\",\"optional\":true},{\"name\":\"ACTIVE\",\"type\":\"boolean\",\"optional\":true,\"label\":\"ACTIVE\",\"control_type\":\"checkbox\",\"render_input\":{},\"parse_output\":{},\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"ACTIVE\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"ACTIVE\",\"type\":\"boolean\",\"optional\":true}}]", "sql": "SELECT\nDATEDIFF(DAYS, DUE_DATE, CURRENT_DATE()) AS PAST_DUE,\nI.INTERNAL_ID AS INVOICE_ID,\nI.INVOICE_NUMBER AS INVOICE_NO,\nI.INVOICE_DATE::DATE AS INVOICE_DATE,\nI.DUE_DATE::DATE AS INVOICE_DUE_DATE,\nI.PAYMENT_TERM_NAME AS PAYMENT_TERMS,\nCC.ISO_CODE AS CURRENCY,\nI.SUBTOTAL,\n(I.SUBTOTAL + IFNULL(I.TAX_TOTAL, 0))::FLOAT AS AMOUNT,\nCASE\nWHEN I.STATUS = 'Paid In Full'\nTHEN TRUE\nELSE FALSE\nEND AS IS_PAID,\nI.AMOUNT_REMAINING AS BALANCE,\nI.SALESFORCE_RECORD_ID AS SALESFORCE_INVOICE_ID,\nCONCAT('https://#{_dp('{\"pill_type\":\"project_property\",\"property_name\":\"Salesforce Environment\"}')}.lightning.force.com/lightning/r/NetSuite_Invoice__c/', I.SALESFORCE_RECORD_ID, '/view') AS SALESFORCE_INVOICE_URL,\nI.CUSTOMER_ID,\nI.CUSTOMER_NAME,\nC.SALESFORCE_ACCOUNT_ID,\nA.OwnerId as ACCOUNT_OWNER,\nCONCAT('https://#{_dp('{\"pill_type\":\"project_property\",\"property_name\":\"Salesforce Environment\"}')}.lightning.force.com/lightning/r/Account/', C.SALESFORCE_ACCOUNT_ID, '/view') AS SALESFORCE_ACCOUNT_URL,\nA.CURRENT_ARR__C AS CURRENT_ARR,\nA.ACTIVE_SUBSCRIPTION__C AS ACTIVE\n\nFROM NETSUITE.FLAT_INVOICE I\nJOIN NETSUITE.FLAT_CUSTOMER C\nON CUSTOMER_ID = C.INTERNAL_ID\nAND C.COMPANY_NAME NOT LIKE 'I/C%'\n\nJOIN NETSUITE.CURRENCY CC\nON I.CURRENCY_ID = CC.INTERNAL_ID\n\nLEFT JOIN SALESFORCE.\"ACCOUNT\" A\nON C.SALESFORCE_ACCOUNT_ID = A.ID\n\nWHERE I.AMOUNT_REMAINING > 0\nAND IS_PAID = FALSE\nAND (A.ACTIVE_SUBSCRIPTION__C = TRUE OR A.ACTIVE_SUBSCRIPTION__C IS NULL)\nAND PAST_DUE IS NOT NULL\nAND I.STATUS NOT IN ('Pending Approval')"}, "block": []}, {"number": 3, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "1ea22b2c", "skip": false, "input": {"variables": {"data": {"new_records": "0"}, "schema": "[{\"control_type\":\"integer\",\"label\":\"New Records Count\",\"parse_output\":\"integer_conversion\",\"name\":\"new_records\",\"type\":\"integer\",\"optional\":true}]"}}, "block": []}, {"number": 4, "keyword": "foreach", "provider": "", "name": "", "as": "833485bd", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"fe9c844d\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"fe9c844d\",\"path\":[\"rows\"]}')}", "block": [{"number": 5, "keyword": "action", "provider": "workato_db_table", "name": "upsert_record", "as": "33761e42", "skip": false, "input": {"parameters": {"028d15b9_ac99_401c_b25f_c44a1ce7c5db": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"past_due\"]}')}", "0be8c260_33ba_4646_862c_ec74b765350a": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"current_arr\"]}')}", "12a1b031_46a2_493f_b19f_51afdab5dd11": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"active\"]}')}", "144af657_99db_483a_9ed8_a1324849d522": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"salesforce_invoice_id\"]}')}", "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"invoice_id\"]}')}", "26fb5415_2534_4707_b26f_a0435b730382": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"account_owner\"]}')}", "3faa69d3_6a7e_4d7c_aced_a1ba0b0442fe": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"customer_id\"]}')}", "595fbc67_aef7_407b_813f_dd5b723d88cd": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"salesforce_account_id\"]}')}", "6044c826_e8b1_4524_b299_5d5d9c63a5a1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"payment_terms\"]}')}", "634d81b9_6dfe_4fc8_a02c_78c49ca13b0f": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"amount\"]}')}", "665410c4_9b6f_46fe_93cd_8253dbcd3308": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"invoice_no\"]}')}", "6b5097f5_ac84_4c8d_8c21_654da728eafb": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"balance\"]}')}", "7d01c55a_176b_47dc_ad8c_b06899074107": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"invoice_date\"]}')}", "a1027508_c1d7_437b_9dd7_208f6dfa3ec3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"currency\"]}')}", "ad862ef9_2e1e_462e_ab20_c149ce29997f": "=skip", "eef0c324_141b_46ad_a5aa_dd09b57e2ecd": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"subtotal\"]}')}", "f9a16194_15bd_4f03_a294_678f8c953df9": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"833485bd\",\"path\":[\"invoice_due_date\"]}')}"}, "primary_field_id": "1e5fd270-2211-4c58-8dfa-95b6ee3b7b9c", "table_id": "1670"}, "block": []}, {"number": 6, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"33761e42\",\"path\":[\"created\"]}')}", "operand": "is_true", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 7, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "e2b913ff", "skip": false, "input": {"name": "d6f8e401-810a-4ea7-9e29-2aa5e8a4758a:1ea22b2c:new_records", "new_records": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"1ea22b2c\",\"path\":[\"new_records\"]}') + 1"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

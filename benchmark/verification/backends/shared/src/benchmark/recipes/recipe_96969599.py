@@ -23,45 +23,6 @@ SEARCH_URL_AS = "ff34358d"
 SEARCH_PREFIX_AS = "3cc8cfc8"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# slack_bot.dynamic_menu 'Select Account' (as 1a17b594; parameters
-# account_name/contact_id are declared but never dereferenced). Body:
-#   IF 2 (trigger typeahead.value contains 'https'):
-#     3  logger.log_message 3aea41e4:
-#        =typeahead.value.split("Account/").last.gsub(/\/view/,"").strip
-#        (lightning URL -> bare record id; trailing whitespace stripped)
-#     4  salesforce.search_sobjects_soql_v2 ff34358d (LIVE, limit 30):
-#        SELECT Id,Name,Owner.Name FROM Account
-#        WHERE Id = '#{logger.message}' ORDER BY Name ASC
-#     5  slack_bot.generate_menu_options dcf3a3c2:
-#        options ____source = records, label '#{Name} (#{Owner.Name})',
-#        value Id
-#   ELSE 6:
-#     7  salesforce.search_sobjects_soql_v2 3cc8cfc8 (LIVE, limit 30):
-#        SELECT Id,Name,Owner.Name FROM Account
-#        WHERE Name LIKE '#{typeahead.value}%' ORDER BY Name ASC
-#        (LIKE is PREFIX-ANCHORED like live SOQL -- engine f9d83a51:
-#        'Acme%' must NOT match 'Big Acme'; case-insensitive)
-#     8  slack_bot.generate_menu_options 6d379c93 (same mapping)
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 url_id_lookup   : IF true; parsed id hits one owned Account ->
-#   one option (trailing space in the URL proves .strip).
-# - variant_01 url_no_match    : IF true; well-formed foreign id -> [] options
-#   (seeded decoys prove the emptiness is the Id filter).
-# - variant_02 prefix_search   : ELSE; 'Acm' -> two prefix matches returned in
-#   ORDER BY Name ASC (seeded in reverse order to prove the sort); the seeded
-#   contains-not-prefix decoy ('Big Acme...') proves LIKE anchoring.
-# - variant_03 prefix_no_match : ELSE; 'qqq' -> [] options against the same
-#   style of seeded pool.
-#
-# Backends: salesforce LIVE. Owner.Name is a live-org join: every seeded
-# Account declares read_fields ['OwnerId'] and the seed enables
-# relationship_expansion so search read-back attaches Owner={Id,Name} from
-# the live User record (the org integration user -- run-dependent, threaded
-# into expects as $USER_NAME via the current_user seed section).
-# slack_bot.generate_menu_options is a payload echo (no live Slack post).
-# Cleanup deletes all owned Accounts in a finally block (read-only recipe,
-# but owned records must not leak).
 
 _STRUCTURE_PINS_JSON = r"""[{"as": "1a17b594", "input": {"dynamic_menu_name": "Select Account", "parameters": "[\n  {\n    \"name\": \"account_name\",\n    \"type\": \"string\",\n    \"optional\": true,\n    \"control_type\": \"text\",\n    \"label\": \"Account name\"\n  },\n  {\n    \"name\": \"contact_id\",\n    \"type\": \"string\",\n    \"optional\": true,\n    \"control_type\": \"text\",\n    \"label\": \"Contact ID\"\n  }\n]"}, "keyword": "trigger", "name": "dynamic_menu", "number": 1, "provider": "slack_bot", "skip": false}, {"as": null, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"1a17b594\",\"path\":[\"typeahead\", \"value\"]}')}", "operand": "contains", "rhs": "https"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": null, "number": 2, "provider": null, "skip": false}, {"as": "3aea41e4", "input": {"message": "=_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"1a17b594\",\"path\":[\"typeahead\",\"value\"]}').split(\"Account/\").last.gsub(/\\/view/,\"\").strip", "user_logs_enabled": "false"}, "keyword": "action", "name": "log_message", "number": 3, "provider": "logger", "skip": false}, {"as": "ff34358d", "input": {"limit": "30", "output_schema": "[{\"properties\":[{\"control_type\":\"text\",\"label\":\"Type\",\"type\":\"string\",\"name\":\"type\"},{\"control_type\":\"text\",\"label\":\"URL\",\"type\":\"string\",\"name\":\"url\"}],\"label\":\"Attributes\",\"type\":\"object\",\"name\":\"attributes\"},{\"control_type\":\"text\",\"label\":\"ID\",\"type\":\"string\",\"name\":\"Id\"},{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"Name\"},{\"properties\":[{\"properties\":[{\"control_type\":\"text\",\"label\":\"Type\",\"type\":\"string\",\"name\":\"type\"},{\"control_type\":\"text\",\"label\":\"URL\",\"type\":\"string\",\"name\":\"url\"}],\"label\":\"Attributes\",\"type\":\"object\",\"name\":\"attributes\"},{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"Name\"}],\"label\":\"Owner\",\"type\":\"object\",\"name\":\"Owner\"}]", "query": "SELECT Id,Name,Owner.Name FROM Account WHERE Id = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"logger\",\"line\":\"3aea41e4\",\"path\":[\"message\"]}')}' ORDER BY Name ASC"}, "keyword": "action", "name": "search_sobjects_soql_v2", "number": 4, "provider": "salesforce", "skip": false}, {"as": "dcf3a3c2", "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"ff34358d\",\"path\":[\"records\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"ff34358d\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Name\"]}')} (#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"ff34358d\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Owner\", \"Name\"]}')})", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"ff34358d\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Id\"]}')}"}}, "keyword": "action", "name": "generate_menu_options", "number": 5, "provider": "slack_bot", "skip": false}, {"as": null, "input": {}, "keyword": "else", "name": null, "number": 6, "provider": null, "skip": false}, {"as": "3cc8cfc8", "input": {"limit": "30", "output_schema": "[{\"properties\":[{\"control_type\":\"text\",\"label\":\"Type\",\"type\":\"string\",\"name\":\"type\"},{\"control_type\":\"text\",\"label\":\"URL\",\"type\":\"string\",\"name\":\"url\"}],\"label\":\"Attributes\",\"type\":\"object\",\"name\":\"attributes\"},{\"control_type\":\"text\",\"label\":\"ID\",\"type\":\"string\",\"name\":\"Id\"},{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"Name\"},{\"properties\":[{\"properties\":[{\"control_type\":\"text\",\"label\":\"Type\",\"type\":\"string\",\"name\":\"type\"},{\"control_type\":\"text\",\"label\":\"URL\",\"type\":\"string\",\"name\":\"url\"}],\"label\":\"Attributes\",\"type\":\"object\",\"name\":\"attributes\"},{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"Name\"}],\"label\":\"Owner\",\"type\":\"object\",\"name\":\"Owner\"}]", "query": "SELECT Id,Name,Owner.Name FROM Account WHERE Name LIKE '#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"1a17b594\",\"path\":[\"typeahead\", \"value\"]}')}%' ORDER BY Name ASC"}, "keyword": "action", "name": "search_sobjects_soql_v2", "number": 7, "provider": "salesforce", "skip": false}, {"as": "6d379c93", "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"3cc8cfc8\",\"path\":[\"records\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"3cc8cfc8\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Name\"]}')} (#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"3cc8cfc8\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Owner\", \"Name\"]}')})", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"3cc8cfc8\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"Id\"]}')}"}}, "keyword": "action", "name": "generate_menu_options", "number": 8, "provider": "slack_bot", "skip": false}]"""
 

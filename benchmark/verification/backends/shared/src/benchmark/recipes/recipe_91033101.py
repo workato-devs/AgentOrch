@@ -23,42 +23,6 @@ THREAD_FIRST_POST_AS = "3a224cd0"
 CATCH_AS = "38bfd4f3"
 REQUIRED_REQUEST_FIELDS = ("user", "channel_name", "channel_id", "is_threaded", "lookup_table_entry_id")
 
-# Callable service 'Standup Meeting' (trigger as 16525f59; request user /
-# channel_name / channel_id / is_threaded / lookup_table_entry_id -- the last
-# is schema-required but never dereferenced). Side-effect-only service (no
-# send_reply):
-#   TRY 2
-#     IF 3 (is_threaded == 'no')
-#       4 slack_bot.post_bot_message a4707917: channel = request.user (a
-#         'U...' literal posts AS-IS, so variants MUST map it via seed
-#         slack_channel_map {'<user>': '__override__'}), text 'Time for our
-#         standup meeting for #{channel_name}' (attachment buttons are
-#         metadata, not part of the live text)
-#     IF 5 (is_threaded == 'yes')
-#       6 lookup_table.search_entries 9dadcd46 (table 3357221, col2 =
-#         request.channel_id)
-#       IF 7 (entries current_item entry.col7 blank -- first entry)
-#         8 slack_bot.post_bot_message 3a224cd0: channel = request.channel_id
-#           (non-'U' -> redirected to SLACK_CHANNEL_OVERRIDE), block
-#           section_text '<!here> Time for our standup meeting for
-#           #{channel_name}. Responses will be collected in the thread.'
-#         9 lookup_table.update_entry 8f926f05: id = first entry id, col7 =
-#           3a224cd0.ts.to_i (the LIVE posted ts floored -- nondeterministic;
-#           the verifier derives it from the trace, never a pinned literal)
-#       IF 10 (col7 present AND now.to_i - col7.to_i > 86400 -- reads the
-#            SEARCH result, so the IF-7 write never re-triggers it)
-#         11 slack_bot.post_bot_message 21795fc5 (same block)
-#         12 lookup_table.update_entry df1d2971 (col7 = 21795fc5.ts.to_i)
-#   CATCH 13 (as 38bfd4f3, retry 3/10s; engine single-execution)
-#     14 slack_bot.post_bot_message 9dc0a2ff: channel = request.user, 'Time
-#        for our daily standup meeting for #{channel_name}' -- only reachable
-#        via seed.force_action_error on step 3a224cd0 (mock/live steps do not
-#        fail naturally with a seeded matching row)
-# Backends: lookup table 3357221 is Workato-internal mock state (per-variant
-# isolated); Slack posts run LIVE (post_bot_message -> slack.post_message).
-# Every live post is read from the trace for verification (the threaded
-# variants derive col7 from the posted ts), so run_91033101 deletes each
-# benchmark post in finally and fails on a failed delete.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("a4707917", "slack_bot", "post_bot_message"),
     ("9dadcd46", "lookup_table", "search_entries"),
@@ -87,11 +51,6 @@ EXPECT_KEYS = (
     "col7_write",
 )
 
-# Verbatim raw-recipe pin: the full normalized node tree (number, keyword,
-# provider, name, as, skip, input; the catch node pins max_retry_count 3 /
-# retry_interval 10). Any drift in the is_threaded gates, the blank/stale
-# col7 conditions, the ts.to_i write-backs or the posted texts fails
-# validation instead of silently changing groundtruth.
 _RAW_PIN_JSON = r"""{"as": "16525f59", "block": [{"as": "", "block": [{"as": "", "block": [{"as": "a4707917", "block": [], "input": {"attachment_buttons": [{"bot_command": "standup collect response", "params": "channel_id: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')} q1: na q2: na q3: na channel_name: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}", "title": "Get started"}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"user\"]}')}", "text": "Time for our standup meeting for #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 4, "provider": "slack_bot", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"is_threaded\"]}')}", "operand": "equals_to", "rhs": "no"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 3, "provider": "", "skip": false}, {"as": "", "block": [{"as": "9dadcd46", "block": [], "input": {"lookup_table_id": "3357221", "parameters": {"col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')}"}}, "keyword": "action", "name": "search_entries", "number": 6, "provider": "lookup_table", "skip": false}, {"as": "", "block": [{"as": "3a224cd0", "block": [], "input": {"blocks": [{"block_type": "section_with_button_with_long_action", "bot_command": "46340660", "button_title": "Standup Now", "button_type": "bot_command", "params": "channel_id: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')} q1: na q2: na q3: na channel_name: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}", "section_text": "<!here> Time for our standup meeting for #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}. Responses will be collected in the thread.", "style": "default"}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 8, "provider": "slack_bot", "skip": false}, {"as": "8f926f05", "block": [], "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"9dadcd46\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "3357221", "parameters": {"col7": "=_('data.slack_bot.3a224cd0.ts').to_i"}}, "keyword": "action", "name": "update_entry", "number": 9, "provider": "lookup_table", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"9dadcd46\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"entry\", \"col7\"]}')}", "operand": "blank", "rhs": ""}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 7, "provider": "", "skip": false}, {"as": "", "block": [{"as": "21795fc5", "block": [], "input": {"blocks": [{"block_type": "section_with_button_with_long_action", "bot_command": "46340660", "button_title": "Standup Now", "button_type": "bot_command", "params": "channel_id: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')} q1: na q2: na q3: na channel_name: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}", "section_text": "<!here> Time for our standup meeting for #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}. Responses will be collected in the thread.", "style": "default"}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 11, "provider": "slack_bot", "skip": false}, {"as": "df1d2971", "block": [], "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"9dadcd46\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "3357221", "parameters": {"col7": "=_('data.slack_bot.21795fc5.ts').to_i"}}, "keyword": "action", "name": "update_entry", "number": 12, "provider": "lookup_table", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"9dadcd46\",\"path\":[\"entries\", {\"path_element_type\": \"current_item\"}, \"entry\", \"col7\"]}')}", "operand": "present", "rhs": ""}, {"lhs": "=now.to_i - _('data.lookup_table.9dadcd46.entries.first.entry.col7').to_i", "operand": "greater_than", "rhs": "86400"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 10, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"is_threaded\"]}')}", "operand": "equals_to", "rhs": "yes"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 5, "provider": "", "skip": false}, {"as": "38bfd4f3", "block": [{"as": "9dc0a2ff", "block": [], "input": {"attachment_buttons": [{"bot_command": "standup collect feedback", "params": "channel_id: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_id\"]}')} q1: na q2: na q3: na channel_name: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}", "title": "Get started"}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"user\"]}')}", "text": "Time for our daily standup meeting for #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"16525f59\",\"path\":[\"request\", \"channel_name\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 14, "provider": "slack_bot", "skip": false}], "input": {"max_retry_count": "3", "retry_interval": "10"}, "keyword": "catch", "name": "", "number": 13, "provider": "", "skip": false}], "input": {}, "keyword": "try", "name": "", "number": 2, "provider": "", "skip": false}], "input": {"request_schema_json": "[{\"control_type\":\"text\",\"label\":\"User\",\"name\":\"user\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Channel name\",\"name\":\"channel_name\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Channel ID\",\"name\":\"channel_id\",\"type\":\"string\",\"optional\":false},{\"name\":\"is_threaded\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Is threaded\"},{\"name\":\"lookup_table_entry_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Lookup table entry ID\"}]", "service_name": "Standup Meeting"}, "keyword": "trigger", "name": "receive_request", "number": 1, "provider": "workato_service", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 

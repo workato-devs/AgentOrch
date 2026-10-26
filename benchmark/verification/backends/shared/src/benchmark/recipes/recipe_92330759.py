@@ -27,49 +27,6 @@ CHUNK_CALL_AS = "664a521c"
 REMAINDER_CALL_AS = "5ed86f4a"
 REPLY_STEP_AS = "3a2a1647"
 
-# Callable "Flexi Idler" service (as c5e63d24, request schema {Secs integer}),
-# the _dp-pill twin of the registered 88624257/88676116 family (byte-identical
-# recipe bodies; only the called Base Timer Unit flow_id differs across the
-# family — this one calls flow 46919722). Steps:
-#   2  logger.log_message f33691f6: =request.Secs % 10   (remainder)
-#   3  workato_list.create_list 84057fa4: size = (request.Secs / 10).to_i
-#   4  FOREACH 95c0de6f over the created list:
-#   5    workato_service.call_service 664a521c (flow 46919722),
-#        request.secs = 10-(((now-job_created_at).to_i+10)-(seq_no*10))
-#        — the foreach-provider OUTPUT pill ["seq_no"] resolves through the
-#        foreach_meta fallback (engine fix on f9d83a51 HEAD lineage)
-#   6  IF logger message > 0:
-#   7    workato_service.call_service 5ed86f4a (flow 46919722),
-#        request.secs = message.to_i-((now-job_created_at).to_i-list.size*10)
-#   8  workato_service.send_reply 3a2a1647:
-#        reply.secs_waited = (now-job_created_at), reply_type success
-#
-# Branch mapping (variants):
-# - chunks + remainder:   Secs%10>0 and Secs>=10 -> N chunk calls + 1
-#   remainder call + reply (2+N+1+1 actions)
-# - chunks, no remainder: Secs%10==0 and Secs>=10 -> IF 6 false (N+3 actions)
-# - remainder only:       Secs<10, Secs%10>0 -> list size 0, foreach body
-#   never runs (4 actions)
-# - single chunk:         Secs==10 -> one chunk call, IF false (4 actions)
-#
-# ENGINE FIDELITY (probed on HEAD, pinned verbatim):
-# - This is a wall-clock sleeper recipe; the pinned seed 'now' makes every
-#   now-reading formula constant across steps, so call args become fixed
-#   numbers: chunk secs = seq_no*10 - delta, remainder secs =
-#   (Secs%10) - (delta - list_size*10), reply secs_waited = delta, where
-#   delta = (now - job_created_at) whole seconds.
-# - call_service request.secs renders as a STRING (e.g. "-15", "0"): the
-#   request object resolves through text interpolation despite the schema's
-#   integer_conversion hint. reply.secs_waited is an INT (formula value).
-# - zero remainder logs "" (not "0"): logger renders via
-#   resolve_text -> str(resolved or ""), so integer 0 becomes the empty
-#   string; the IF-6 lhs then reads "" and "" > "0" is false. Pin "".
-# - Every call_service reply is deterministic Workato-internal seed state
-#   (seed.workato_service_replies keyed by step as-id, fail-fast); the reply
-#   values are never dereferenced downstream.
-#
-# Backends: ALL Workato-internal mocks (service trigger/replies, logger,
-# workato_list). No live backend, no persistent state, no cleanup.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

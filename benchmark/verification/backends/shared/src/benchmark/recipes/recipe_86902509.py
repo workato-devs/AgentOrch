@@ -16,27 +16,17 @@ TRACK = "live_slack_financebot_duplicate_order_acknowledge"
 TRIGGER_PROVIDER = "slack_bot"
 TRIGGER_NAME = "bot_command_v2"
 
-# Linear recipe (no branches). Actions, in raw-summary order:
-#   2 slack_bot.post_bot_message   -> live slack.post_message (create, "Processing this!")
-#   3 slack.get_user_by_email      -> live slack_bot.get_user_by_email (acknowledger)
-#   4 workato_variable.declare_variable -> internal workato_runtime.declare_variable
-#   5 slack_bot.post_bot_message   -> live slack.post_message (updates step-2 message via advanced.ts)
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("slack_bot", "post_bot_message"),
     ("slack", "get_user_by_email"),
     ("workato_variable", "declare_variable"),
     ("slack_bot", "post_bot_message"),
 ]
-# Unique tool names that may appear in the raw-execution trace (membership set;
-# both slack posts surface as slack.post_message, the variable step surfaces as
-# the internal workato_runtime.declare_variable trace tool).
 EXPECTED_RAW_TOOLS: list[str] = [
     "slack.post_message",
     "slack_bot.get_user_by_email",
     "workato_runtime.declare_variable",
 ]
-# Live tool calls the recipe is permitted to make (the workato_variable step is
-# internal and never becomes a live call).
 ALLOWED_TOOLS: list[str] = [
     "slack.post_message",
     "slack_bot.get_user_by_email",

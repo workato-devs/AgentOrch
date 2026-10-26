@@ -22,38 +22,8 @@ CATCH_AS = "2da14745"
 ERROR_RESPONSE_AS = "57671952"
 STOP_AS = "8ce124ba"
 
-# BYTE-twin of family head 117566176 (the 684-line Automation Compass
-# widget skeleton): the raw bodies are byte-identical; the only delta is
-# CSV header metadata (created_at/flow_id/updated_at/version_no).
-# 117566176 is the ORIGINAL (v7); 117566176 is the re-issue. Shape:
-#   workato_api_platform.receive_request 751ec271 (request schema [] — no
-#   params; trigger seed is exactly {"request": {}})
-#   TRY(2)> snowflake.search_rows_sql d8a6f6bf (LIVE): AUTOMATION_LEVEL AL
-#     LEFT JOIN BUSINESS_PROCESS_DASHBOARD BP ON AL.LEVEL =
-#     BP.CURRENT_AUTOMATION_LEVEL, COUNT(BP.CURRENT_AUTOMATION_LEVEL) — the
-#     LEFT JOIN guarantees one output row per AUTOMATION_LEVEL row and a
-#     native int 0 for unmatched levels (the data-level branch).
-#   return_response 83954e0e: 200 {automationByLevel: ____source over rows,
-#     name/value current_item pills} + CORS headers.
-#   CATCH 2da14745 (max_retry_count 0)> return_response 57671952: 400
-#     {error: catch message pill}; stop 8ce124ba (stop_with_error) is DEAD:
-#     return_response is in TERMINAL_TOOLS, so the 400 response halts the run
-#     and the stop step never executes (no trace row) — catch variants expect
-#     executed_action_count 1 and the verifier pins the absence of any stop
-#     trace row.
-# Backends: Snowflake runs LIVE (seeder create-or-replace via
-# harness.snowflake_live.seed_tables; the runner drops the tables in a
-# `finally` and the recipe itself is READ-ONLY — snapshot equality pinned).
-# The api_platform trigger/return_response is the Workato-internal mock.
-# The SQL uses no CURRENT_DATE/TIMESTAMP/sysdate, so snowflake_live has no
-# current_time. Physical table names are shared across the whole
-# AUTOMATION_COMPASS family — never run family variants concurrently.
 LEVEL_TABLE = "AUTOMATION_COMPASS.AUTOMATION_LEVEL"
 DASHBOARD_TABLE = "AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD"
-# Column typing is LOAD-BEARING: number (NUMBER(38,0)) columns keep the
-# AL.LEVEL = BP.CURRENT_AUTOMATION_LEVEL join numeric and COUNT()/0 native
-# ints through _json_value. NUMBER columns round fractional seeds on insert
-# (45.5 -> 46), so the seeder rejects non-integer values outright.
 LEVEL_COLUMNS = {"LEVEL": "number", "NAME": "string"}
 DASHBOARD_COLUMNS = {"PROCESS_ID": "string", "CURRENT_AUTOMATION_LEVEL": "number"}
 RAW_SQL = (
@@ -88,7 +58,6 @@ ALLOWED_TOOLS: list[str] = list(EXPECTED_RAW_TOOLS)
 SUCCESS_TOOLS = ["snowflake.search_rows_sql", "workato_api_platform.return_response"]
 CATCH_TOOLS = ["workato_api_platform.return_response"]
 REQUIRED_EXPECT_KEYS = ("executed_action_count", "tools", "tool_expectations", "return_value")
-# Corpus lint: every expected call carries at least one value-asserting key.
 VALUE_KEYS = (
     "args_contains",
     "result_count",

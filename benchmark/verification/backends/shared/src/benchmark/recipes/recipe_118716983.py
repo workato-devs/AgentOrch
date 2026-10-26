@@ -25,50 +25,6 @@ UPDATE_TARGET_AS = "be51b2f4"
 POST_CONFIRM_CURRENT_AS = "4cd2958c"
 POST_CONFIRM_TARGET_AS = "b3290ba6"
 
-# slack_bot.bot_command_v2 /change presentation (as dd6c40b1) parameters
-# {presentation_list: required 'topics', new_date: optional} — DESPITE the
-# label, new_date carries the OTHER slot's TOPIC (both searches filter
-# col_Topics). Strictly linear, no ifs/foreach; every sheet-row pill reads
-# rows[current_item] OUTSIDE any foreach = FIRST-MATCH semantics:
-#   2  google_sheets.search_spreadsheet_rows_v4_new d833fbb1 (LIVE, sheet
-#      'scheduled', count 200) data {col_Topics: #{presentation_list}} —
-#      the 'current slot' row.
-#   3  google_sheets.search_spreadsheet_rows_v4_new e65217d3 same, data
-#      {col_Topics: #{new_date}} — the 'target slot' row.
-#   4  slack_bot.post_bot_message e2021af2 channel = e65217d3 first
-#      col_Member. Block section_with_button_with_long_action ('Approve',
-#      bot_command 58847136): the engine renders ONLY section_text and does
-#      NOT wait (user_selection is never dereferenced downstream, so the
-#      linearization is behavior-preserving; batch-05 118858162 precedent).
-#      section_text interleaves col_Who / col_Scheduled Time / col_Topics
-#      pills from BOTH searches with literal \n\t\t separators, the RIGHT
-#      SINGLE QUOTE in 'Here’s' and EN-DASH '–' separators — pinned verbatim.
-#   5  google_sheets.update_row_v4_new 8a6f0b71: row_number = d833fbb1 first
-#      row_number, data {col_Scheduled Time: e65217d3 first value} (the
-#      engine maps col_-keys to the plain header 'Scheduled Time').
-#   6  google_sheets.update_row_v4_new be51b2f4: row_number = e65217d3 first
-#      row_number, data = d833fbb1 first PRE-UPDATE value — the swap works
-#      because pills read the STEP-OUTPUT SNAPSHOT, not the live sheet.
-#   7  slack_bot.post_bot_message 4cd2958c channel = d833fbb1 first
-#      col_Member: 'Your all hands slot on {cur} has been swapped to {tgt}.'
-#   8  slack_bot.post_bot_message b3290ba6 reverse confirmation to the
-#      e65217d3 member.
-#
-# Backends: google_sheets LIVE (SHEETS_SPREADSHEET_ID/SHEETS_TAB redirect;
-# the tab is seeded LABEL-HEADED — plain 'Topics'/'Scheduled Time'/… headers
-# — because update_row writes the stripped header name; the engine adds
-# col_<Header> aliases to search rows from the node output schema, probe-
-# verified) + slack LIVE (all three channel cells are non-'U' values and
-# route to SLACK_CHANNEL_OVERRIDE; posts are terminal observables, never
-# re-read). Seeding hazard (probe-verified): harness.google_sheets.seed_rows
-# takes {'sheets': {...}} — a {'google_sheets': …} arg key silently seeds
-# NOTHING. USER_ENTERED locale-parses date-like cells, so Scheduled Time
-# seeds pin RENDERED month-name forms ('July 24' style, live-probe-verified
-# round-trip) and never ISO datetimes. No cleanup: every seed fully
-# overwrites the redirected tab (replace_rows) and Slack posts are terminal.
-#
-# Zero-match searches are a faithful ERROR path (row_number int(MISSING)
-# raises), NOT a benchmark variant — probe-verified, kept out of variants.
 
 _RAW_PIN_JSON = r"""{"as": "dd6c40b1", "block": [{"as": "d833fbb1", "block": [], "input": {"count": "200", "data": {"col_Topics": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"dd6c40b1\",\"path\":[\"parameters\", \"presentation_list\"]}')}"}, "sheet": "scheduled", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "keyword": "action", "name": "search_spreadsheet_rows_v4_new", "number": 2, "provider": "google_sheets", "skip": false}, {"as": "e65217d3", "block": [], "input": {"count": "200", "data": {"col_Topics": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"dd6c40b1\",\"path\":[\"parameters\", \"new_date\"]}')}"}, "sheet": "scheduled", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "keyword": "action", "name": "search_spreadsheet_rows_v4_new", "number": 3, "provider": "google_sheets", "skip": false}, {"as": "e2021af2", "block": [], "input": {"blocks": [{"block_type": "section_with_button_with_long_action", "bot_command": "58847136", "button_title": "Approve", "button_type": "continue_flow", "section_text": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Who\"]}')} is requesting to swap an all-hands slot with you. Here\u2019s the new schedule:\n\t\t#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')}: #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Topics\"]}')} \u2013 #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Who\"]}')}\n\t\t#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')}: #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Topics\"]}')} \u2013 #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Who\"]}')}", "style": "default"}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Member\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 4, "provider": "slack_bot", "skip": false}, {"as": "8a6f0b71", "block": [], "input": {"data": {"col_Scheduled Time": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')}"}, "row_number": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"row_number\"]}')}", "sheet": "scheduled", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "keyword": "action", "name": "update_row_v4_new", "number": 5, "provider": "google_sheets", "skip": false}, {"as": "be51b2f4", "block": [], "input": {"data": {"col_Scheduled Time": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')}"}, "row_number": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"row_number\"]}')}", "sheet": "scheduled", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "keyword": "action", "name": "update_row_v4_new", "number": 6, "provider": "google_sheets", "skip": false}, {"as": "4cd2958c", "block": [], "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "Your all hands slot on #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')} has been swapped to #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')}."}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Member\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 7, "provider": "slack_bot", "skip": false}, {"as": "b3290ba6", "block": [], "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "Your all hands slot on #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')} has been swapped to #{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"d833fbb1\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Scheduled Time\"]}')}."}], "channel": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"e65217d3\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"col_Member\"]}')}"}, "keyword": "action", "name": "post_bot_message", "number": 8, "provider": "slack_bot", "skip": false}], "input": {"allow_dialog": "true", "domain": "change", "name": "presentation", "parameters": "[{\"name\":\"presentation_list\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"topics\"},{\"name\":\"new_date\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"new date\"}]", "scope": "timing"}, "keyword": "trigger", "name": "bot_command_v2", "number": 1, "provider": "slack_bot", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

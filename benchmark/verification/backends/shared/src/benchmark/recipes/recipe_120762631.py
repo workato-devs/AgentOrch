@@ -25,43 +25,6 @@ CATCH_AS = "dbd9e528"
 CATCH_RETURN_AS = "bccfccc1"
 TOPIC_ID = "47402"
 
-# workato_api_platform.receive_request (as 4c34d26c) -- dereferences
-# request.user_objectives (publish message) and request.zoominfo_id (via
-# =_dp(...).to_i). Body = one TRY (step 2):
-#   3  workato_variable.declare_variable 7c6eff74: workflow_run_id =
-#      =workato.uuid -- resolved from seed.workato_uuids (deterministic list,
-#      consumed in call order; the engine evaluates the declare node's data
-#      TWICE -- once while resolving the args `variables` object and once for
-#      the step result -- so ONE run consumes EXACTLY TWO seeded uuids. The
-#      seeder therefore requires seed.workato_uuids == [u, u] with both
-#      entries identical, keeping args and step output consistent.)
-#   4  workato_pub_sub.publish_to_topic fa742e11 (topic 47402 '[RIQ] New
-#      DeepResearch Job', Workato-internal mock): message {conversation_id
-#      'NA', force_generate 'true' (custom-value string), user_email
-#      'api_user', user_objectives = request pill (typed passthrough),
-#      workflow_run_id = declare pill, zoom_info_id = request.zoominfo_id
-#      .to_i (INTEGER -- '00421' -> 421)}
-#   5  workato_api_platform.return_response 0a351f84: 201 {success 'true'
-#      (literal string), workflow_run_id pill} -- ENGINE-TERMINAL
-#   6  CATCH dbd9e528 (max_retry_count 0) -> 7 return_response bccfccc1:
-#      500 {message: catch.dbd9e528.message, success 'false'} -- TERMINAL
-#
-# Branch mapping (all reachable paths covered):
-# - variant_00 publish_201: happy path; 3 executed actions (declare +
-#   publish + 201). The trailing catch never fires.
-# - variant_01 catch_500: seed.force_action_error on fa742e11 (the publish
-#   is a pure Workato-internal mock -- no trigger-controllable failure
-#   exists, the forced error is the deterministic catch path). The error
-#   raises BEFORE the tool call, so the trace has NO publish row; declare
-#   still ran (both uuids consumed). 2 executed actions.
-# - variant_02 zoominfo_string_to_i: request.zoominfo_id seeded as the
-#   STRING '00421' -> .to_i coerces to integer 421 in the published message
-#   (Ruby to_i, leading zeros dropped). 201 path again; pins the coercion.
-#
-# Backends: ALL Workato-internal mocks (api_platform trigger/responses,
-# pub_sub topic, workato_variable) -- no live backend, no cleanup, no
-# persistent state. Both return_response steps are engine-terminal
-# (TERMINAL_TOOLS), so exactly one response fires per run.
 
 _RAW_PIN_JSON = r"""{"as": "4c34d26c", "block": [{"as": "", "block": [{"as": "7c6eff74", "block": [], "input": {"variables": {"data": {"workflow_run_id": "=workato.uuid"}, "schema": "[{\"name\":\"workflow_run_id\",\"type\":\"string\",\"optional\":true,\"label\":\"workflow_run_id\",\"details\":{\"real_name\":\"workflow_run_id\"},\"control_type\":\"text\",\"parent\":[\"variables\",\"data\"]}]"}}, "keyword": "action", "name": "declare_variable", "number": 3, "provider": "workato_variable", "skip": false}, {"as": "fa742e11", "block": [], "input": {"message": {"conversation_id": "NA", "force_generate": "true", "user_email": "api_user", "user_objectives": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"4c34d26c\",\"path\":[\"request\", \"user_objectives\"]}')}", "workflow_run_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"7c6eff74\",\"path\":[\"workflow_run_id\"]}')}", "zoom_info_id": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"4c34d26c\",\"path\":[\"request\",\"zoominfo_id\"]}').to_i"}, "topic_id": "47402"}, "keyword": "action", "name": "publish_to_topic", "number": 4, "provider": "workato_pub_sub", "skip": false}, {"as": "0a351f84", "block": [], "input": {"http_status_code": "201", "response": {"success": "true", "workflow_run_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"7c6eff74\",\"path\":[\"workflow_run_id\"]}')}"}}, "keyword": "action", "name": "return_response", "number": 5, "provider": "workato_api_platform", "skip": false}, {"as": "dbd9e528", "block": [{"as": "bccfccc1", "block": [], "input": {"http_status_code": "500", "response": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"dbd9e528\",\"path\":[\"message\"]}')}", "success": "false"}}, "keyword": "action", "name": "return_response", "number": 7, "provider": "workato_api_platform", "skip": false}], "input": {"max_retry_count": "0", "retry_interval": "2"}, "keyword": "catch", "name": "", "number": 6, "provider": "", "skip": false}], "input": {}, "keyword": "try", "name": "", "number": 2, "provider": "", "skip": false}], "input": {"request": {"content_type": "json", "schema": "[{\"name\":\"zoominfo_id\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\",\"label\":\"Zoominfo ID\",\"parse_output\":\"integer_conversion\"},{\"name\":\"user_objectives\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"User objectives\"}]"}, "response": {"content_type": "json", "responses": [{"body_schema": "[{\"name\":\"workflow_run_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Workflow run ID\"},{\"name\":\"success\",\"type\":\"boolean\",\"optional\":false,\"control_type\":\"checkbox\",\"label\":\"Success\",\"render_input\":\"boolean_conversion\",\"parse_output\":\"boolean_conversion\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Success\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"success\",\"type\":\"boolean\",\"optional\":false}}]", "http_status_code": "201", "name": "Success"}, {"body_schema": "[{\"name\":\"message\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Message\"},{\"name\":\"success\",\"type\":\"boolean\",\"optional\":false,\"control_type\":\"checkbox\",\"label\":\"Success\",\"render_input\":\"boolean_conversion\",\"parse_output\":\"boolean_conversion\",\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Success\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"name\":\"success\",\"type\":\"boolean\",\"optional\":false}}]", "http_status_code": "500", "name": "Error"}]}}, "keyword": "trigger", "name": "receive_request", "number": 1, "provider": "workato_api_platform", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

@@ -18,59 +18,6 @@ TRACK = "live_salesforce_renewal_ocr_sync"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "360e48d3"
-# Recipe function: copy every OpportunityContactRole from an original
-# Opportunity onto its renewal Opportunity (create or update), collecting
-# successes/failures:
-#   #2 declare_list e1f1c45c "failed_list", #3 declare_list acdf275f
-#      "successful_list"
-#   #4 salesforce.search_sobjects 6837086a: OCRs by OpportunityId =
-#      parameters.original_opp_id (field_list incl. the 5 Nurture custom
-#      fields + Contact$Contact ID.Email/.Name join, table_list Contact,
-#      limit 150)
-#   #5 FOREACH f9528993 over 6837086a.OpportunityContactRole (simple):
-#      #6 search ae5aa3ed: OCR by ContactId = current.ContactId AND
-#         OpportunityId = parameters.renewal_opp_id (limit 150)
-#      #7 TRY:
-#        IF#8 ae5aa3ed size equals_to "0" ->
-#          #9 create_custom_object 52a4cce3 on the renewal opp
-#             (ContactId/OpportunityId/CurrencyIsoCode interpolated pills +
-#              Role/IsPrimary/Nurture* "=pill or skip")
-#        ELSE#10 -> #11 update_sobject 3c411ced id = ae5aa3ed
-#             current_item.Id (current_item OUTSIDE a foreach = FIRST found
-#             row), same "or skip" field set (no ContactId)
-#        #12 insert 2a4c8b74 successful_list: opportunity_contact_id =
-#            #{52a4cce3.id}, contact_email = foreach Contact.Email
-#      CATCH#13 29f2788f (max_retry 3 / interval 5; engine single-execution
-#        precedent 119259283) -> #14 insert 87ffaec9 failed_list incl.
-#        error_message = catch message + opportunity_contact_role = Role
-#   #15 return_result 98e6d4e7: failed_list + SUCESSFUL_list (raw typo,
-#      pinned verbatim) as ____source mappings
-#
-# Live Salesforce; workato lists + recipe-function return are mock.
-# FIRST OCR-custom-field use in the bench org: the 5 Nurture fields are
-# provisioned schema-in-seed via ensure_custom_field (Tooling API, fail-fast
-# if the org rejects OpportunityContactRole custom fields).
-#
-# Faithfulness pins (probe-verified):
-# - CurrencyIsoCode is multicurrency-only and must NEVER be seeded: the live
-#   search reads only seeded field names, the pill resolves MISSING and
-#   create/update DROP the field (no INVALID_FIELD in the single-currency
-#   org). The seeder rejects any seeded CurrencyIsoCode; the verifier pins
-#   its absence from every SF write.
-# - "or skip" drops falsy/absent pills: only seed IsPrimary/Nurture fields
-#   where a variant needs them.
-# - On the ELSE/update path 52a4cce3 never ran -> successful_list entry
-#   opportunity_contact_id is None; after a create iteration the pill carries
-#   the PREVIOUS create's id (Workato last-execution semantics; the mixed
-#   variant pins entry[1].id == entry[0].id via expect.
-#   stale_pill_equals_first_create).
-# - force_action_error is step-scoped (every iteration): the catch variant
-#   uses a single-OCR seed (a mixed per-iteration success/failure run is not
-#   forceable).
-#
-# Cleanup: harness.salesforce.cleanup in finally deletes every benchmark-owned
-# record INCLUDING recipe-created OCRs (they are created through the owned
-# SalesforceRun state); fail-fast on leftovers.
 ORIGINAL_SEARCH_AS = "6837086a"
 PER_CONTACT_SEARCH_AS = "ae5aa3ed"
 CREATE_AS = "52a4cce3"

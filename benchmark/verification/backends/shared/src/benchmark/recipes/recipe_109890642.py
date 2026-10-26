@@ -15,12 +15,6 @@ SEED_TYPE = "workspace_packages_api_variant"
 TRACK = "workato_api_platform_packages"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API Platform endpoint. Reads the caller's enabled Workspaces row(s) for the
-# requested workspace_user_id (table 9009) filtered by the calling access
-# profile. If none match -> 401. Otherwise, in a try, it paginates the Packages
-# table (9006, deprecated=false) inside a repeat/while_condition loop, batching
-# each page into the `packages` list, and returns 200 with the collected
-# packages. Any error in the try returns 400 "Unexpected Error".
 OUTER_TABLE_ID = "9009"
 INNER_TABLE_ID = "9006"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [

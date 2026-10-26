@@ -29,8 +29,6 @@ SLACK_POST_AS = "336b10f9"
 RAW_CHANNEL = "C03FVMYSM8X"  # non-U literal -> raw_executor routes to SLACK_CHANNEL_OVERRIDE
 TS_TOKEN = "$SLACK_MESSAGE_TS"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
-# The 10 raw column headers exactly as the search/update steps declare them in
-# column_headers (the env-bound benchmark tab is seeded with these).
 SHEET_HEADERS = [
     "Name",
     "Japanese Name",
@@ -45,77 +43,12 @@ SHEET_HEADERS = [
 ]
 LOOKUP_COLS = tuple(f"col{idx}" for idx in range(1, 11))
 COMPLETED_PREFIX = "Completed on "
-# Rendered verbatim from the step-7 section_with_text block (incl. the
-# trailing space and the <anon>-tagged sheet URL, which live chat.update
-# accepts as plain text).
 SECTION_TEXT = (
     "This request has been `Completed`. <https://docs.google.com/spreadsheets/d/"
     "<anon>2PqR8StU9VwX0YzA1BcD2EfG3HiJ4KlM5NoPqRsT6Uv</anon>/edit#gid=1071595560"
     "|Here are the details.> "
 )
 
-# slack_bot.bot_command_v2 (as 79c4a18b, command 'Namecard', domain SG, scope
-# Done, declared parameters [{email, string, required}]). Dereferenced trigger
-# pills: parameters.email (step 2) and ts (step 7 advanced.ts). Body (strictly
-# LINEAR -- no IF/foreach/try; every step must succeed):
-#   2  lookup_table.search_entries 12079e4b table 1840306 (mock, Workato-
-#      internal): col5 = trigger parameters.email.
-#   3  logger.log_message 1f7aeafc: message = job_context.job_created_at
-#      .in_time_zone("Asia/Singapore").strftime("%d %B %Y") -> the rendered
-#      long date is REUSED verbatim by steps 4, 6 (col10 / Remarks
-#      "Completed on <date>").
-#   4  lookup_table.update_entry 171ad1f8 table 1840306: id = 12079e4b
-#      entries current_item id (= FIRST matching row), ignore_not_found
-#      "false"; col9 'Completed', col10 'Completed on #{message}'.
-#   5  google_sheets.search_spreadsheet_rows_v4_new 89357d8d (LIVE, env-bound
-#      benchmark tab): col_Remarks = 12079e4b current_item entry.col10 -- the
-#      step-2 PRE-update SNAPSHOT (state.steps outputs are immutable after
-#      record_step; step 4 does not mutate them) -- AND col_'Workato Email' =
-#      entry.col5, count 200. TRAP: a BLANK seeded col10 would be dropped by
-#      the engine's blank-criterion rule and silently widen the search to
-#      email-only, so every seeded lookup row pins a non-empty col10.
-#   6  google_sheets.update_row_v4_new cfa21416 (LIVE): row_number = 89357d8d
-#      rows current_item row_number; label-mapped data {Status 'Completed',
-#      Remarks 'Completed on <date>'} -- other cells keep their seeded values.
-#   7  slack_bot.post_bot_message 336b10f9: advanced.ts = trigger ts ->
-#      the engine routes slack.post_message with a non-empty ts to LIVE
-#      chat.update; channel literal C03FVMYSM8X (non-U) -> override channel.
-#      Rendered text = section_with_text + 5 'Title: value' attachment-field
-#      lines (Full Name/Job Title/Email/Phone/Location from entry.col1/col3/
-#      col5/col6/col8); message.color 'good' is metadata, never rendered.
-#
-# Branch mapping (coverage per benmark_rules): the recipe is strictly linear,
-# so every variant runs the same 6-step path; variants vary the DATA traps:
-# - variant_00 namecard_completed_decoy_filtered: decoy lookup row seeded
-#   FIRST (target _row_id 1 -> proves the col5 search filter, not seed order);
-#   sheet decoys share the email (different Remarks) and share the Remarks
-#   (different email) -> proves BOTH search criteria bite; target sheet row 2.
-# - variant_01 second_sheet_row_targeted: the matching sheet row is row 3
-#   (row 2 is a non-matching decoy) -> proves the row_number pill targeting;
-#   the decoy row is byte-untouched.
-# - variant_02 tz_boundary_date: job_created_at 2026-07-31T16:05:00Z renders
-#   '01 August 2026' in Asia/Singapore (+8 crosses the calendar month) ->
-#   proves in_time_zone shifts the date in col10 / Remarks / logger output.
-# - variant_03 multi_entry_first: TWO lookup rows carry the trigger email
-#   (result_count 2); current_item = FIRST entry drives the update id AND the
-#   sheet search col10; the sheet row matching the SECOND entry's col10 stays
-#   untouched, as does the second lookup row.
-# Non-branches (fail-fast job errors, not variants): unknown email -> step-4
-# id pill unresolved -> NonRecipeError; no matching sheet row -> step-6
-# row_number pill unresolved -> error. force_action_error is not sanctioned
-# (no catch -- a forced error fails the whole run instead of exercising a
-# branch).
-#
-# Backends: google_sheets LIVE (harness.google_sheets.seed_rows fully
-# overwrites the env-bound benchmark tab per run -> deterministic reruns, no
-# sheet cleanup needed; USER_ENTERED means pins are the rendered read-back --
-# keep seeded cells textual). slack LIVE: the seed live-posts a bot-owned
-# placeholder in the override channel and threads its ts through the trigger
-# ts (seed_slack_message pattern, 130740169/124203347); the recipe
-# chat.updates that exact ts; cleanup DELETES the message in finally (rerun
-# determinism -- the updated placeholder would otherwise accumulate).
-# lookup_table 1840306 is a Workato-internal deterministic mock seeded per
-# variant; job_context.job_created_at is pinned per variant (no wall clock).
 
 _STRUCTURE_PINS_JSON = r'''
 [
@@ -281,9 +214,6 @@ ALLOWED_TOOLS: list[str] = [
     "google_sheets.update_row_v4_new",
     "slack.post_message",
 ]
-# The agent-visible tool sequence (workato_runtime.log_message is an internal
-# runtime marker: it appears in the trace/executed_action_count but never in
-# tool_calls).
 AGENT_TOOL_SEQUENCE: list[str] = list(ALLOWED_TOOLS)
 EXECUTED_ACTION_COUNT = 6
 REQUIRED_EXPECT_KEYS = (

@@ -18,9 +18,6 @@ TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "b68b1cac"
 SERVICE_NAME = "Bizible Touchpoint Tagging"
-# Workato-internal mock backends only (backend policy: lookup tables, smart
-# lists, variable lists, logger, and the callable-service reply are all
-# Workato-owned): no live system is touched by this recipe.
 MAPPING_TABLE_ID = "3256253"  # "Bizible/Salesforce Mapping Updated": col1 SF campaign, col2 Bizible campaign, col3 Bizible UTM campaign, col4 SF campaign id
 OTHER_CAMPAIGNS_TABLE_ID = "3256252"  # "Bizible Lookup Table (Other campaigns)": col1 SF campaign name, col2 SF campaign id
 REPLY_LIST_KEYS = (
@@ -31,52 +28,6 @@ REPLY_LIST_KEYS = (
     "contacts_to_update",
 )
 
-# Callable service "Bizible Touchpoint Tagging" (trigger b68b1cac): the request
-# carries request.bizible_touchpoints[] and request.campaign_activities[].
-# Body wrapped in TRY (step 2):
-#   declare_list x5 (steps 3-7: Create/Update/Unhandled/Leads/Contacts lists)
-#   smart_list.create_list "Bizible Touchpoints" (step 8, 19924381) and
-#     "Campaign Activities" (step 9, b1b52805) from the request arrays
-#   query_list db451e5b (step 10): UNION of emails from both lists
-#   FOREACH email (c963603d, step 11):
-#     query_list ffb8e037 (step 12): paid touchpoints of the email
-#       (marketing_channel IN ('Paid Search','Paid Social') OR medium='CPC'
-#        OR medium='adwords')
-#     FOREACH touchpoint (9f06623b, step 13):
-#       lookup 3256253 by col2=ad_campaign_name (d02c897e, step 14)
-#       IF miss -> lookup by col3=medium (e3c578c8, step 16)
-#         IF miss -> lookup by col3=ad_campaign_name (e1220bd5, step 18)
-#           IF miss -> IF touchpoint_source contains 'interview' (step 20,
-#             EMPTY true-branch) ELSE insert Unhandled (79129f95, step 22)
-#           ELSE query existing CA 2dd33149 (step 24); IF none -> insert
-#             Create (15c7052c, step 26; contactId/leadId 003/00Q ternaries,
-#             activityCreatedDate=.to_time)
-#         ELSE query existing CA 8013b3f6 (step 28); IF none -> insert Create
-#           (8280c99c, step 30)
-#       ELSE query existing CA 8fb36d29 (step 32); IF none -> insert Create
-#         (99b690d2, step 34)
-#     lookup_table.get_entries 3256252 (9ec76c54, step 35)
-#     logger 23068836 (step 36): entries.pluck(['entry','col1'])
-#       .format_map('\'%s\'').join(",") -- feeds the IN (...) below
-#     query_list e32ca8c6 (step 37): Campaign Activities cA LEFT JOIN Bizible
-#       Touchpoints bTP ON cA.bizible_touchpoint_id = bTP.id, filtered by
-#       email + campaign_name IN (<logger message>)
-#     FOREACH joined CA row (8b82d936, step 38):
-#       query_list 3264bba7 (step 39): paid touchpoints with
-#         JULIANDAY window <= 180 days AND touchpoint_datetime <
-#         activity_created_at, ORDER BY touchpoint_datetime ASC
-#       IF rows.size > 0 (step 40):
-#         insert Update {id, first touchpoint id} (0737710e, step 41)
-#         IF first row leadSource not in {'Inbound Paid Advertising',
-#           'LinkedIn Paid Advertising'} (step 42):
-#           logger b0643132 (step 43): touchpoint_source mapping if/elsif/else
-#           IF first row contact_lead_id starts_with '003' (step 44):
-#             insert Contacts to Update (fcb733d8, step 45)
-#           ELSE insert Leads to Update (677ff1fc, step 47)
-#   send_reply success (066db276, step 48): the five ____source-mapped lists
-#     (create items render activityCreatedDate.in_time_zone("America/Los_Angeles"))
-# CATCH (bf97d947, step 49, max_retry_count=0):
-#   send_reply error (d865b3a4, step 50) with message = catch message.
 EXPECTED_ACTIONS: list[tuple[str, str, str, int]] = [
     ("workato_variable", "declare_list", "e4f7ec4f", 3),
     ("workato_variable", "declare_list", "a1bce0af", 4),
@@ -129,13 +80,6 @@ ALLOWED_TOOLS: list[str] = [
     "workato_service.send_reply",
 ]
 
-# Verbatim structural pin of the raw recipe: the complete trigger input, every
-# action input (all six smart-list SQL texts, the lookup search parameters,
-# the insert_to_list mappings with their 003/00Q ternaries and .to_time, both
-# logger formulas including format_map('\'%s\''), and both send_reply
-# mappings), every IF condition block, the foreach sources, the else/try
-# numbers and the catch node. validate_88917380 raises RuntimeError on ANY
-# drift from these values.
 _PINNED_RAW_JSON = r'''{
  "action_inputs": {
   "066db276": {
@@ -506,9 +450,6 @@ _PINNED_RAW_JSON = r'''{
  ]
 }'''
 PINNED_RAW: dict[str, Any] = json.loads(_PINNED_RAW_JSON)
-# The imported pin predates the repaired temporal direction. Retain the full
-# structural pin and replace only that reviewed clause: a touchpoint is valid
-# when it precedes the activity by at most 180 days.
 _TOUCHPOINT_DATETIME_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\","
     "\"line\":\"19924381\",\"path\":[\"columns\", \"touchpoint_datetime\"]}')}"

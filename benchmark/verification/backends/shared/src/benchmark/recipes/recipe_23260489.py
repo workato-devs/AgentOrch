@@ -15,9 +15,6 @@ SEED_TYPE = "workato_service_reply_variant"
 TRACK = "workato_service_reply"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Two send_reply actions, in raw-summary order: the success reply (step 3,
-# as 76eb9029) inside the try body, then the error reply (step 5, as e6502478)
-# inside the catch body.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

@@ -29,10 +29,6 @@ IDLER_STEP_AS = "313a1274"
 COLLAB_STEP_AS = "503c4462"
 ERROR_NOTIFIER_STEP_AS = "50073cae"
 SLACK_TITLE_PREFIX = "New On-Demand View for "
-# The 20 hardcoded MKTO campaign ids of the trigger's runtime OR-filter
-# (raw trigger "filter"; the batch_B triage entry MISSED this filter — same
-# situation as the recipe_130704674 precedent). A payload campaign_id outside
-# this list runs ZERO actions (trigger_filter_matched false; variant_00).
 CAMPAIGN_FILTER_IDS = (
     "36346", "36335", "36337", "36334", "36338", "36344", "36336", "36341",
     "36333", "36339", "36331", "36345", "36342", "36343", "36348", "36329",
@@ -44,72 +40,6 @@ PAYLOAD_KEYS = (
 )
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_webhooks.new_event (as a933e72a, webhook_suffix 'formfills-apj',
-# JSON payload firstname/lastname/email/company/campaign_id/phone/comments/
-# time_zone/leadid/sfdcid [, joinURL]) with a runtime trigger filter:
-# payload.campaign_id equals one of the 20 CAMPAIGN_FILTER_IDS (or-compound).
-# Body:
-#   2  IF payload.email contains '@workato.com' OR contains 'test.com'
-#      -> 3 STOP (as b3655a16, stop_with_error false) — internal/test
-#      registrations are dropped gracefully.
-#   4  TRY:
-#      5  workato_service.call_service 313a1274 (flow 45178314 'Flexi Idler',
-#         request {Secs:'480'}) — Workato-internal; reply is deterministic
-#         seed state (production waits 480s; the seeded reply {secs_waited:
-#         480.0} returns instantly and is never dereferenced downstream)
-#      6  lookup_table.search_entries a45d596c (table 4088652 'JPN Automate
-#         On-Demand Lookup': col1 SFDC Campaign ID, col2 SFDC/MKTO Camp.
-#         Name, col3 MKTO Campaign ID) by col3 = payload.campaign_id
-#      7  salesforce.search_sobjects e9c58b87 (LIVE): Campaign_Activity__c,
-#         field_list Id, limit 200, field filters Campaign__c =
-#         a45d596c.entries[current_item].entry.col1 (current_item outside a
-#         foreach = FIRST entry), Email__c = payload.email
-#      8  workato_service.call_service 503c4462 (flow 45178540 'Get
-#         Collaboration Tools', request {lead_id: payload.leadid}) -> reply
-#         {Lead:{first_name,last_name,email,job_title,...},
-#          Company:{company,...}}
-#      9  slack_bot.post_bot_message 35a6b894 (LIVE; channel literal
-#         'C02GPT83HAT' -> SLACK_CHANNEL_OVERRIDE). Rendered text = title
-#         'New On-Demand View for #{a45d596c col2} <@U05KPK5L8MS>' + four
-#         'Title: value' attachment-field lines (Name/Email/Company Name/
-#         Job Title from the 503c4462 reply). message.color and
-#         message.title_link are metadata slack_text does NOT render — the
-#         title_link (the ONLY consumer of the e9c58b87 output) affects no
-#         observable text, but the SF search still executes live for a
-#         faithful trace.
-#   10 CATCH 36d3b7d0 (max_retry_count 3, retry_interval 10 — the engine
-#      executes the try body once and the catch once; NO retried attempts
-#      appear in the trace, retry config is pinned at validate time only):
-#      11 workato_service.call_service 50073cae (flow 45178280, request
-#         {error_message '(#{firstname} #{lastname} - #{email})#{catch
-#         .message}', job_id/job_url/recipe_id job_context pills,
-#         stop_recipe 'false'})
-#      12 STOP stop_with_error true, stop_reason = catch.message
-#
-# Branch-mapping notes (recorded per benmark_rules):
-# - variant_00 trigger_filter_no_match: campaign_id '40399' is outside the
-#   20-id runtime filter -> trigger_filter_matched false, ZERO actions, no
-#   stop row (the body never starts).
-# - variant_01 internal_email_stop: email contains '@workato.com' (OR leg 1)
-#   -> graceful STOP 3 after zero actions.
-# - variant_02 testcom_stop: email contains 'test.com' (OR leg 2, distinct
-#   domain proves the second leg alone) -> same graceful STOP 3.
-# - variant_03 happy_path_post: both service replies seeded, lookup row
-#   matches campaign_id 36335, ONE benchmark-owned live Campaign_Activity__c
-#   matches both field filters (result_count 1), slack post to the override
-#   channel with the exact rendered text.
-# - variant_04 catch_error_service_stop: forced action error on e9c58b87
-#   (raised BEFORE arg resolution, so no salesforce trace row and no live SF
-#   seed is needed) -> catch 36d3b7d0 -> error-notifier call_service with the
-#   '(first last - email)<catch message>' interpolation + pinned job_context
-#   -> STOP 12 with error.
-#
-# Backends: salesforce LIVE (Campaign_Activity__c physical==logical, mdapi
-# org fact; custom fields via schema-in-seed ensure_custom_field; the owned
-# record is deleted in finally and leftovers fail the run); slack LIVE
-# (ordinary observable post, never re-read -> no cleanup per the cleanup
-# principle); lookup_table + workato_service are Workato-internal
-# deterministic mocks (replies keyed by step as-id, fail-fast when absent).
 
 _STRUCTURE_PINS_JSON = r'''
 [

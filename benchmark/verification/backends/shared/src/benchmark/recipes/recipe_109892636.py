@@ -16,19 +16,6 @@ TRACK = "workato_api_platform_package_versions"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "b28165b1"
-# API Platform endpoint: list a package's released versions. Step map:
-#   auth get_records (Workspaces, access_profile.id + workspace_user_id +
-#   enabled istrue) -> IF size==0 return 401 (terminal). TRY: package
-#   get_records by request.package_id -> IF deprecated is_true return 400
-#   ("The <name> package has been deprecated ..."), installs get_records
-#   (workspace relation + package relation), declare_list package_versions,
-#   declare_variable page_token, REPEAT [versions get_records (package
-#   relation eq + released istrue + deprecated isfalse, limit 200,
-#   continuation_token=page_token), update page_token, IF size>0
-#   insert_to_list_batch (name = "v<n>" + ' - currently installed' ternary
-#   when the version id matches the installed fc952b5a relation),
-#   WHILE page_token present] -> return 200 {versions}. CATCH -> 400
-#   {error: "Unexpected Error"}.
 AUTH_TABLE_ID = "8057"
 PACKAGES_TABLE_ID = "8054"
 INSTALLS_TABLE_ID = "8056"
@@ -93,10 +80,6 @@ EXPECTED_CONTROL_FLOW: list[dict[str, Any]] = [   {   'input': {   'conditions':
         'keyword': 'while_condition',
         'number': 17},
     {'input': {'max_retry_count': '0', 'retry_interval': '2'}, 'keyword': 'catch', 'number': 19}]
-# Raw trigger + per-action inputs pinned verbatim from
-# dataset/input_recipes/109892636/raw_recipe.md (key formulas: db-table filter pills,
-# the pagination continuation_token / page_token pills, the list mappings
-# and the return_response bodies). Any drift raises at validate time.
 PINNED_TRIGGER_INPUT: dict[str, Any] = {   'request': {   'content_type': 'json',
                    'schema': '[{"name":"workspace_user_id","type":"integer","optional":false,"control_type":"integer","label":"Workspace '
                              'user '

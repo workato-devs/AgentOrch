@@ -21,79 +21,17 @@ TRIGGER_AS = "2ac33b95"
 TRIGGER_SOBJECT = "Account"
 TRIGGER_FIELD_LIST = "Customer_is_a_Partner__c\nName\nRecordTypeId\nId"
 TRIGGER_ROW_KEYS = {"Customer_is_a_Partner__c", "Id", "Name", "RecordTypeId"}
-# Source-org record type ids hardcoded in the raw recipe. Record type ids are
-# ORG-GENERATED: they cannot be chosen, re-created, or assigned in the
-# benchmark org (Salesforce rejects a foreign RecordTypeId with
-# INVALID_CROSS_REFERENCE_KEY on create), so no live Account can ever carry
-# either value.
 CUSTOMER_RT_ID = "012o0000000teVpAAI"  # trigger IF-2 rhs + ELSE-arm search filter
 PARTNER_RT_ID = "012o0000000tYvxAAE"  # IF-arm search filter
 NAME_SUFFIX = " - Partner"
 CUSTOMER_STOP = {"number": 5, "as": "c8723ba4"}
 PARTNER_STOP = {"number": 10, "as": "e28e0a52"}
 TRIGGER_ID_TOKEN = "$TRIGGER_ACCOUNT_ID"
-# Schema-in-seed contract (128901328 precedent): the trigger field_list and
-# both (dead) update steps reference Account.Customer_is_a_Partner__c, so the
-# field is provisioned once as real org schema (never data; cleanup keeps it).
 REQUIRED_SCHEMA = [
     {"sobject": "Account", "field": "Customer_is_a_Partner__c", "sf_type": "Text"},
 ]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# salesforce.new_custom_object on Account (as 2ac33b95, since_offset no_limit,
-# field_list Customer_is_a_Partner__c/Name/RecordTypeId/Id), replayed as a
-# deterministic seeded payload (101641436 / 64106452 precedent). Body:
-#   2  IF trigger.RecordTypeId == '012o0000000teVpAAI' (customer arm):
-#      3  salesforce.search_sobjects 01b64088 Account:
-#         Name = '#{trigger.Name} - Partner' AND RecordTypeId =
-#         '012o0000000tYvxAAE', limit 150
-#      4  IF 01b64088.Account.size == 0 -> 5 STOP c8723ba4 (no error)
-#      6  salesforce.update_sobject d81f9ae2: id = trigger.Id,
-#         Customer_is_a_Partner__c = first matched partner's Id
-#   7  ELSE (partner arm):
-#      8  salesforce.search_sobjects dce8845f Account:
-#         Name = trigger.Name.gsub(" - Partner", "") AND RecordTypeId =
-#         '012o0000000teVpAAI', limit 150
-#      9  IF dce8845f.Account.size == 0 -> 10 STOP e28e0a52 (no error)
-#      11 salesforce.update_sobject 96cd9744: id = first matched customer's
-#         Id, Customer_is_a_Partner__c = trigger.Id
-#
-# DEAD LIVE BRANCHES (coordinator decision: faithful 2-variant build).
-# Both update steps (6 and 11) are provably unreachable in the benchmark org:
-# each sits behind a search whose field filters include a RecordTypeId
-# EQUALITY against a source-org id ('012o0000000tYvxAAE' / '012o0000000teVpAAI'
-# -- pinned verbatim in STRUCTURE_PINS). Record type ids are org-generated;
-# Salesforce rejects INVALID_CROSS_REFERENCE_KEY when creating a record with a
-# foreign RecordTypeId, and the benchmark org's own Accounts read back with
-# null/its-own RT ids -- so both searches return size 0 on every live run and
-# every reachable path ends at a clean STOP (same class as the 85944334
-# recordtype_skip and 59346468 dead-app-loop findings). The two stop variants
-# below are therefore the COMPLETE reachable coverage:
-# - variant_00 customer_arm_no_partner_stop: IF arm -> search 3 -> 0 rows ->
-#   STOP 5.
-# - variant_01 partner_arm_no_customer_stop: ELSE arm (gsub name strip) ->
-#   search 8 -> 0 rows -> STOP 10.
-# The counterfactual (offline stub serving a record that carries the foreign
-# RT id) executes the update arm fine, proving the dead code is a LIVE-DATA
-# impossibility, not an engine gap.
-#
-# Zero-match honesty: every variant live-seeds a DECOY Account whose Name
-# equals the search's exact Name filter, with RecordTypeId in read_fields so
-# the search compares the decoy's REAL live RT value against the hardcoded
-# source-org id. The 0-result is thereby attributable to the RecordTypeId
-# filter, never to a trivially empty org.
-#
-# Trigger payload / live-record tension (triage-flagged): the seeded trigger
-# payload carries the source-org RecordTypeId as REPLAYED TRIGGER DATA while
-# trigger.Id/Name are the live seeded Account's real values ($TRIGGER_ACCOUNT_ID
-# threading) -- the live record itself cannot carry that RT id, which is
-# exactly the dead-branch proof above.
-#
-# Backends: salesforce LIVE (benchmark-owned Accounts; Customer_is_a_Partner__c
-# via schema-in-seed). Cleanup: required (live records) -- harness cleanup in a
-# finally block; both variants must leave Customer_is_a_Partner__c null on
-# both accounts (the dead updates never fire), pinned via
-# expect.final_fields_by_name.
 
 _STRUCTURE_PINS_JSON = r"""[
  {
@@ -260,8 +198,6 @@ STRUCTURE_PINS: list[dict[str, Any]] = json.loads(_STRUCTURE_PINS_JSON)
 EXPECTED_RAW_TOOLS: list[str] = [
     "salesforce.search_records",
 ]
-# The update_sobject steps are provably dead live (see above); only the search
-# is ever executed/exposed (59346468 dead-branch precedent).
 ALLOWED_TOOLS: list[str] = [
     "salesforce.search_records",
 ]

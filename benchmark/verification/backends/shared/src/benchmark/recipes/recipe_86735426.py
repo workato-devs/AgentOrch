@@ -15,10 +15,6 @@ SEED_TYPE = "pod_issues_logs_service_variant"
 TRACK = "pod_issues_logs_service"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# All non-skip actions collected structurally (across every branch), in
-# raw-summary order: create (add_entry + reply), read (get_entry + reply),
-# update (get_entry + update_entry + reply), and the catch branch which calls
-# an escalation sub-recipe then replies with an error.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("lookup_table", "add_entry"),
     ("workato_service", "send_reply"),

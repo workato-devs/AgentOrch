@@ -17,54 +17,6 @@ TRACK = "workato_db_table_job_retry_loop"
 TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
 TRIGGER_AS = "e927c754"
-# Clock scheduled_event (every 30 minutes, payload-less) -> retry failed jobs
-# recorded in Workato data table 17244 ("[EDW] Atlassian x Snowflake | Issue
-# Attachments | Job Retries"):
-#   #2 declare_variable ca43cdfa {limit: '200', total_count: '0', cursor: nil}
-#      (schema types limit/total_count integer via integer_conversion)
-#   REPEAT df17b6c8 (do-while):
-#     #4 workato_db_table.get_records fc16e458 (table 17244, order_by
-#        aa006927 asc, limit #{limit}, continuation_token =
-#        '=cursor.presence || skip' -- OMITTED from args on the first page,
-#        passed verbatim on later pages)
-#     FOREACH 544078ee over fc16e458.records (bare row field paths):
-#       TRY:  #7 workato_app.rerun_jobs a9474f43
-#             jobs=[{job_id: row.aa006927...}], recipe_id=row.e6ee22c4...
-#       CATCH c1d510c6:
-#             #9 workato_db_table.update_record 7927a7b5 (record_id =
-#                row.11fbe9a6..., 78ed4fbf... = catch.message,
-#                9c21b0ac... = row.9c21b0ac... + 1)
-#             IF#10 catch.message not_contains 'It has not completed yet':
-#               #11 STOP 9cb4faab (stop_reason = catch.message,
-#                   stop_with_error = true)
-#     #12 update_variables 47e49dd2 (multi-target newline form):
-#         cursor = '=fc16e458.continuation_token.presence || clear' ('' when
-#         absent), total_count = '=total_count + (records.size.presence || 0)'
-#     WHILE fc16e458.continuation_token present
-#
-# Backends: workato_db_table table 17244 is Workato-internal MOCK state
-# (deterministic seeded rows + optional plain-form first-page continuation
-# token). workato_app.rerun_jobs is the deterministic Workato-internal ack
-# ({ok, job_ids}); the catch branch is reachable ONLY via
-# seed.force_action_error targeting step a9474f43 (forces EVERY foreach
-# iteration -> catch variants must seed exactly one row). No live SaaS.
-#
-# KNOWN ENGINE CAVEATS (probed 2026-07-07; see the scale-batch03 build report;
-# neither value is pinned by any variant so expects stay green before and
-# after the engine fixes):
-#   1. declare_variable integer_conversion only walks TOP-LEVEL
-#      extended_input_schema entries; this recipe nests limit/total_count under
-#      variables->data->properties, so total_count stays the string '0' and the
-#      step-12 accumulator concatenates ('02', '022'...) where Workato sums
-#      (2, 4). Wrong value lands ONLY in workato_runtime.update_variables trace
-#      args / final variable state.
-#   2. workato_app_rerun_jobs drops the recipe's TOP-LEVEL resolved recipe_id
-#      input (it only reads recipe_id from inside jobs[] entries), so args
-#      carry job_ids alone. args_contains pins job_ids and stays green if
-#      recipe_id is later added to args (extra keys are allowed).
-#
-# Cleanup: none required -- the mock table state is variant-local and the seed
-# fully overwrites it on every run (cleanup principle: no persistent backend).
 TABLE_ID = "17244"
 COL_ID = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 COL_RECIPE = "e6ee22c4_0ce7_4a9f_b7b7_fc0a3c43f116"
@@ -102,9 +54,6 @@ ALLOWED_TOOLS: list[str] = [
     "workato_db_table.update_record",
 ]
 
-# Full verbatim structure pins (keyword/number/as/provider/name/skip/input per
-# node, depth-first) -- any raw drift, including the while_condition, the catch
-# retry config or a formula edit, fails validation loudly.
 _STRUCTURE_PINS_JSON = r'''
 [
  {

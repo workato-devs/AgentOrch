@@ -15,31 +15,6 @@ SEED_TYPE = "recipe_function_staged_file_column_count_variant"
 TRACK = "workato_recipe_function_staged_file_column_count"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe function (trigger as cabb207b; parameters.database/.schema/
-# .stage/.date_path/.file_format, all required strings). "Takes a staged S3
-# file and return the number of columns". The whole body is wrapped in TRY
-# (step 2):
-#   snowflake.search_rows_sql (step 3, as cdea878c) -- LIVE Snowflake; reads a
-#     STAGED FILE, not a table:
-#       SELECT ARRAY_SIZE(SPLIT(T.$1, ',')) AS NUMBER_OF_COLUMNS
-#       FROM @<database>.<schema>.<stage>/<date_path>
-#       (FILE_FORMAT => '<database>.<schema>.<file_format>') AS T LIMIT 1
-#     All five identifiers are interpolated verbatim from the trigger
-#     parameters. The named FILE FORMAT must use FIELD_DELIMITER = NONE so
-#     T.$1 is the whole line and the comma-split counts every column (the raw
-#     step comment: "For this to work, file format needs to used a different
-#     delimiter than what the file is using").
-#   return_result (step 4, as 1c675dba): number_of_columns = rows[0] pill
-#     .presence or 0, success "true".
-# CATCH (step 5, as 2918c48b, max_retry_count=0, retry_interval=2):
-#   return_result (step 6, as 9b578a55): error_message = catch message pill,
-#     number_of_columns = same pill formula (snowflake step missing -> 0),
-#     success "false".
-# Snowflake runs LIVE. The stage, its named file format and the staged CSV
-# are benchmark-owned objects provisioned by the seed
-# (seed.snowflake_live.stages via harness.snowflake_live.seed_tables) and
-# dropped by harness cleanup; the recipe-function return is a deterministic
-# Workato-internal mock.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("snowflake", "search_rows_sql", "cdea878c"),
     ("workato_recipe_function", "return_result", "1c675dba"),

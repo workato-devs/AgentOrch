@@ -40,11 +40,6 @@ ALLOWED_TOOLS = [
     "salesforce.search_records",
     "workato_genie.workflow_return_result",
 ]
-# stage is optional in the Genie parameter schema; when it is absent the
-# recipe skips the Workato DB stage-log branch (IF #4) — variant_05 exercises
-# that path. The remaining parameters stay required as before.
-# Match the authored trigger contract rather than imposing a hidden harness
-# budget on optional update fields.
 REQUIRED_PARAMETERS = ("opportunity_id",)
 
 

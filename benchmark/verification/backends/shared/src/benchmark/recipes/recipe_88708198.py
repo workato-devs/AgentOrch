@@ -24,55 +24,12 @@ SUCCESS_REPLY_AS = "18f926a3"
 CATCH_AS = "2d7b3539"
 ERROR_REPLY_AS = "06138c68"
 SOBJECT = "Campaign_Activity__c"
-# The deliberate non-owned Campaign_Activity__c id the catch variant sends:
-# OwnedSalesforce refuses it DETERMINISTICALLY (before any live write), which
-# is the faithful "live update failed" catch path for this service recipe.
 NON_OWNED_ID = "a0X000000000000AAA"
 
-# workato_service.receive_request 'Update Campaign Activity' (as d42d4f2a):
-# request carries sfdc_campaign_activity_id (required) + 27 optional fields.
-#   TRY (2):
-#     3 salesforce.update_sobject 8753d35d (LIVE) Campaign_Activity__c,
-#       id = request.sfdc_campaign_activity_id; every one of the 27 field
-#       writes sits behind a per-field formula guard - 21 x
-#       `present?? _(...) : skip` + 6 x `.presence or skip` (SDR_Notes__c and
-#       the five UTM_*__c). A guard that evaluates SKIP drops the column from
-#       the live update entirely (fields never carry the sentinel).
-#     4 workato_service.send_reply 18f926a3 reply_type 'success',
-#       reply.sfdc_campaign_activity_id echoes the REQUEST id. NOT terminal.
-#   CATCH 5 (as 2d7b3539, max_retry_count 0):
-#     6 workato_service.send_reply 06138c68 reply_type 'error',
-#       message = catch.2d7b3539.message. The failed update never traces, so
-#       the catch branch executes exactly ONE action (probe-verified; the
-#       triage note claiming 2 was wrong).
-#
-# Live backend: Campaign_Activity__c custom object ALREADY EXISTS in the org
-# with all 27 recipe fields updateable (2026-07-08 tooling+describe probe).
-# The seed schema section re-ensures FLS per field on every run
-# (ensure_custom_field is idempotent) - it never redeploys the object.
-# Workato-internal mock: service trigger + send_reply.
-#
-# Semantics pinned by variants (all probe-verified on the current tree):
-# - present??:skip and `.presence or skip` both SKIP on ''/absent -> the
-#   column is dropped before the tool call (blank-vs-missing equivalence).
-# - admin_load=true passes through the ternary as a real boolean and writes
-#   a boolean to the Admin_Load__c checkbox field.
-# - ENGINE/RUBY DIVERGENCE (probe finding): admin_load=false would WRITE
-#   False (Ruby `false.present?` is false -> skip). The seeder REJECTS
-#   admin_load=false so no variant pins the divergent path.
-# - OwnerId is a real reference field: only a live Salesforce id passes
-#   _physical_update_fields; variants seed current_user and send
-#   $CURRENT_USER_ID. A non-id value diverts into the catch (not exercised;
-#   the ownership refusal is the pinned catch path instead).
-# - catch message is the deterministic OwnedSalesforce refusal text
-#   "refusing to update non-owned Salesforce record <id> for
-#   Campaign_Activity__c"; the catch variant still seeds one owned record
-#   and proves it survives untouched.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_service", "name": "receive_request", "as": "d42d4f2a", "skip": false, "input": {"reply_schema_json": "[{\"name\":\"sfdc_campaign_activity_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"}]", "request_schema_json": "[{\"control_type\":\"text\",\"label\":\"Sfdc campaign activity ID\",\"name\":\"sfdc_campaign_activity_id\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Sfdc owner ID\",\"name\":\"sfdc_owner_id\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Region\",\"name\":\"region\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Category\",\"name\":\"category\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Fit\",\"name\":\"fit\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Unqualified reasons\",\"name\":\"unqualified_reasons\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Stage\",\"name\":\"stage\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"Previous campaign activity\",\"name\":\"previous_campaign_activity\",\"type\":\"string\",\"optional\":true},{\"name\":\"admin_load\",\"type\":\"boolean\",\"optional\":true},{\"name\":\"browser_timezone\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"notes\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"utm_source\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"utm_campaign\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"utm_content\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"utm_medium\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"utm_term\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"outreach_sequence_state_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"person_country\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"hq_company_country\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"person_sub_region\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"hq_company_sub_region\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"bizible_touchpoint_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"sdr_notes\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"outreach_sequence_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"creative_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"lead_gen_form_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"campaign_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"},{\"name\":\"form_type\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Form type\"}]", "service_name": "Update Campaign Activity"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "salesforce", "name": "update_sobject", "as": "8753d35d", "skip": false, "input": {"Admin_Load__c": "=_('data.workato_service.d42d4f2a.request.admin_load').present?? _('data.workato_service.d42d4f2a.request.admin_load') : skip", "Bizible_Touchpoint__c": "=_('data.workato_service.d42d4f2a.request.bizible_touchpoint_id').present?? _('data.workato_service.d42d4f2a.request.bizible_touchpoint_id') : skip", "Browser_Timezone__c": "=_('data.workato_service.d42d4f2a.request.browser_timezone').present?? _('data.workato_service.d42d4f2a.request.browser_timezone') : skip", "Campaign_Id__c": "=_('data.workato_service.d42d4f2a.request.campaign_id').present?? _('data.workato_service.d42d4f2a.request.campaign_id') : skip", "Category__c": "=_('data.workato_service.d42d4f2a.request.category').present?? _('data.workato_service.d42d4f2a.request.category') : skip", "Creative_ID__c": "=_('data.workato_service.d42d4f2a.request.creative_id').present?? _('data.workato_service.d42d4f2a.request.creative_id') : skip", "Fit__c": "=_('data.workato_service.d42d4f2a.request.fit').present?? _('data.workato_service.d42d4f2a.request.fit') : skip", "Form_Type__c": "=_('data.workato_service.d42d4f2a.request.form_type').present?? _('data.workato_service.d42d4f2a.request.form_type') : skip", "HQ_Company_Country__c": "=_('data.workato_service.d42d4f2a.request.hq_company_country').present?? _('data.workato_service.d42d4f2a.request.hq_company_country') : skip", "HQ_Company_Sub_Region__c": "=_('data.workato_service.d42d4f2a.request.hq_company_sub_region').present?? _('data.workato_service.d42d4f2a.request.hq_company_sub_region') : skip", "Lead_Gen_Form_ID__c": "=_('data.workato_service.d42d4f2a.request.lead_gen_form_id').present?? _('data.workato_service.d42d4f2a.request.lead_gen_form_id') : skip", "Notes__c": "=_('data.workato_service.d42d4f2a.request.notes').present?? _('data.workato_service.d42d4f2a.request.notes') : skip", "Outreach_Sequence_State_ID__c": "=_('data.workato_service.d42d4f2a.request.outreach_sequence_state_id').present?? _('data.workato_service.d42d4f2a.request.outreach_sequence_state_id') : skip", "OwnerId": "=_('data.workato_service.d42d4f2a.request.sfdc_owner_id').present?? _('data.workato_service.d42d4f2a.request.sfdc_owner_id') : skip", "Person_Country__c": "=_('data.workato_service.d42d4f2a.request.person_country').present?? _('data.workato_service.d42d4f2a.request.person_country') : skip", "Person_Sub_Region__c": "=_('data.workato_service.d42d4f2a.request.person_sub_region').present?? _('data.workato_service.d42d4f2a.request.person_sub_region') : skip", "Previous_Campaign_Activity__c": "=_('data.workato_service.d42d4f2a.request.previous_campaign_activity').present?? _('data.workato_service.d42d4f2a.request.previous_campaign_activity') : skip", "Region__c": "=_('data.workato_service.d42d4f2a.request.region').present?? _('data.workato_service.d42d4f2a.request.region') : skip", "SDR_Notes__c": "=_('data.workato_service.d42d4f2a.request.sdr_notes').presence or skip", "Sequence_ID__c": "=_('data.workato_service.d42d4f2a.request.outreach_sequence_id').present?? _('data.workato_service.d42d4f2a.request.outreach_sequence_id') : skip", "Stage__c": "=_('data.workato_service.d42d4f2a.request.stage').present?? _('data.workato_service.d42d4f2a.request.stage') : skip", "UTM_Campaign__c": "=_('data.workato_service.d42d4f2a.request.utm_campaign').presence or skip", "UTM_Content__c": "=_('data.workato_service.d42d4f2a.request.utm_content').presence or skip", "UTM_Medium__c": "=_('data.workato_service.d42d4f2a.request.utm_medium').presence or skip", "UTM_Source__c": "=_('data.workato_service.d42d4f2a.request.utm_source').presence or skip", "UTM_Term__c": "=_('data.workato_service.d42d4f2a.request.utm_term').presence or skip", "Unqualified_Reason__c": "=_('data.workato_service.d42d4f2a.request.unqualified_reasons').present?? _('data.workato_service.d42d4f2a.request.unqualified_reasons') : skip", "id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"d42d4f2a\",\"path\":[\"request\", \"sfdc_campaign_activity_id\"]}')}", "sobject_name": "Campaign_Activity__c"}, "block": []}, {"number": 4, "keyword": "action", "provider": "workato_service", "name": "send_reply", "as": "18f926a3", "skip": false, "input": {"reply": {"sfdc_campaign_activity_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"d42d4f2a\",\"path\":[\"request\", \"sfdc_campaign_activity_id\"]}')}"}, "reply_type": "success"}, "block": []}, {"number": 5, "keyword": "catch", "provider": "", "name": "", "as": "2d7b3539", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 6, "keyword": "action", "provider": "workato_service", "name": "send_reply", "as": "06138c68", "skip": false, "input": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"2d7b3539\",\"path\":[\"message\"]}')}", "reply_type": "error"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# request key -> (salesforce field, guard kind)
 GUARDED_FIELDS: dict[str, tuple[str, str]] = {
     "admin_load": ("Admin_Load__c", "present"),
     "bizible_touchpoint_id": ("Bizible_Touchpoint__c", "present"),
@@ -106,9 +63,6 @@ REQUEST_KEYS = ("sfdc_campaign_activity_id", *GUARDED_FIELDS)
 CUSTOM_FIELDS = sorted(
     field for field, _kind in GUARDED_FIELDS.values() if field.endswith("__c")
 )
-# Pinned schema-in-seed: re-ensure FLS on the 26 custom fields every run
-# (OwnerId is standard and never provisioned). sf_types mirror the live org
-# probe: Admin_Load__c checkbox, Notes__c textarea, the rest plain text.
 SF_SCHEMA: list[dict[str, str]] = [
     {
         "sobject": SOBJECT,

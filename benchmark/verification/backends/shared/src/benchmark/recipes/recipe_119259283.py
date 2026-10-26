@@ -21,42 +21,6 @@ REQ_TABLE = "PUBLIC.WORKSPACE_REQ_LOG"
 ADJ_TABLE = "PUBLIC.WORKSPACE_FEATURES_ADJ_LOG"
 SNOWFLAKE_STEP_AS = "62d83e8f"
 SNOWFLAKE_STEP_NUMBER = "9"
-# Callable recipe function (trigger as 9410e4ed; parameters.workato_key +
-# parameters.workspace_details{~80 feature/limit fields}). Whole body wrapped
-# in TRY (step 2):
-#   declare_variable Mapper (step 3, as 15d20217) = giant hash literal (with
-#     inline '# Page N' comments) indexed by the interpolated workato_key pill
-#   IF4 workato_key == 'ad_hoc_adapters' AND ad_hoc_adapters&.compact present:
-#     parse_json (step 5, as dfca28a6) document = ad_hoc_adapters.compact
-#     IF6 document.array.length > 0:
-#       update Mapper = document.array.smart_join(", ") (step 7, as d7316f53)
-#   IF8 workato_key == 'trial_end':
-#     snowflake.search_rows_sql (step 9, as 62d83e8f) -- LIVE Snowflake over
-#       PUBLIC.WORKSPACE_REQ_LOG LEFT JOIN PUBLIC.WORKSPACE_FEATURES_ADJ_LOG,
-#       binds :workato_user_id/:datacenter_alpha2code, limit 1
-#     IF10 rows.size > 1 -> STOP 11 with error  [PROVABLY DEAD: the action
-#       pins limit='1', so the executor/live client always appends LIMIT 1 and
-#       rows.size can never exceed 1; no variant exercises step 11]
-#     IF12 rows.size == 1 -> update Mapper = rows[current_item]
-#       .workspace_end_date.strftime("%Y-%m-%d") (step 13, as fc06c248)
-#   lookup_table.search_entries 322627 '[WORK] Workato Products' by
-#     col1=workato_key (step 14, as ce9db633) -- Workato-internal mock
-#   return_result {workato_key: {current_value: "#{Mapper}", label: col3
-#     .presence or nil, section: col2.presence or nil, type: "#{col4}"}}
-#     (step 15, as 30c78cc9)
-# CATCH (step 16, as 1f0c9ee0, max_retry_count=3, retry_interval=5) -> STOP 17
-#   stop_with_error reason = catch message. The harness executes try/catch as
-#   a single attempt (no retries) -- observably identical for the
-#   deterministic forced-error variant.
-# UNREACHABLE FALSE-CASE of IF6: IF4 already requires ad_hoc_adapters&.compact
-#   present (a non-empty array) and the parse_json document is that same
-#   .compact array, so document.array.length > 0 is always true inside IF4.
-# The executor drops the search_rows_sql 'orderby' input ("WORKSPACE_END_DATE
-#   DESC"); benign only while every variant seeds at most ONE matching
-#   bind-param row -- variants must never seed 2 candidate rows.
-# Snowflake runs LIVE (provisioned via harness.snowflake_live.seed_tables from
-#   seed.snowflake_live and dropped by cleanup); the lookup table and the
-#   recipe-function return are deterministic Workato-internal mocks.
 PINNED_TRIGGER_INPUT = {   'parameters_schema_json': '[{"properties":[{"control_type":"text","label":"Datacenter '
                               'Alpha2Code","name":"datacenter_alpha2code","type":"string","optional":false},{"control_type":"text","label":"User '
                               'ID","type":"string","name":"user_id"},{"control_type":"text","label":"User '

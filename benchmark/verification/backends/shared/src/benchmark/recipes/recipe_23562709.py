@@ -16,22 +16,6 @@ TRACK = "workato_recipe_function_app_status_lookup"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 APP_TABLE = "PUBLIC.APP"
-# Callable recipe function (trigger as b9a23d4f, parameters.manager_id). The
-# whole body is wrapped in TRY (step 2):
-#   declare_list "Default App IDs" (step 3, as 5c31546c)
-#   IF manager_id == "1" (step 4) -> insert_to_list {app_id: "A106"} (step 5)
-#   declare_list "Final List of Apps" (step 6, as a9191425)
-#   snowflake.search_rows PUBLIC.APP ID/NAME/STATUS limit 50000 (step 7, as 8f08fd02)
-#   workato_smart_list.create_list "APP" from the snowflake rows (step 8, as 761b6972)
-#   FOREACH Default App IDs (step 9, as 9cde7fd6):
-#     workato_smart_list.query_list SELECT * FROM APP WHERE ID = '<app_id>' (step 10, as 11cd7cad)
-#     IF status != "Active" (step 11) -> STOP with error
-#       "Inactive app evaluated: <name>" (step 12)
-#     insert_to_list {app_id, app_name} into Final List of Apps (step 13)
-#   return_result {apps: Final List of Apps} (step 14)
-# CATCH (step 15, as 62efc5a7) -> STOP with error = catch message (step 16).
-# Snowflake runs LIVE; variable lists / smart list / recipe-function return are
-# deterministic Workato-internal mocks.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_variable", "declare_list"),
     ("workato_variable", "insert_to_list"),

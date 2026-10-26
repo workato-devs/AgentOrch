@@ -10,20 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_78751381
 
 
-# Workato API-platform endpoint over live Salesforce: receive_request (the JSON
-# request payload is never dereferenced) -> TRY { salesforce.search_sobjects on
-# pse__Proj__c with filter pse__Is_Template__c="false" (non-template projects),
-# field_list Id+Name, limit 2000 } -> IF list_size > 0 return_response 200
-# {projects:[{id,name}]} -> ELSE return_response 204 (empty) -> CATCH (retry
-# disabled) return_response 500 {message: <catch message>}.
-#
-# Live-org mapping (PSA stand-in object/field provisioned live 2026-07-06):
-# pse__Proj__c -> physical custom object Proj__c via SALESFORCE_SOBJECT_MAP;
-# pse__Is_Template__c -> Is_Template__c via SALESFORCE_FIELD_MAP. The checkbox
-# field itself is created live by schema-in-seed (ensure_custom_field via the
-# seed's salesforce.schema section). The harness search only scans
-# benchmark-owned records seeded for this run, so results are deterministic
-# against org leftovers.
 RECIPE_ID = "78751381"
 SEED_TYPE = "api_projects_search_response_variant"
 TRACK = "live_salesforce_api_projects_response"

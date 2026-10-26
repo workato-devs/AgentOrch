@@ -10,7 +10,7 @@
 # reward (src/rl/reward.py). Starts from a merged SFT checkpoint.
 # Usage (from training/):
 #   sbatch [--gres=gpu:h200:N] src/rl/verl/run_grpo.sbatch <model_path> [run_name] [hydra overrides...]
-# The published Qwen runs used (see results/EXPERIMENTS.md):
+# The published Qwen runs used (see results/training.csv):
 #   27B LoRA:  actor_rollout_ref.model.lora_rank=16 actor_rollout_ref.model.lora_alpha=32 \
 #              actor_rollout_ref.actor.optim.lr=3e-6 actor_rollout_ref.actor.use_kl_loss=True \
 #              actor_rollout_ref.actor.kl_loss_coef=0.001

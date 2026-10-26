@@ -21,7 +21,6 @@ TRIGGER_AS = "b8aa6233"
 MENU_NAME = "[RepGenie] Fields"
 LOOKUP_TABLE_ID = "4014969"
 TRIGGER_PARAM_KEYS = {"api_name", "object_name"}
-# menu_branch -> (search step number, search as, menu step number, menu as)
 BRANCH_STEPS = {
     "lookup": ("3", "7fb98fac", "4", "e89c104c"),
     "lookup_empty": ("3", "7fb98fac", "4", "e89c104c"),
@@ -30,55 +29,6 @@ BRANCH_STEPS = {
 }
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# slack_bot.dynamic_menu '[RepGenie] Fields' (as b8aa6233) - the 118905064
-# near-twin on lookup table 4014969:
-#   IF 2 (parameters.api_name present):
-#     3  lookup_table.search_entries 7fb98fac on table 4014969
-#        '[Rep Genie] Picklist Lookups' by col1 = api_name (mock)
-#     4  slack_bot.generate_menu_options e89c104c (label entry.col2,
-#        value entry.col3; use_option_groups false -> plain options list)
-#   ELSIF 5 (parameters.object_name present):
-#     IF 6 (object_name == 'Contact'):
-#       7  salesforce.search_sobjects_soql_v2 b1582dc0 (LIVE):
-#          SELECT Id, Name, Email FROM Contact WHERE Name like
-#          '%<typeahead.value>%' AND IsDeleted = false (limit 150)
-#       8  generate_menu_options 586380ee (label '#{Name} (#{Email})', value Id)
-#     ELSE 9:
-#       10 salesforce.search_sobjects_soql_v2 1ecaa00b (LIVE, dynamic FROM
-#          #{parameters.object_name}, limit 150)
-#       11 generate_menu_options 0dc00721 (label Name, value Id)
-#   neither parameter -> zero-action job.
-#
-# SOQL MATCHING MODE - deliberately DIFFERENT from the 118905064 twin
-# (probe-verified, batch_C triage + recipe_57440067 precedent): this recipe
-# runs in the DEFAULT lenient matcher. Lenient mode silently drops the
-# unquoted 'IsDeleted = false' term and matches on the Name LIKE alone, which
-# is identical to real behavior (benchmark-seeded records are never deleted).
-# strict_soql_conditions MUST NOT be set here: the seeded read-back carries no
-# IsDeleted column ('None' != 'false'), so strict mode would silently match
-# ZERO records and poison the groundtruth. The seeder/runner fail fast when a
-# variant tries to enable strict mode or to smuggle an IsDeleted read_field.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 lookup       : api_name='Industry__c' -> 2 matching rows + 1
-#   decoy -> menu from col2/col3.
-# - variant_01 lookup_empty : api_name='No_Such_Field__c' -> search returns 0
-#   entries (only decoy rows seeded) -> generate_menu_options still runs with
-#   options [].
-# - variant_02 contact      : object_name='Contact' -> live Contact SOQL LIKE
-#   matches the two seeded 'Bench 117535537 Acme *' contacts (LastName-only
-#   seeds), Kappa decoy excluded -> menu 'Name (Email)' / Id.
-# - variant_03 object       : object_name='Account' -> ELSE arm dynamic FROM ->
-#   two seeded Robo accounts match, decoy excluded -> menu Name / Id.
-# - variant_04 none         : parameters {} -> IF 2 and ELSIF 5 both false ->
-#   zero actions.
-#
-# Backends: lookup_table 4014969 is a Workato-internal per-variant mock (read
-# only -> snapshot identical before/after). Salesforce runs LIVE against
-# benchmark-owned records (read only; cleanup deletes this run's seeds in a
-# finally block). generate_menu_options is a controlled echo (menu payload
-# return, no Slack write). Live record ids thread into expect via $<REF>_ID
-# tokens. No try/catch in the raw recipe -> force_action_error is rejected.
 
 _STRUCTURE_PINS_JSON = r'''[
  {

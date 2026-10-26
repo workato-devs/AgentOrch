@@ -15,20 +15,6 @@ SEED_TYPE = "hrbot_admin_error_status_variant"
 TRACK = "live_slack_workato_service_admin_error"
 TRIGGER_PROVIDER = "slack_bot"
 TRIGGER_NAME = "bot_command_v2"
-# 'hrbot handle admin_error' bot command (required parameters status + ru_id):
-# try { workato_service.call_service RUSlackLog Read-noClear -> json_parser
-# parse_json x2 (attachment fields + buttons) -> workato_list
-# accumulate_list_items (Attachment_title.upcase) -> IF status==in_progress
-# { slack post_bot_message (warning, updates Message_to_update ts) +
-# call_service Update } -> IF status==resolved { slack post_bot_message (good)
-# + call_service Read } -> UNCONDITIONAL stop (stop_with_error=false), making
-# step 14 parse_json dead code } catch { declare_variable Status
-# (status.gsub("_","").titleize) + slack post_bot_message (danger, threaded
-# under Message_to_update.presence or trigger ts) }.
-# RUSlackLog replies are deterministic Workato-internal seed state
-# (seed.workato_service_replies keyed by step as-id). Slack runs live: when a
-# variant carries $SEED_MESSAGE_TS tokens, the seeder posts a real message and
-# threads its ts into the trigger/replies so chat.update targets a live ts.
 SERVICE_FLOW_ID = "18452539"
 READ_STEP_AS = "8d9e8b75"
 SEED_TS_TOKEN = "$SEED_MESSAGE_TS"

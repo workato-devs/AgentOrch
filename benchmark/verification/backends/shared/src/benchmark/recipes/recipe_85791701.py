@@ -18,10 +18,6 @@ TRIGGER_NAME = "scheduled_event"
 CONNECTOR_TABLE_ID = "4357"
 DUE_DATE_FIELD_ID = "f8fb4963-11ec-45f8-8a8b-c54926cb1b4c"
 
-# _collect_actions walks the raw tree depth-first: get_records, then (inside the
-# if) declare_variable #4, then (inside the foreach) declare_variable #6 and
-# update_variables #7, then the slack post #8. The foreach body actions repeat
-# once per record at runtime, but the static action sequence is fixed.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_db_table", "get_records"),
     ("workato_variable", "declare_variable"),
@@ -29,17 +25,12 @@ EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_variable", "update_variables"),
     ("slack", "post_message_to_channel"),
 ]
-# Unique tool names that may appear in the raw-execution trace (membership set;
-# workato_variable actions surface as internal workato_runtime.* trace tools).
 EXPECTED_RAW_TOOLS: list[str] = [
     "workato_db_table.get_records",
     "workato_runtime.declare_variable",
     "workato_runtime.update_variables",
     "slack.post_message",
 ]
-# Live tool calls the recipe is permitted to make (workato_variable steps are
-# internal and never become live calls; the Slack post is the only external
-# write besides the Workato-internal table read).
 ALLOWED_TOOLS: list[str] = [
     "workato_db_table.get_records",
     "slack.post_message",

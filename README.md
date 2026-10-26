@@ -4,7 +4,7 @@
 
 ### How Close Can Global Orchestration Come to Step-by-Step Interaction?
 
-Zijie Liu¹, Qi Yang Huang², Jinhao Duan¹, Yueh Che Lee², Thomas A. Joseph²,<br>
+Zijie Liu¹, Qi Yang Huang², Jinhao Duan², Yueh Che Lee², Thomas A. Joseph²,<br>
 Zayne Turner², Adam Seligman², Tianlong Chen¹, Zhaozhuo Xu²
 
 ¹ University of North Carolina at Chapel Hill · ² Workato
@@ -41,12 +41,11 @@ response.
 | **Global** | Generates one complete workflow before seeing concrete runtime inputs; the workflow is reused across the SOP's variants. | `plan_execute` |
 | **Step-by-Step** | Chooses one tool call at a time, observing the input and intermediate execution results. | `react` |
 | **Local** | Builds a workflow incrementally with editor and validation feedback, without executing it during construction. | `incremental_workflow` |
-| **Replan** | Revises a Global workflow using execution feedback, then runs the revised workflow without further LLM calls. | `replan` |
+| **Replan** | Revises a Global workflow between executions using its execution feedback; the revised workflow runs without further LLM calls. | `experiments.replan_iter` |
 
 The primary comparison is **Global versus Step-by-Step**. Local, Replan, SFT,
 and GRPO examine ways to improve global workflow orchestration. See the
-[pipeline](benchmark/doc/pipeline.md) and [worked case](benchmark/doc/case.md)
-for the execution and scoring details.
+[pipeline](benchmark/doc/pipeline.md) for execution and scoring details.
 
 ## Results
 
@@ -115,8 +114,8 @@ Step-by-Step minus Global, in percentage points.
 
 </details>
 
-Full results, additional models and protocols, confidence intervals, and
-error rates are in [benchmark/results/](benchmark/results/). The
+Results for the paper’s model comparisons, protocols, confidence intervals,
+and error rates are in [benchmark/results/](benchmark/results/). The
 [combined leaderboard](results/combined_leaderboard.md) brings base, SFT,
 and RL runs together. [Metric definitions](benchmark/doc/metric.md) describe
 the individual checks and aggregation.
@@ -125,7 +124,7 @@ the individual checks and aggregation.
 
 Global Orchestration Accuracy (%) for the checkpoints linked below.
 Δ is the better of SFT and SFT + RL minus the base score; it is measured in
-percentage points. Additional checkpoint sweeps are recorded in the
+percentage points. Checkpoint settings are recorded in the
 [training results](training/results/training.csv).
 
 | Model | Base | SFT | SFT + RL | Δ |
@@ -273,6 +272,26 @@ GPUs. The default local protocol reserves 122,880 input tokens plus up to
 4,096. [The evaluation guide](benchmark/README.md#the-canonical-evaluator)
 provides the generation settings and context options.
 
+### Local construction and Replan
+
+For incremental construction (Table 5), use `--modes incremental_workflow`
+with the canonical evaluator. For Replan (Figure 4 and Table 7), run three
+rounds of complete-workflow revision:
+
+```bash
+PYTHONPATH=benchmark python -m experiments.replan_iter \
+  --run-name replan --backend simulated --model compat:my-served-model \
+  --rounds 3 --resume
+
+PYTHONPATH=benchmark python -m experiments.replan_iter_heldout \
+  --run-name replan-heldout --backend simulated --model compat:my-served-model \
+  --rounds 3 --feedback-variants 2 --resume
+```
+
+The second command limits feedback to the first two variants per SOP and
+scores the remaining variants separately. See the
+[evaluation guide](benchmark/README.md#replan) for outputs and feedback details.
+
 ### Provider APIs and results
 
 Provider model IDs are also supported: set `OPENAI_API_MODE=direct` and
@@ -324,7 +343,7 @@ Slurm launchers, see the [training guide](training/README.md).
 | Directory | Contents |
 | --- | --- |
 | [benchmark/](benchmark/README.md) | Evaluation harness, connector simulator, metrics, and experiment drivers |
-| [training/](training/README.md) | Data preparation, SFT / GRPO, checkpoint merging, and transfer evaluation |
+| [training/](training/README.md) | Data preparation, SFT / GRPO, checkpoint merging, and reported training results |
 | [results/](results/combined_leaderboard.md) | Combined base / SFT / RL leaderboard |
 | [benchmark/reproduction/](benchmark/reproduction/README.md) | Offline scoring and reproduction scripts |
 | [scripts/](scripts/) | Dataset downloader and leaderboard builder |

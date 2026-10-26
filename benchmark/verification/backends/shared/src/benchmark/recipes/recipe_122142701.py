@@ -21,88 +21,6 @@ TRIGGER_AS = "b8b674f7"
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SF_ID_RE = re.compile(r"^[a-zA-Z0-9]{15,18}$")
 
-# Salesforce outbound-message trigger on Account_Handover__c ("New Account
-# Owner AccountHandover"). Step map (16 actions; byte-identical twin of
-# 122142838 -- only CSV metadata differs):
-#   2  search_sobjects Account_Handover__c by trigger sObject.Id, joined
-#      Account__r fields (At_Risk_Status__c/Website/Recipes_Consumed_vs_
-#      Contracted__c/Task_Trend__c/OwnerId/Current_ARR__c/Total_Account_ARR
-#      __c/Total_Account_ARR_USD__c) -- needs seed.salesforce.relationship_
-#      expansion to serve Account__c -> Account__r from the owned Account
-#   3  SOQL Opportunity WHERE AccountId = <AH.Account__c> AND (StageName =
-#      'Closed Won' OR StageName LIKE '%S5%') ORDER By CloseDate DESC limit 2
-#      (live search preserves seed order; the seeder REQUIRES Opportunity
-#      seed rows in non-increasing CloseDate order so live order == SOQL
-#      ORDER BY order)
-#   4  declare_list 'List of Opportunity' from step-3 records
-#   5  smart_list create 'opportunity List' (primary_index Id)
-#   6  smart_list query: most recent Closed-Won non-Renewal opp (WHERE ...
-#      NOT LIKE '%Renewal%' ORDER BY CloseDate DESC LIMIT 1; SQLite engine;
-#      output unused downstream but must execute)
-#   7  SOQL OpportunityContactRole WHERE Opportunity.AccountId = ... AND
-#      (NOT Role LIKE '%Economic Buyer%') AND (NOT Role LIKE '%Champion%')
-#   8  declare_list 'List of Opportunity Contacts' incl. formated_contact
-#      "<li><a href='<Salesforce Base URL><ContactId>'>Name</a> (Role)</li>"
-#      (account property 'Salesforce Base URL' -- seed.account_properties)
-#   9  logger: "<ul>" + pluck(formated_contact).uniq.compact.smart_join + "</ul>"
-#   10 SOQL ServiceContract WHERE Status = 'Active' AND AccountId = ...
-#   11 logger: "'<acc>'" + (opp size>0 ? ",'<oppIds>'" : "") + (contract
-#      present ? ",'<contractId>'" : "") (nested-#{}-ternary interpolation)
-#   12 logger: opportunity ids uniq format_map('\'%s\'') joined
-#   13 SOQL Opportunity WHERE FirstValue_CS_Task__c != null AND Id IN
-#      (<step-12 message>) -- FirstValue_CS_Task__c is a Text(255) field
-#      holding the id of an owned FirstValue_CS_Task__c record; relationship
-#      expansion serves FirstValue_CS_Task__r.fv_First_Value_Plan_URL__c
-#   14 declare_list 'CS Task First Value Plan'
-#   15 search_sobjects_soql ContentDocumentLink: LinkedEntityId IN
-#      (<step-11 message>)
-#   16 IF ContentDocumentLink size != '0'
-#   17   FOREACH ContentDocumentLink rows
-#   18     TRY  19 create ContentDocumentLink {ContentDocumentId=<row doc>,
-#              LinkedEntityId=<trigger top-level Id>, ShareType V,
-#              Visibility AllUsers} -- live create on the AH record
-#          20 CATCH (EMPTY, max_retry 0) -- swallows create errors
-#   21 update Account_Handover__c (10 presence-or-skip fields:
-#      Account_Health__c/Account_Owner__c/Champion__c/Economic_Buyer__c/
-#      First_Value_Plan_URL__c/Recipes_Consumed_vs_Contracted__c/
-#      Related_Opportunity_Contacts__c/Task_Trend__c/Total_ARR__c/Website__c)
-#
-# Trigger payload carries BOTH the top-level Id and sObject.Id; both must be
-# the seeded AH record id ($<AH ref>_ID token): step 2 re-reads the record by
-# sObject.Id and step 19 links found documents to the top-level Id, so any
-# other value would make the live create fail (the real outbound-message
-# notification id is not a linkable entity).
-#
-# ContentDocumentLink seeding (docs-present variants): ContentDocumentLink
-# rows can only be created against a real ContentDocument, which Salesforce
-# derives from a seeded ContentVersion. The seeder provisions phase 1 (incl.
-# ContentVersion rows with Title/PathOnClient/VersionData), reads each
-# ContentVersion's live ContentDocumentId back (OwnedSalesforce._read),
-# exposes it as the $<CVREF>_DOC_ID token, registers the ContentDocument as a
-# synthetic owned record (so harness cleanup deletes the document, cascading
-# the versions and every remaining link), then provisions the
-# seed.salesforce_phase2 ContentDocumentLink rows with the resolved ids
-# (two-phase merge pattern of recipe_118153797).
-#
-# Cleanup: every live object is benchmark-owned (seeded or recipe-created via
-# SalesforceRun.create_record, which registers ownership); run_122142701 calls
-# harness.salesforce.cleanup in finally and fails on leftovers. Delete order
-# (reversed ownership) removes run-created links, then phase-2 links, then
-# ContentDocuments (cascade deletes ContentVersions -- their own delete then
-# 404s harmlessly), then the remaining records.
-#
-# HARNESS DEPENDENCY (RESOLVED, commit 3b7736da): the step-7
-# OpportunityContactRole SOQL relies on two salesforce_live_harness matcher
-# capabilities landed for this build:
-#   (a) dotted relationship paths in conditions (Opportunity.AccountId = '..')
-#       resolve into the expansion-attached parent dict (OpportunityId ->
-#       Opportunity via the standard-parent map; requires
-#       seed.salesforce.relationship_expansion true, enforced below), and
-#   (b) the SOQL NOT-prefix operator ((NOT Role LIKE '%x%')) under
-#       strict_soql_conditions.
-# All variants dry-replay clean with condition matching delegated verbatim to
-# the live harness matcher (probe-verified with the exact step-7 SQL:
-# match / champion-excluded / economic-buyer-excluded / wrong-account-excluded).
 
 _STRUCTURE_PINS_JSON = r'''
 [
@@ -430,8 +348,6 @@ ALLOWED_TOOLS: list[str] = [
     "salesforce.create_record",
     "salesforce.update_record",
 ]
-# Account custom fields the step-2 Account__r join reads (schema-in-seed via
-# ensure_custom_field; idempotent when the org already has them).
 REQUIRED_ACCOUNT_SCHEMA: dict[str, str] = {
     "At_Risk_Status__c": "Text",
     "Recipes_Consumed_vs_Contracted__c": "Text",
@@ -440,8 +356,6 @@ REQUIRED_ACCOUNT_SCHEMA: dict[str, str] = {
     "Total_Account_ARR__c": "Number",
     "Total_Account_ARR_USD__c": "Number",
 }
-# Account seed keys that feed the step-21 presence-or-skip update; blanks must
-# be EXPLICIT empty strings so skip variants are declared, never accidental.
 REQUIRED_ACCOUNT_SEED_KEYS = (
     "Name",
     "OwnerId",

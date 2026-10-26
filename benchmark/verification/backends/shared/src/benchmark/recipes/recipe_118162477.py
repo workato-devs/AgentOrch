@@ -22,9 +22,6 @@ SUCCESS_RETURN_AS = "83954e0e"
 CATCH_AS = "2da14745"
 CATCH_RETURN_AS = "57671952"
 STOP_STEP_AS = "8ce124ba"
-# The literal 2-part name the SQL references; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD).
 DASHBOARD_TABLE = "AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD"
 RAW_SQL = (
     "SELECT \n  CEIL(AVG(COMPLETION_PERCENTAGE)) AS AUTOMATION_SCORE,\n"
@@ -47,7 +44,6 @@ EXPECTED_COLUMNS = {
     "AI_READINESS_SCORE": "number",
     "AI_IMPACT_LEVEL": "number",
 }
-# response key -> derivation, in the recipe's output_schema order.
 RESPONSE_KEYS = (
     "automationScore",
     "aiReadiness",
@@ -59,49 +55,6 @@ RESPONSE_KEYS = (
     "highValueOpportunities",
 )
 
-# workato_api_platform.receive_request (as 751ec271, request schema [] — NO
-# request field is ever dereferenced). NO byte twin in the batch; structural
-# sibling of registered 118162478 (identical shell as-ids/uuids). Body = one
-# TRY (step 2):
-#   3  snowflake.search_rows_sql d8a6f6bf (LIVE): RAW_SQL, limit '50000' —
-#      8 single-row aggregates over the dashboard: CEIL(AVG(...)) x2 across
-#      ALL rows, SUM(CASE ...) level-4 bucket counts x5, and the level-4
-#      AI_IMPACT_LEVEL >= 3 high-value count. An aggregate SELECT always
-#      returns EXACTLY ONE row.
-#   4  workato_api_platform.return_response 83954e0e (mock, TERMINAL): 200,
-#      response = OBJECT of 8 scalars, each rows[current_item].<col> —
-#      current_item OUTSIDE a loop = FIRST row. Full-pill fields resolve
-#      NATIVELY: CEIL/SUM Decimals -> int (_json_value), so every value is
-#      an INT in the response (probe-verified 2026-07-08).
-#   CATCH 2da14745 (max_retry_count 0):
-#   6  return_response 57671952 (TERMINAL): 400 {error: catch.message}
-#   7  stop 8ce124ba: DEAD CODE — return_response is terminal (probed).
-#
-# Branch mapping:
-# - metrics_200: non-trivial dashboard rows; EVERY pinned aggregate must be
-#   >= 1 (triage caution: never pin 0/NULL aggregate renders). Non-round
-#   averages prove CEIL; non-level-4 decoys count ONLY in the averages;
-#   an AI_IMPACT_LEVEL exactly-3 row proves the >= 3 boundary; a high-impact
-#   non-level-4 decoy proves the level-4 conjunction on HIGH_VALUE.
-# - catch_400: seed.force_action_error on d8a6f6bf -> 400 {error}, 1 action.
-#
-# ZERO-BRANCH (documented, NOT shipped): on an empty table the aggregate row
-# is all NULLs (SUM over 0 rows is NULL, not 0) and the full-pill response
-# renders all 8 keys as native null — probe-verified 2026-07-08. The
-# resolve_text int-0 -> '' gap is NOT on this path (full-pill fullmatch
-# resolves natively, no string interpolation), but per the batch caution the
-# corpus pins only non-zero aggregates.
-#
-# CEIL(AVG(..)) exactness: seeds cap the row count at 20, so the true average
-# is a rational with denominator <= 20; Snowflake's scale-6 AVG rounding
-# (error < 5e-7) can therefore never cross an integer boundary and the
-# integer-math ceil below is exact live parity.
-#
-# Backends: Snowflake runs LIVE (create-or-replace seed; dropped in the
-# runner's finally). API platform trigger/responses are mocks. READ-ONLY on
-# Snowflake. The physical AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD is
-# SHARED with 118162478/118162479/117566182 — never run family lanes
-# concurrently.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

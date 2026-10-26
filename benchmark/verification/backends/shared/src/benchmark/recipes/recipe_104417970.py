@@ -42,12 +42,6 @@ ALLOWED_TOOLS: list[str] = ['google_sheets.search_spreadsheet_rows_v4_new',
  'lookup_table.add_entry',
  'lookup_table.get_entry',
  'slack.post_reply']
-# The live harness binds ONE spreadsheet/tab from env, so the participant sheet
-# ("Product Design Batch Email Sender": Name..Tests) and the ADMIN sheet
-# (Question..Sets of Gift Cards) share a single seeded tab. Union headers in
-# schema order; the searches filter on "col_Search Row" (participant rows) vs
-# "col_Search" (ADMIN rows), which decode to the distinct "Search Row" and
-# "Search" columns, so the two row families never cross-match.
 SHEET_HEADERS: list[str] = [
     "Name",
     "Email",

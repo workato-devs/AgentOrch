@@ -15,12 +15,6 @@ SEED_TYPE = "service_secs_stop_variant"
 TRACK = "service_secs_stop_reply"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Synchronous callable service (as 8d2bfb48) keyed on request.secs. A cascade
-# of ten if blocks (steps 2..38) checks secs equals_to 1..10; each match runs a
-# try whose body is a "stop with error" (steps 4/8/.../40) that halts the job
-# with no reply. If secs is greater_than 10 (step 42) it replies success
-# (send_reply, as faa82bde) then stops. Otherwise it falls through to the final
-# send_reply (step 45, as 82f924b9). Both replies are reply_type=success.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

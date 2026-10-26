@@ -16,30 +16,6 @@ TRACK = "workato_recipe_function_direct_hire_default_apps"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 APP_TABLE = "BENCH.APP"
-# Callable recipe function (trigger as a753c75f; parameters.direct_hire boolean
-# + parameters.employment_type_id string). The whole body is wrapped in TRY
-# (step 2):
-#   declare_list "Default App IDs" (step 3, as c556d2b4)
-#   declare_list "Final Apps List" (step 4, as a140d0a9)
-#   IF direct_hire is_true (step 5):
-#     IF ["ET1","ET2","ET3","ET8"] contains employment_type_id (step 6):
-#       insert_to_list {app_id:"A121"} -> Default App IDs (step 7, "Coupa")
-#   IF Default App IDs size > 0 (step 8):
-#     declare_variable where_clause = list.pluck('app_id').uniq
-#       .smart_join("', '") (step 9, as c32cdbf8)
-#     snowflake.search_rows_sql APP WHERE A.ID IN ('<where_clause>')
-#       limit 50000 (step 10, as 8c579c0a) -- LIVE Snowflake, BENCH.APP
-#     FOREACH rows (step 11, as 47a5b050):
-#       IF status != 'Active' (step 12) -> STOP with error
-#         "Inactive app evaluted: <app_name>" (step 13; sic in the raw recipe)
-#       insert_to_list {app_id, app_name} -> Final Apps List (step 14)
-#   return_result {apps: ____source-mapped Final Apps List} (step 15)
-# CATCH (step 16, as 3b0db497, max_retry_count=0) -> STOP with error =
-#   catch message (step 17).
-# Snowflake runs LIVE (seed.snowflake_live, provisioned via
-# harness.snowflake_live.seed_tables and dropped by harness cleanup); the
-# variable lists and the recipe-function return are deterministic
-# Workato-internal mocks.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("workato_variable", "declare_list", "c556d2b4"),
     ("workato_variable", "declare_list", "a140d0a9"),

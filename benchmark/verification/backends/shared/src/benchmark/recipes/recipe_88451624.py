@@ -16,35 +16,6 @@ SEED_TYPE = "salesforce_skilljar_student_platform_event_link_variant"
 TRACK = "live_salesforce_skilljar_student_link"
 TRIGGER_PROVIDER = "salesforce"
 TRIGGER_NAME = "new_platform_event"
-# Salesforce platform event New_Updated_Skilljar_Student__e (as dd6906dc;
-# dereferences Student_Id__c only) -> TRY:
-#   #3 search_sobjects skilljar__Student__c by Id (as dc656cf3, limit 150,
-#      field_list Email/First/Last/Domain/Id)
-#   #4 workato_service.call_service flow 45071427 'Check Record In Salesforce
-#      v2.5' (as e5696ea1) with {company: Domain__c, email, first_name,
-#      last_name, create_section {create_record 'Lead', lead_source
-#      'Automation Institute'}} — the sub-recipe is NOT executed; its reply is
-#      deterministic Workato-internal seed state (seed.workato_service_replies
-#      keyed by 'e5696ea1').
-#   IF#5 reply.salesforce_id present:
-#     IF#6 reply.object == 'Lead' -> #7 update skilljar__Student__c set
-#       skilljar__Lead__c = reply.salesforce_id
-#     ELSE#8 ('Contact') -> #9 update set skilljar__Contact__c = reply id
-# CATCH#10 (as 12cae2c6, max_retry 0) > IF#11 catch message not_contains '404'
-#   -> STOP#12 (as 51c78897, stop_with_error=true, reason = catch message);
-#   a message containing '404' falls through silently (catch completes clean).
-#
-# Backend: Salesforce LIVE. skilljar__Student__c is a managed-package object
-# routed to the benchmark-owned Student__c stand-in (mdapi deployed 2026-07-07,
-# commit 948d5ede) via SALESFORCE_SOBJECT_MAP; the skilljar__ field names map
-# via SALESFORCE_FIELD_MAP (Email__c/First_Name__c/Last_Name__c/Lead__c/
-# Contact__c; Domain__c is physical on both sides). skilljar__Lead__c /
-# skilljar__Contact__c are Lookup(Lead)/Lookup(Contact) reference fields, so
-# the seeded call_service reply threads the LIVE id of a seeded companion
-# Lead/Contact record ($LEAD_ID / $CONTACT_ID); the trigger Student_Id__c
-# carries the seeded Student record's live id ($STUDENT_ID).
-# Cleanup: every seeded record is benchmark-owned and deleted after the final
-# snapshot (fail-fast on leftovers).
 STUDENT_SOBJECT = "skilljar__Student__c"
 FLOW_ID = "45071427"
 CATCH_AS = "12cae2c6"
@@ -58,7 +29,6 @@ _REF_TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*_ID")
 
 FIELD_LIST = "skilljar__Email__c\nskilljar__First_Name__c\nskilljar__Last_Name__c\nDomain__c\nId"
 
-# --- verbatim datapill templates (spacing/quoting exactly as in the raw JSON) ---
 
 TRIGGER_ID_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\","
@@ -153,11 +123,6 @@ EXPECTED_NODES: list[dict[str, Any]] = [
           {"stop_reason": CATCH_MESSAGE_PILL, "stop_with_error": "true"}),
 ]
 
-# Every custom field the recipe (or its seeds) touches on the Student stand-in.
-# ensure_custom_field grants FLS on the already-deployed physical fields
-# (field names are PHYSICAL; the skilljar__Student__c sobject name maps via
-# SALESFORCE_SOBJECT_MAP). Schema is a constant so a variant cannot silently
-# drop a grant.
 REQUIRED_SCHEMA: list[dict[str, str]] = [
     {"sobject": STUDENT_SOBJECT, "field": "Email__c", "sf_type": "Text"},
     {"sobject": STUDENT_SOBJECT, "field": "First_Name__c", "sf_type": "Text"},

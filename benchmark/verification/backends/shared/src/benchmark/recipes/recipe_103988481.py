@@ -19,13 +19,6 @@ TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "35a0e063"
 SEARCH_AS = "2fc09276"
-# Source-org Event record type id hardcoded in the raw SOQL as a WHERE
-# equality. Record type ids are ORG-GENERATED: they cannot be chosen,
-# re-created, or imported into the benchmark org, and benchmark-org Event
-# rows read back with the org's OWN RecordTypeId (or none) -- so the strict
-# equality NEVER matches a live record (90485335/110005007 dead-query
-# precedent; rewriting the literal to a visible org RT is BANNED as a
-# matcher hack).
 FOREIGN_RT_ID = "012o0000000tRwxAAE"
 CSM_EVENT_TYPES = (
     "Business Review",
@@ -44,72 +37,10 @@ CSM_EVENT_TYPES = (
 )
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName", "SuccessOwner_UserID"}
 EVENT_SEED_FIELD_KEYS = {"Subject", "Type", "StartDateTime", "EndDateTime", "WhatId"}
-# The decoy Event's live read-back must expose every WHERE-arm field: the
-# derived AccountId (from WhatId), the org-assigned OwnerId (the API user),
-# the real RecordTypeId (org value or none -- never the foreign literal),
-# IsDeleted, and the derived EndDate (from EndDateTime).
 EVENT_READ_FIELDS = ["IsDeleted", "RecordTypeId", "AccountId", "OwnerId", "EndDate"]
 EMPTY_REASONS = {"foreign_record_type", "empty_in_list"}
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_recipe_function.execute (as 35a0e063; parameters.AccountList[]
-# {AccountID, AccountName, SuccessOwner_UserID}). Linear body, no
-# if/foreach/try -- BYTE-TWIN of registered 118290293 (identical as ids
-# 35a0e063/64a4fa81/2fc09276/0d2e8b10 AND step uuids; 27 leaf deltas = SOQL
-# body Task+MAX(Closed_Date__c) vs Event+MAX(EndDate)+IsDeleted+RecordTypeId+
-# Type IN 13+OwnerId IN, result key renames, and this recipe's extra
-# trigger-schema property SuccessOwner_UserID). In-batch dead-RT sibling:
-# 125214871 (Type IN ('GEARS') instead of the 13-type list).
-#   2  workato_variable.declare_variable 64a4fa81: account_ids_string =
-#      AccountList&.pluck("AccountID").join("','"); owner_ids_string =
-#      AccountList&.pluck('SuccessOwner_UserID').uniq.join("','") -- BOTH
-#      feed the SOQL here (unlike the byte-twin head).
-#   3  salesforce.search_sobjects_soql_v2 2fc09276 (LIVE, limit 2000):
-#      SELECT AccountId, MAX(EndDate) last_csm_meeting FROM Event WHERE
-#      IsDeleted = FALSE AND RecordTypeId = '012o0000000tRwxAAE' AND Type IN
-#      (13 CSM meeting types) AND OwnerId IN ('<owners>') AND AccountId IN
-#      ('<ids>') GROUP BY AccountId.
-#   4  workato_recipe_function.return_result 0d2e8b10 (TERMINAL):
-#      result.LastCSMMeetings ____source-mapped over the records.
-#
-# DEAD QUERY (org-capability, faithful minimal build -- 90485335/110005007
-# precedent): the RecordTypeId equality against the source-org literal can
-# never match in this org, so the search returns [] and LastCSMMeetings is
-# [] on EVERY input, forever. Probe-verified on HEAD 07af31c2 (2026-07-08):
-# - P11: an Event whose read-back matches EVERY other arm (IsDeleted false,
-#   Type 'GEARS' in the 13-type list, OwnerId in the owner list, AccountId
-#   in the account list) still returns 0 records.
-# - P11b counterfactual: the SAME row with the foreign RT id as read-back
-#   matches and the MAX(EndDate) alias evaluates -- the dead code is a
-#   LIVE-DATA impossibility, not an engine gap.
-# - P11c arm isolation: each non-RT arm evaluates True on the decoy row;
-#   only the RT equality is False.
-# Zero-match honesty: every variant live-seeds a DECOY Event that satisfies
-# every seedable arm (Type='GEARS', WhatId=the listed Account so the derived
-# AccountId matches, OwnerId=the API user threaded into the trigger's
-# SuccessOwner_UserID via $USER_ID) with RecordTypeId in read_fields, so the
-# 0-result is attributable to the RT filter (or, on the empty-list variant,
-# to the IN ('') arms), never to a trivially empty org.
-#
-# Branch mapping (single linear path; the only observable dimensions are the
-# declare-step derivations flowing into the resolved SOQL text and the
-# always-empty result):
-# - variant_00 dead_rt_multi_account: 2 accounts with distinct owners ->
-#   join "'id1','id2'" + owner uniq join; decoy Event on account A -> 0
-#   records -> LastCSMMeetings [] (empty_reason foreign_record_type).
-# - variant_01 empty_account_list: AccountList [] -> both id strings ''
-#   -> OwnerId IN ('') / AccountId IN ('') match nothing; the decoy Event
-#   still exists (empty_reason empty_in_list; the RT arm would also
-#   exclude it).
-# The >0-records branch is ORG-UNREACHABLE and therefore not represented by
-# any variant (documented, not forced); the buildable byte-twin 118290293
-# covers this skeleton's aggregate/group shapes live.
-#
-# Backends: salesforce LIVE (benchmark-owned Account + Event records +
-# read-only current-user row for $USER_ID threading; no custom fields --
-# Event/EndDate/Type are standard; cleanup deletes owned seeds in a finally
-# block); workato_variable / workato_recipe_function are Workato-internal
-# in-process.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

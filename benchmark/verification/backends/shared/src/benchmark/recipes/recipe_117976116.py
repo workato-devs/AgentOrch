@@ -31,13 +31,7 @@ RAW_SHEET = "ADMIN"
 RAW_SPREADSHEET = "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>"
 TS_RE = re.compile(r"^\d{10}\.\d{6}$")
 CHANNEL_RE = re.compile(r"^C[A-Z0-9]+$")
-# USER_ENTERED render-stability guards: seeded/param cell values must read
-# back byte-identical from the live tab (dates/booleans/formulas get locale-
-# parsed or evaluated, batch-06 lesson).
 DATE_LIKE_RE = re.compile(r"^\d{1,4}[-/]\d{1,2}([-/]\d{1,4})?$")
-# Rendered verbatim from the step-6 blocks (both section_texts render via
-# slack_text regardless of block_type; the Start button / bot_command
-# 44341431 / style are dropped metadata in a TEXT reply).
 SECTION1_TEXT = (
     "> You have triggered the Batch Email Sender Bot. \U0001f916\n\n"
     "*Please input your email address here*:\n\n"
@@ -53,49 +47,6 @@ SECTION1_TEXT = (
 )
 SECTION2_TEXT = 'Press "Start" once you are ready!'
 
-# slack_bot.bot_command_v2 (as 3605cd52, domain 'start', name 'update', scope
-# 'sender', allow_dialog true; parameters name/chilipiper/duration/blurb ALL
-# required). Dereferenced trigger pills: all 4 parameters + context.user_name
-# (+ channel/message_ts consumed by the reply routing). Body — STRICTLY
-# LINEAR, 5 unconditional actions, no if/try/foreach:
-#   2  google_sheets.update_row_v4_new 62bab84a 'Name'   row 2 col_Answer=name
-#   3  google_sheets.update_row_v4_new c26913a7 'Chili'  row 3 col_Answer=chilipiper
-#   4  google_sheets.update_row_v4_new f8d7bbd5 'Duration' row 4 col_Answer=duration
-#   5  google_sheets.update_row_v4_new e3445cc9 'Blurb'  row 5 col_Answer=blurb
-#      (col_Answer -> header 'Answer' via the node schema labels; row_number
-#      stays the LITERAL string '2'..'5'; the anon spreadsheet id + sheet
-#      'ADMIN' ride along in the args while the live client binds the
-#      env-bound benchmark tab. row_number is 1-based INCLUDING the header
-#      row -> row 2 = FIRST data row; positional addressing, the Question
-#      column is never consulted — probe-verified.)
-#   6  slack_bot.post_bot_reply_v2 64c5a9f3: channel = SLACK_CHANNEL_OVERRIDE
-#      (env wins over trigger channel), thread_ts = trigger message_ts, text
-#      = section1 + '\n' + section2 + '\n' + context.user_name (both blocks'
-#      section_texts render, incl. the section_with_button_with_long_action;
-#      the Start button/bot_command 44341431 are dropped metadata; the anon
-#      google-docs link stays a literal).
-#
-# Branch mapping: strictly linear -> every variant runs the same 5-step path;
-# variants vary the DATA traps:
-# - variant_00 update_all_four_and_reply: canonical ADMIN layout (Question
-#   labels match the step comments rows 2-5) + a row-6 decoy that must stay
-#   byte-identical (proves exactly rows 2-5 written, no append).
-# - variant_01 overwrite_previous_values: rows 2-5 pre-loaded with PRIOR
-#   Answer values (update-in-place proof) and the Question labels SHUFFLED
-#   against the step comments (proves positional row_number addressing, not
-#   Question matching); non-Answer columns byte-untouched.
-# Non-branches (probe-verified hazards, not variants): a missing parameter
-# resolves MISSING -> writes null; a short tab (< 5 rows incl. header) makes
-# update_row write into blank rows. The seeder fail-fasts both (>= 4 data
-# rows, all 4 params non-empty).
-#
-# Backends: google_sheets LIVE (harness.google_sheets.seed_rows fully
-# overwrites the env-bound benchmark tab per run -> deterministic reruns, no
-# sheet cleanup; USER_ENTERED means pins are the rendered read-back — the
-# seeder rejects date-like/TRUE/FALSE/formula-prefixed cells). slack LIVE:
-# the reply threads on the pinned synthetic trigger message_ts (live Slack
-# accepts an unknown thread_ts — registered 118554940 precedent); the post
-# is a terminal observable, never re-read -> no cleanup.
 
 _STRUCTURE_PINS_JSON = r'''
 [

@@ -16,16 +16,6 @@ TRACK = "workato_api_platform_packages"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "b28165b1"
-# API Platform "list packages" endpoint -- exact table-id-only twin of the
-# registered recipe 109890642 (same as-ids, filters, mappings and schemas;
-# the raw diff is the two table ids). Step map: auth get_records (Workspaces
-# table 8057, access_profile.id + workspace_user_id + enabled istrue) ->
-# IF size==0 return 401 (terminal). TRY: declare_list packages,
-# declare_variable page_token, REPEAT [Packages get_records (table 8054,
-# deprecated isfalse, limit 200, continuation_token=page_token pill),
-# update_variables page_token=continuation_token, IF size>0
-# insert_to_list_batch (id/description/name), WHILE page_token present] ->
-# return 200 {packages}. CATCH -> 400 {error: "Unexpected Error"}.
 OUTER_TABLE_ID = "8057"
 INNER_TABLE_ID = "8054"
 REQUIRED_TRIGGER_REQUEST_FIELDS = ("workspace_user_id",)
@@ -73,11 +63,6 @@ EXPECTED_CONTROL_FLOW: list[dict[str, Any]] = [   {   'input': {   'conditions':
         'keyword': 'while_condition',
         'number': 13},
     {'input': {'max_retry_count': '0', 'retry_interval': '2'}, 'keyword': 'catch', 'number': 15}]
-# Raw trigger + per-action inputs pinned verbatim from
-# dataset/input_recipes/109890664/raw_recipe.md (key formulas: the auth-table filter pills,
-# the pagination continuation_token / page_token pills, the
-# insert_to_list_batch ____source mapping and the return_response bodies).
-# Any drift raises at validate time.
 PINNED_TRIGGER_INPUT: dict[str, Any] = {   'request': {   'content_type': 'json',
                    'schema': '[{"name":"workspace_user_id","type":"integer","optional":false,"control_type":"integer","label":"Workspace '
                              'user ID","parse_output":"integer_conversion"}]'},

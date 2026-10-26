@@ -21,13 +21,6 @@ SQL_STEP_AS = "0be77de3"
 CATCH_AS = "ddf5dd60"
 POST_STEP_AS = "1ffedbe4"
 RAW_CHANNEL = "C07594FG2ER"
-# The recipe's 3-part production names; seeds register them verbatim so the
-# snowflake_live boundary rewrites every reference (FROM + LEFT JOIN + the
-# CTAS target itself) into the benchmark database. Registering the CTAS
-# TARGET with exactly {'rows': []} is the ownership mechanism: the empty-rows
-# spec PRE-DROPS the table at seed (deterministic rerun), participates in
-# _rewrite_sql, and is cleanup-owned afterwards (130549575 precedent;
-# LIVE-VERIFIED end-to-end by batch-07 triage).
 TARGET_TABLE = "product.plg.sfdc_hard_deleted_accounts"
 DIM_TABLE = "edw_db.workato_usage.accounts_dim"
 SF_ACCOUNT_TABLE = "workato_business_systems.salesforce.account"
@@ -39,52 +32,6 @@ DIM_COLUMNS = {
 }
 SF_ACCOUNT_COLUMNS = {"id": "string"}
 
-# clock.scheduled_event (as 027722a7, weekly Monday 12:00) -- payload-less:
-# trigger_input is exactly {} and seed.trigger {} (declared payload-less
-# scheduler tick). Body:
-#   TRY (step 2):
-#     3  snowflake.run_custom_sql 0be77de3 (LIVE): CREATE OR REPLACE TABLE
-#        product.plg.sfdc_hard_deleted_accounts AS SELECT a.account_id,
-#        a.account_name FROM edw_db.workato_usage.accounts_dim a LEFT JOIN
-#        workato_business_systems.salesforce.account b ON a.account_id = b.id
-#        WHERE 1=1 AND is_latest AND is_paying AND b.id IS NULL -- bare
-#        boolean predicates + the LEFT-JOIN-NULL arm select exactly the
-#        latest paying dim accounts that are hard-deleted from Salesforce.
-#        The CTAS returns one status row ('Table SFDC_HARD_DELETED_ACCOUNTS
-#        successfully created.') and rows_affected 1 even when the selected
-#        set is empty.
-#   CATCH (step 4, as ddf5dd60, max_retry_count 0):
-#     5  slack_bot.post_bot_message 1ffedbe4 (LIVE slack): channel
-#        C07594FG2ER routes to env.slack_channel_override (non-'U' literal);
-#        one section_with_text block whose dataset-only anon wrapper renders as
-#        '@john.smith something
-#        wrong with product.plg.sfdc_hard_deleted_accounts recipe
-#        \n\nlink:#{job_context.recipe_url}\nworkspace: plg dev env\n' (the
-#        anonymization wrapper is not user-visible; the vestigial
-#        second block {button_type: continue_flow} has no block_type and
-#        renders nothing) -- catch variants must seed job_context.recipe_url.
-#
-# Branch mapping (probe-verified offline 2026-07-08 on the current tree; the
-# verbatim CTAS + cleanup were LIVE-VERIFIED end-to-end by triage):
-# - variant_00 ctas_one_hard_deleted: dim rows cover every exclusion arm
-#   (in-SF / non-paying / non-latest) plus one hard-deleted include ->
-#   target = exactly that one row.
-# - variant_01 ctas_zero_rows: every dim account exists in sf.account ->
-#   target created EMPTY (status row still returned) -- proves the
-#   LEFT-JOIN-NULL arm is the only include path.
-# - variant_02 ctas_multi_rows_null_boolean: sf.account seeded EMPTY (all
-#   b.id NULL) -> two includes; a NULL is_latest row is excluded (SQL
-#   three-valued logic on the bare boolean) beside a false is_paying row.
-# - variant_03 catch_slack_alert: force_action_error on 0be77de3 (sanctioned
-#   fault injection -- the CTAS is the only fallible step) -> CATCH -> live
-#   Slack alert on the override channel with the seeded recipe_url; the
-#   target table is pre-dropped at seed and never created.
-#
-# Backends: Snowflake LIVE (all 3 registered tables benchmark-owned;
-# cleanup drops them in a finally block); Slack LIVE on the catch path only
-# (ordinary post, never re-read -- no cleanup per the cleanup principle).
-# No current_date/current_timestamp in the SQL -> no
-# seed.snowflake_live.current_time. No time deref anywhere -> no seed.now.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "027722a7", "skip": false, "input": {"days_of_week": "1", "time_unit": "weeks", "trigger_at": "12:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "0be77de3", "skip": false, "input": {"sql": "create or replace table product.plg.sfdc_hard_deleted_accounts as \n\nselect a.account_id, a.account_name\nfrom edw_db.workato_usage.accounts_dim a\nleft join workato_business_systems.salesforce.account b\n    on a.account_id = b.id\nwhere 1=1\n    and is_latest\n    and is_paying\n    and b.id is null\n    ;", "update_only": "false"}, "block": []}, {"number": 4, "keyword": "catch", "provider": "", "name": "", "as": "ddf5dd60", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 5, "keyword": "action", "provider": "slack_bot", "name": "post_bot_message", "as": "1ffedbe4", "skip": false, "input": {"blocks": [{"block_type": "section_with_text", "button_type": "continue_flow", "section_text": "@<anon>john.smith</anon> something wrong with product.plg.sfdc_hard_deleted_accounts recipe \n\nlink:#{_dp('{\"pill_type\":\"job_context\",\"path\":[\"recipe_url\"]}')}\nworkspace: plg dev env\n"}, {"button_type": "continue_flow"}], "channel": "C07594FG2ER"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

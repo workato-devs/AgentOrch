@@ -23,57 +23,10 @@ MENU_AS = "25629193"
 SNOWFLAKE_TABLE = "PUBLIC.EMPLOYEE"
 SEED_COLUMNS = {"email": "string", "first_name": "string", "last_name": "string"}
 ROW_KEYS = {"EMAIL", "FIRST_NAME", "LAST_NAME"}
-# Spliced raw into SQL (twice): letters/digits/space/dot/@/hyphen only. No
-# quotes (would break the literal), no % or _ (LIKE wildcards would change
-# the predicate the verifier re-evaluates).
 _TYPEAHEAD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9 .@-]*")
 _SEED_TEXT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9 .@_-]*")
 
-# slack_bot.dynamic_menu 'Employee Email' (as 1f5130ea; parameters '[]' --
-# NONE, unlike the FV-owner family) -> LIVE snowflake.search_rows 826258bc on
-# PUBLIC.EMPLOYEE (limit 50000, offset 0, NO output_columns -> all columns)
-# with the typeahead.value interpolated TWICE into the where passthrough:
-#   EMAIL LIKE LOWER(CONCAT('%<v>%'))
-#   OR LOWER(CONCAT(FIRST_NAME, ' ', LAST_NAME)) LIKE LOWER(CONCAT('%<v>%'))
-# -> slack_bot.generate_menu_options 25629193 (____source = rows; label =
-# 'first_name last_name (email)' 3-pill interpolation; value = email;
-# lowercase row keys exist because _fetch_rows lowercase-dups every column).
-#
-# EXACT TWIN of 108426411: the raw_recipe.md files differ ONLY in the title
-# line and CSV metadata (flow_id 44816229 vs 16190212, created_at,
-# version_no 4 vs 15); every recipe-body byte (as-aliases, uuids, inputs,
-# schema) is identical -- byte-diffed on the current tree, and the normalized
-# structure pins are equal. verify_108426411 DELEGATES to verify_108625382
-# (registered 88674737 -> 88676643 delegation precedent: merge this head
-# fragment first). Distinct variant data per id.
-#
-# FAITHFUL QUIRK (pinned as the recipe actually behaves): the first OR arm
-# lowers only the PATTERN -- 'EMAIL LIKE LOWER(...)' leaves the EMAIL column
-# unlowered, so the email comparison is CASE-SENSITIVE against the stored
-# value while the full-name arm lowers both sides. An uppercase-stored EMAIL
-# with a lowercase typeahead therefore does NOT match arm 1 (variant
-# email_case_quirk pins the resulting [] menu). Single-arg CONCAT is valid
-# Snowflake. The %-literals survive the no-params path via _executable_sql
-# un-doubling (probed engine behavior; parameters resolve to {}).
-#
-# Backends: snowflake LIVE ('PUBLIC.EMPLOYEE' -> $SNOWFLAKE_DATABASE.PUBLIC.
-# EMPLOYEE). Seed exactly the three dereferenced string columns EMAIL/
-# FIRST_NAME/LAST_NAME -- the recipe's 28-column extended output schema is
-# read-shape metadata only. slack_bot dynamic_menu trigger +
-# generate_menu_options are Workato-internal (mock): trigger payload seeded,
-# menu options observed in the trace only. Recipe is READ-ONLY on Snowflake:
-# snapshots must not drift; cleanup drops the seeded table in the runner's
-# finally.
-#
-# Variants cover: arm-1-only admission, arm-2 mixed-case admission (both
-# sides lowered), the arm-1 case-sensitivity quirk ([] menu), zero-match
-# ([] menu with real rows seeded), and a 2-of-3 multi-match across different
-# arms (label render + table-order options pinned).
 
-# Frozen document-order structure pins (keyword/number/as/provider/name/skip
-# + verbatim raw input per node, incl. the two-pill where clause with its
-# embedded newline and the 3-pill label template). Any upstream drift fails
-# validation instead of silently changing ground truth.
 _STRUCTURE_PINS_JSON = r'''
 [
  {

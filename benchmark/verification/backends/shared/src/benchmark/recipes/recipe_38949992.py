@@ -16,39 +16,6 @@ TRACK = "sdr_ae_routing_smart_list"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "8546a8b1"
-# SDR->AE routing recipe function (trigger as 8546a8b1, parameters {territory}):
-# TRY {
-#   3x lookup_table.get_entries -> 3x smart lists from CSV plucks:
-#     'General/Group Territory to AE Mapping' (id, general_territory, group,
-#     assignee_email), 'AE Status' (email, isActive), 'Detailed Territory to
-#     Group Mapping' (id, detailed_territory, group)
-#   query bbecc363 (step 9): general-territory JOIN AE Status; result schema
-#     renames POSITIONALLY (no output_schema_by): ae_email <- assignee_email,
-#     group <- group, ae_status <- isActive
-#   IF 10 (rows.size == 0):
-#     query 7837a714 (step 11): detailed-territory scalar subquery + NOT LIKE
-#       'TBH' + IS NOT NULL + isActive='TRUE'; create 'AE Assignees' (force)
-#   ELSE IF 14 (OR: first row ae_email=='TBH' / blank / ae_status is_not_true;
-#              current_item outside foreach = FIRST row):
-#     query 0f6b11d2 (step 15): group re-query keyed on the FIRST bbecc363
-#       row's group VALUE ('#{rows.current_item.group}' inside single quotes);
-#       create 'AE Assignees' (force)
-#   ELSE:
-#     declare territory_assigned=true (the ONLY path that declares it);
-#     create 'AE Assignees' from bbecc363.rows.pluck('ae_email').to_csv (force)
-#   query 3c6fecda (step 20): SELECT * FROM "AE Assignees"
-#   IF 21 (territory contains 'Emerging'):
-#     query f22deb44 (step 22): Emerging-wide JOIN (LIKE '%Emerging%' AND
-#       '%workato.com%' AND '%TRUE%'); return step 23 over f22deb44.rows
-#   ELSE: return step 25 over 3c6fecda.rows
-# } CATCH (7e1b2a0f, max_retry 0): return step 27 {data:{email:nil},
-#   territory_assigned:"false" (STRING — the other paths return booleans)}
-#
-# territory_assigned resolves via .is_true? on the variable: True only on the
-# declare path, False (undeclared -> nil.is_true?) everywhere else.
-# All backends are Workato-internal mocks (lookup tables + smart lists +
-# variables + recipe-function return): no live seeding, no cleanup (per-run
-# isolated state; 'AE Assignees' is force-overwritten inside the run).
 LOOKUP_TABLES: list[tuple[str, str, str]] = [
     # (step as, lookup_table_id, display name)
     ("1a060163", "1482814", "[SDR-AE Routing] General Territory - Grouping - Email Mapping"),
@@ -116,7 +83,6 @@ _H = _sl_col("4d1dd4de", "group")
 _I = _sl_list("4d1dd4de")
 _J = _sl_col("4d1dd4de", "detailed_territory")
 
-# The five query SQL templates VERBATIM (incl. the raw recipe's double spaces).
 SQL_BBECC363 = (
     "SELECT " + _A + ", " + _B + ", aES." + _C
     + " FROM " + _D + " JOIN " + _E + " aES ON aES." + _F + " =  " + _A
@@ -185,9 +151,6 @@ QUERY_SQLS: dict[str, str] = {
     "3c6fecda": SQL_3C6FECDA,
     "f22deb44": SQL_F22DEB44,
 }
-# output_schema_by is set (to "index") ONLY on 0f6b11d2 and f22deb44 in the raw
-# recipe; bbecc363's 3-column rename relies on Workato's positional mapping of
-# headers=false query results, which the executor must honor without the flag.
 QUERY_OUTPUT_SCHEMA_BY: dict[str, str] = {
     "bbecc363": "",
     "7837a714": "",

@@ -15,10 +15,6 @@ SEED_TYPE = "referral_logic_router_variant"
 TRACK = "referral_logic_router"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Router recipe: depending on which *_logic parameters are "None" and whether
-# the *_logic strings contain the matching department/region/country_name, one
-# of five return_result actions fires (each returns {email}); some inputs match
-# no branch and return nothing.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_recipe_function", "return_result"),
     ("workato_recipe_function", "return_result"),

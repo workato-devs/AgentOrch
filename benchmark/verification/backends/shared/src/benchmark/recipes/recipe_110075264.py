@@ -33,11 +33,6 @@ PRIMARY_UPSERT_AS = "305d7b23"
 SIBLING_SEARCH_AS = "e580f7d9"
 COMPOSITE_AS = "b623d730"
 STOP_AS = "58a5baa4"
-# Schema-in-seed contract: mdapi Workato_User_Opportunity__c deployed
-# 2026-07-07 (Opportunity__c Text, Workato_User__c Lookup(Workato_User__c),
-# Provisioning_Status__c Text, Text name field) with FLS; the seed schema
-# section (ensure_custom_field) re-ensures the three Workato_User__c columns
-# the relationship pills dereference.
 REQUIRED_SCHEMA = [
     {"sobject": "Workato_User__c", "field": "User_ID__c", "sf_type": "Text"},
     {"sobject": "Workato_User__c", "field": "Workspace_ID__c", "sf_type": "Text"},
@@ -45,74 +40,6 @@ REQUIRED_SCHEMA = [
 ]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_recipe_function.execute (as 1d428569; the only dereferenced
-# parameter is workato_user_opportunity_id):
-#   2  salesforce.search_sobjects 074b5f04 (LIVE): Workato_User_Opportunity__c
-#      by Id = param (limit 2000; the Workato_User__r$ field_list entries are
-#      UI metadata -- the nested Workato_User__r pills are served by
-#      seed.salesforce.relationship_expansion over the owned Workato_User__c
-#      lookup)
-#   3  workato_db_table.upsert_record 305d7b23 (table 15307 '[AWP] Workspace
-#      Deprovisioning Operation Log', primary field workato_user_id
-#      a114ddce...): workato_user_id = current.Workato_User__c, opportunity_id
-#      = current.Opportunity__c, user_id = Workato_User__r.User_ID__c,
-#      data_center = Workato_User__r.Data_Center__c, operation_executed
-#      'Downgrade', execution_date = job_created_at.to_date (probe-verified
-#      -> '2026-07-07' string; every variant pins seed.job_context).
-#      DESIGN: every variant seeds table 15307 with the primary user's
-#      existing log row (record-id column set) so this upsert takes the
-#      UPDATE arm and the step-12 record-id pill resolves deterministically;
-#      the mock only carries the Workato record-id column on seeded rows
-#      (created rows expose _row_id, not the 11fbe9a6 column), so the
-#      create-arm return value is not faithfully representable -- the INSERT
-#      arm is still exercised by the sibling loop upserts, whose record ids
-#      are never read.
-#   4  salesforce.update_sobject b9b06b94 (LIVE): id = trigger param,
-#      Provisioning_Status__c = 'Partially Deprovisioned'
-#   5  salesforce.search_sobjects_soql e580f7d9 (LIVE, limit 150):
-#      Opportunity__c = current.Opportunity__c AND
-#      Workato_User__r.Workspace_ID__c = current.Workato_User__r.User_ID__c
-#      AND Workato_User__r.Data_Center__c = current...Data_Center__c AND
-#      Id != current.Id -- the recipe quirk (sibling WORKSPACE id compared to
-#      the primary's USER id) is deliberately encoded in every seed; the
-#      4-term compound WHERE with dotted relationship paths needs
-#      seed.salesforce.strict_soql_conditions.
-#   IF 6 (e580f7d9 list_size > 0):
-#     7  salesforce.composite_update_sobject b623d730 (LIVE): ____source =
-#        sibling records, {Id, Provisioning_Status__c 'Partially
-#        Deprovisioned'}, allOrNone=false, batch_size 200 -> one
-#        salesforce.update_record call per sibling;
-#        seed.composite_update_extended_output (set unconditionally by the
-#        seeder) exposes the successRecords/failedRecords shape steps 8/10
-#        dereference.
-#     FOREACH 8 (0a06a593 over successRecords, repeat_mode simple):
-#       9  workato_db_table.upsert_record 5219854f (same table/primary key):
-#          sibling fields via e580f7d9.where(Id: foreach.Id).pluck(...).first
-#          (probe-verified) -> INSERTs one log row per sibling user
-#     IF 10 (failedRecords.current_item.errors.size > 0):
-#       11 STOP 58a5baa4 stop_with_error=true.  The failure path is exercised
-#          with a post-resolution simulated connector fault on a benchmark-
-#          owned sibling update.  Because allOrNone=false catches that child
-#          failure, it faithfully appears in failedRecords without turning
-#          the composite action itself into an unhandled recipe error.
-#   12 workato_recipe_function.return_result 8bc5206e:
-#      result.data_table_record_id = 305d7b23.record.<record-id column>
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 related_workspaces_updated: 2 matching siblings (+ wrong-DC
-#   and wrong-Opportunity decoys) -> IF 6 true -> composite updates both ->
-#   2 loop upserts -> return the primary log record id.
-# - variant_01 no_related_workspaces: only a wrong-DC decoy -> e580f7d9
-#   returns 0 -> IF 6 false -> steps 2-5 + return only.
-# - variant_02 single_sibling_id_exclusion: the primary user's OWN
-#   Workspace_ID__c equals its User_ID__c, so the primary WUO matches all
-#   three field terms and is excluded ONLY by Id != -> exactly 1 sibling ->
-#   1-iteration loop (loop-size variation + Id-term proof).
-#
-# Backends: salesforce LIVE (owned Workato_User__c / Workato_User_Opportunity
-# __c records; cleanup deletes them in a finally block -- the run MUTATES
-# live rows). workato_db_table 15307 is the Workato-internal per-variant mock
-# (the seed fully overwrites it each run -> deterministic reruns).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

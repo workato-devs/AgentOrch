@@ -28,38 +28,10 @@ TABLE_ID = "4326"
 PRIMARY_FIELD_ID = "6dce61e4-27e7-4174-9d3f-e15ae3665454"
 PRIMARY_COLUMN = "6dce61e4_27e7_4174_9d3f_e15ae3665454"
 
-# Daily 00:00 clock trigger (payload-less, seed.trigger = {}):
-#   2  snowflake.search_rows (LIVE) d1dbd7b0: FULL-TABLE read of
-#      PUBLIC.FULL_APP_ACCESS_LEVEL (text-toggled table name, NO where) ->
-#      'select * from <SNOWFLAKE_DATABASE>.PUBLIC.FULL_APP_ACCESS_LEVEL
-#      limit 50000' (offset '0' dropped by _append_limit_offset — re-probed
-#      verbatim on HEAD 07af31c2). _fetch_rows adds lowercase aliases of the
-#      UPPERCASE physical columns, which is what the foreach pills resolve.
-#   3  FOREACH a4327fb6 over rows (repeat_mode simple; zero rows -> zero
-#      iterations):
-#   4    workato_db_table.upsert_record 330069fa (Workato-internal MOCK per
-#        backend policy) table 4326 '[APPS] Snowflake: APP_ACCESS_LEVEL',
-#        primary_field_id 6dce61e4-27e7-…-e15ae3665454 (DASHED — the mock's
-#        _primary_keys normalizes it against the UNDERSCORED record keys,
-#        re-probed insert->update on HEAD), 12 parameters all foreach pills.
-# Mock write semantics (documented + re-probed): _clean STRINGIFIES
-# non-strings (True->'true', 129.5->'129.5') and DROPS None params — a NULL
-# snowflake cell never reaches the stored record on insert, and on the update
-# arm the absent key LEAVES the previous value in place.
-# The full-table SELECT has no ORDER BY: multi-row variants pin upserts and
-# the final table as MULTISETS keyed by the App Access Level ID (batch-07
-# no-ORDER-BY rule); _row_id assignment order is NOT contractual, so
-# final_table_records exclude _row_id (the fragment separately requires
-# unique sequential-range row ids).
-# SEED-AUTHORING CONSTRAINT: app_license_cost seeds must be NULL or a
-# NON-INTEGRAL float — Snowflake FLOAT returns 40.0 for an integral seed and
-# the mock would store '40.0' while a naive expect pins '40'; fractional
-# costs keep the string form deterministic end-to-end.
 
 _RAW_PIN_JSON = r"""{"as": "b46dd68f", "block": [{"as": "d1dbd7b0", "block": [], "input": {"limit": "50000", "offset": "0", "table": "PUBLIC.FULL_APP_ACCESS_LEVEL"}, "keyword": "action", "name": "search_rows", "number": 2, "provider": "snowflake", "skip": false}, {"as": "a4327fb6", "block": [{"as": "330069fa", "block": [], "input": {"parameters": {"038c9907_fec3_4f50_abd8_fd0fbdcc1383": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"status\"]}')}", "1aa5554d_f5ab_4703_9d6e_faf816041d56": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"description\"]}')}", "2918db41_4973_448b_b3c0_22d2c18387cf": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"can_hold_multiple_licenses\"]}')}", "3a9d89c8_8fe5_480f_af01_69b15d6fef4c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_access_level_name\"]}')}", "4c661a35_02f5_4626_8c4b_88d5fa865568": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_name\"]}')}", "6dce61e4_27e7_4174_9d3f_e15ae3665454": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_access_level_id\"]}')}", "7e31c8cc_d936_453f_85d4_c07efd9245d7": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_id\"]}')}", "99d52e63_5600_4199_807b_113cbb58a12a": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"can_have_multiple_access_levels\"]}')}", "ac088077_a942_4bd8_90f5_990ba4664e1a": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_license_id\"]}')}", "c3fbbb1b_7687_40e8_8c44_ded6586ca043": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_license_cost\"]}')}", "c54daf0a_6d98_4515_a065_d7e5b20bceed": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"app_license_name\"]}')}", "da068f90_734d_42fc_b7a3_f06db43c9bda": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"a4327fb6\",\"path\":[\"access_inherent\"]}')}"}, "primary_field_id": "6dce61e4-27e7-4174-9d3f-e15ae3665454", "table_id": "4326"}, "keyword": "action", "name": "upsert_record", "number": 4, "provider": "workato_db_table", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"d1dbd7b0\",\"path\":[\"rows\"]}')}"}, "keyword": "foreach", "name": "", "number": 3, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"d1dbd7b0\",\"path\":[\"rows\"]}')}"}], "input": {"time_unit": "days", "trigger_at": "00:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# upsert parameter uuid -> snowflake column (lowercase pill alias).
 PARAM_TO_COLUMN = {
     "038c9907_fec3_4f50_abd8_fd0fbdcc1383": "status",
     "1aa5554d_f5ab_4703_9d6e_faf816041d56": "description",

@@ -17,29 +17,6 @@ TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "458af9a1"
 WORKSPACE_TABLE = "product.workato_usage.workspace_dim"
-# API endpoint recipe (trigger as 458af9a1; request.typeAhead optional,
-# request.accountID required). Body wrapped in TRY (step 2):
-#   IF (step 3): request.typeAhead blank ->
-#     4  snowflake.search_rows_sql 5a86b1ad: workspace_dim query WITH the
-#        "lower(concat(workspace_name, workspace_email)) like '%<typeAhead>%'"
-#        clause -- faithful author quirk: the LIKE-filtered SQL runs on the
-#        BLANK branch, where the missing typeAhead pill interpolates '' and
-#        like '%%' matches every non-null concat (probe-verified). orderby
-#        input 'task_limit DESC nulls last' is appended as ORDER BY by the
-#        executor (engine fix 4d133d1e); limit 200, offset 0.
-#     5  workato_api_platform.return_response 426432f0: 200,
-#        response.workspaces ____source-mapped over rows
-#        ({workspace_id, workspace: "<name> (<email>)"})
-#   ELSE (step 6): typeAhead present ->
-#     7  snowflake.search_rows_sql d3755b75: same query WITHOUT the like
-#        clause (typeAhead is never used -- replayed faithfully)
-#     8  workato_api_platform.return_response c6f3354f: 200, same mapping
-# CATCH (step 9, as c96801ed, max_retry_count 0):
-#   10 workato_api_platform.return_response 1c0a9f98: 500, no body
-# Snowflake runs LIVE: the seed registers the table under the exact 3-part
-# key 'product.workato_usage.workspace_dim' (recipe_116263482 precedent).
-# The 'nulls last' ordering is provable by seeding a NULL task_limit row.
-# The catch branch is exercised via seed.force_action_error on step 5a86b1ad.
 _SQL_HEAD = (
     "select wd.workspace_name, wd.workspace_email, wd.workspace_id, wd.task_limit\n"
     "from product.workato_usage.workspace_dim wd\n"

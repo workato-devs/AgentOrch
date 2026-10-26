@@ -1,81 +1,31 @@
-# GLOBAL (plan_execute) vs STEP-BY-STEP (react), stratified by SOP structure
+# Performance across workflow characteristics
 
-Models pooled: 45 (every model has all 3,220 variants in both modes; failed rows scored 0 and counted in the error rate, as in the main benchmark).  
-Gap = STEP-BY-STEP - GLOBAL orchestration accuracy; CI95 = clustered bootstrap over SOPs (1000 resamples, seed 0).  '#models gap>0' = models whose own gap is positive.
+Pooled Global and Step-by-Step results for the subgroup analysis in Appendix E.
+Scores and gaps below use fractions; gap is Step-by-Step minus Global.
+Confidence intervals are clustered by SOP.
 
-
-## Breakdown by all
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| all | 650 | 3220 | 0.138 | 0.464 | +0.326 | [+0.312, +0.342] | 45/45 | 0.707 | 0.005 | 0.060 | 0.261 | 0.155 | 0.566 | 0.121 | 0.362 |
-
-## Breakdown by size_num_tool_calls
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| long (6+ calls) | 165 | 1036 | 0.083 | 0.466 | +0.383 | [+0.351, +0.413] | 45/45 | 0.820 | 0.007 | 0.031 | 0.233 | 0.102 | 0.601 | 0.063 | 0.331 |
-| medium (3-5 calls) | 251 | 1149 | 0.142 | 0.473 | +0.331 | [+0.309, +0.351] | 45/45 | 0.693 | 0.005 | 0.065 | 0.265 | 0.168 | 0.593 | 0.116 | 0.353 |
-| short (1-2 calls) | 234 | 1035 | 0.188 | 0.452 | +0.263 | [+0.245, +0.284] | 45/45 | 0.609 | 0.005 | 0.084 | 0.285 | 0.192 | 0.501 | 0.185 | 0.402 |
-
-## Breakdown by num_apps
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| <=1 | 235 | 1192 | 0.190 | 0.515 | +0.325 | [+0.302, +0.347] | 45/45 | 0.652 | 0.004 | 0.091 | 0.304 | 0.213 | 0.621 | 0.168 | 0.409 |
-| 2 | 360 | 1676 | 0.117 | 0.442 | +0.325 | [+0.304, +0.346] | 45/45 | 0.721 | 0.006 | 0.046 | 0.238 | 0.132 | 0.543 | 0.103 | 0.342 |
-| 3+ | 55 | 352 | 0.059 | 0.394 | +0.334 | [+0.285, +0.385] | 45/45 | 0.824 | 0.007 | 0.025 | 0.225 | 0.066 | 0.491 | 0.053 | 0.297 |
-
-## Breakdown by num_services
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| <=1 | 275 | 1462 | 0.190 | 0.570 | +0.380 | [+0.358, +0.400] | 45/45 | 0.669 | 0.004 | 0.085 | 0.309 | 0.230 | 0.734 | 0.150 | 0.406 |
-| 2 | 328 | 1508 | 0.101 | 0.393 | +0.292 | [+0.271, +0.312] | 45/45 | 0.727 | 0.007 | 0.041 | 0.223 | 0.100 | 0.457 | 0.102 | 0.329 |
-| 3+ | 47 | 250 | 0.056 | 0.271 | +0.215 | [+0.182, +0.245] | 45/45 | 0.810 | 0.006 | 0.029 | 0.208 | 0.045 | 0.240 | 0.067 | 0.302 |
-
-## Breakdown by conditional
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| has_conditional | 347 | 1981 | 0.136 | 0.500 | +0.364 | [+0.344, +0.384] | 45/45 | 0.733 | 0.005 | 0.067 | 0.290 | 0.165 | 0.638 | 0.106 | 0.361 |
-| no_conditional | 303 | 1239 | 0.142 | 0.407 | +0.265 | [+0.246, +0.284] | 45/45 | 0.665 | 0.006 | 0.049 | 0.214 | 0.138 | 0.451 | 0.145 | 0.362 |
-
-## Breakdown by loop
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| has_loop | 139 | 807 | 0.085 | 0.443 | +0.357 | [+0.326, +0.391] | 45/45 | 0.789 | 0.008 | 0.044 | 0.282 | 0.105 | 0.592 | 0.065 | 0.293 |
-| no_loop | 511 | 2413 | 0.156 | 0.471 | +0.315 | [+0.299, +0.332] | 45/45 | 0.679 | 0.004 | 0.065 | 0.254 | 0.171 | 0.557 | 0.140 | 0.385 |
-
-## Breakdown by try_catch
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| has_try_catch | 237 | 1291 | 0.140 | 0.512 | +0.372 | [+0.347, +0.396] | 45/45 | 0.748 | 0.005 | 0.055 | 0.240 | 0.175 | 0.675 | 0.104 | 0.349 |
-| no_try_catch | 413 | 1929 | 0.137 | 0.432 | +0.295 | [+0.276, +0.312] | 45/45 | 0.679 | 0.006 | 0.064 | 0.275 | 0.141 | 0.493 | 0.133 | 0.370 |
-
-## Breakdown by structure_category
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| branch_only | 132 | 688 | 0.149 | 0.486 | +0.336 | [+0.302, +0.368] | 45/45 | 0.694 | 0.005 | 0.089 | 0.323 | 0.164 | 0.573 | 0.134 | 0.398 |
-| error_handling_only | 78 | 295 | 0.166 | 0.488 | +0.322 | [+0.284, +0.361] | 45/45 | 0.696 | 0.005 | 0.063 | 0.179 | 0.186 | 0.616 | 0.147 | 0.360 |
-| linear | 186 | 781 | 0.144 | 0.397 | +0.253 | [+0.229, +0.279] | 45/45 | 0.642 | 0.005 | 0.043 | 0.209 | 0.130 | 0.409 | 0.158 | 0.385 |
-| loop_only | 36 | 148 | 0.089 | 0.309 | +0.220 | [+0.185, +0.260] | 45/45 | 0.704 | 0.007 | 0.054 | 0.296 | 0.090 | 0.357 | 0.088 | 0.262 |
-| multiple_control_flow_types | 218 | 1308 | 0.128 | 0.504 | +0.377 | [+0.352, +0.403] | 45/45 | 0.755 | 0.006 | 0.055 | 0.273 | 0.164 | 0.668 | 0.091 | 0.340 |
-
-## Breakdown by nesting_depth
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2 | 235 | 1030 | 0.150 | 0.478 | +0.328 | [+0.305, +0.352] | 45/45 | 0.693 | 0.004 | 0.074 | 0.269 | 0.172 | 0.585 | 0.129 | 0.372 |
-| 3+ | 229 | 1409 | 0.126 | 0.490 | +0.365 | [+0.342, +0.387] | 45/45 | 0.753 | 0.006 | 0.059 | 0.283 | 0.156 | 0.639 | 0.096 | 0.341 |
-| 1 (flat) | 186 | 781 | 0.144 | 0.397 | +0.253 | [+0.228, +0.279] | 45/45 | 0.642 | 0.005 | 0.043 | 0.209 | 0.130 | 0.409 | 0.158 | 0.385 |
-
-## Breakdown by fault_injection
-
-| bucket | #SOP | #variants | GLOBAL orch | STEP orch | gap | gap CI95 | #models gap>0 | GLOBAL err | STEP err | GLOBAL final | STEP final | GLOBAL side-effect | STEP side-effect | GLOBAL exec-trace | STEP exec-trace |
-|---|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| fault_variant | 224 | 264 | 0.164 | 0.528 | +0.365 | [+0.338, +0.394] | 45/45 | 0.742 | 0.006 | 0.089 | 0.264 | 0.199 | 0.688 | 0.128 | 0.369 |
-| normal_variant | 650 | 2956 | 0.136 | 0.458 | +0.322 | [+0.308, +0.337] | 45/45 | 0.704 | 0.005 | 0.058 | 0.261 | 0.151 | 0.555 | 0.121 | 0.361 |
+| Feature | Subset | SOPs | Variants | Global | Step-by-Step | Gap | 95% CI | Global error | Step error |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| all | all | 650 | 3220 | 0.138 | 0.4638 | 0.3259 | [0.3122, 0.342] | 0.7068 | 0.0053 |
+| size_num_tool_calls | long (6+ calls) | 165 | 1036 | 0.0828 | 0.4659 | 0.3831 | [0.3514, 0.4131] | 0.8198 | 0.0065 |
+| size_num_tool_calls | medium (3-5 calls) | 251 | 1149 | 0.1423 | 0.473 | 0.3307 | [0.309, 0.3514] | 0.6933 | 0.0045 |
+| size_num_tool_calls | short (1-2 calls) | 234 | 1035 | 0.1884 | 0.4515 | 0.2631 | [0.2445, 0.2839] | 0.6086 | 0.0049 |
+| num_apps | <=1 | 235 | 1192 | 0.1901 | 0.5148 | 0.3247 | [0.3024, 0.3468] | 0.6521 | 0.0041 |
+| num_apps | 2 | 360 | 1676 | 0.1174 | 0.4423 | 0.3249 | [0.304, 0.3458] | 0.721 | 0.0057 |
+| num_apps | 3+ | 55 | 352 | 0.0594 | 0.3936 | 0.3343 | [0.2855, 0.385] | 0.8241 | 0.0073 |
+| conditional | has_conditional | 347 | 1981 | 0.1357 | 0.4997 | 0.364 | [0.3444, 0.3839] | 0.7329 | 0.0051 |
+| conditional | no_conditional | 303 | 1239 | 0.1416 | 0.4065 | 0.2649 | [0.2464, 0.2836] | 0.665 | 0.0056 |
+| loop | has_loop | 139 | 807 | 0.0852 | 0.4427 | 0.3575 | [0.3257, 0.391] | 0.7892 | 0.0082 |
+| loop | no_loop | 511 | 2413 | 0.1556 | 0.4709 | 0.3153 | [0.2991, 0.3317] | 0.6792 | 0.0043 |
+| try_catch | has_try_catch | 237 | 1291 | 0.1398 | 0.5119 | 0.3722 | [0.3473, 0.3965] | 0.7482 | 0.0048 |
+| try_catch | no_try_catch | 413 | 1929 | 0.1368 | 0.4316 | 0.2949 | [0.2765, 0.3121] | 0.679 | 0.0056 |
+| structure_category | branch_only | 132 | 688 | 0.1491 | 0.4856 | 0.3364 | [0.3022, 0.3675] | 0.694 | 0.0046 |
+| structure_category | error_handling_only | 78 | 295 | 0.1665 | 0.4883 | 0.3218 | [0.2841, 0.3606] | 0.6958 | 0.0047 |
+| structure_category | linear | 186 | 781 | 0.1439 | 0.3968 | 0.2529 | [0.229, 0.2785] | 0.6418 | 0.0053 |
+| structure_category | loop_only | 36 | 148 | 0.0893 | 0.3092 | 0.2199 | [0.1855, 0.26] | 0.7039 | 0.0072 |
+| structure_category | multiple_control_flow_types | 218 | 1308 | 0.1276 | 0.5044 | 0.3768 | [0.3517, 0.4035] | 0.755 | 0.0056 |
+| nesting_depth | 2 | 235 | 1030 | 0.1502 | 0.4783 | 0.3281 | [0.3049, 0.3525] | 0.6933 | 0.0043 |
+| nesting_depth | 3+ | 229 | 1409 | 0.1257 | 0.4904 | 0.3647 | [0.3418, 0.3868] | 0.7526 | 0.006 |
+| nesting_depth | 1 (flat) | 186 | 781 | 0.1439 | 0.3968 | 0.2529 | [0.2284, 0.2793] | 0.6418 | 0.0053 |
+| fault_injection | fault_variant | 224 | 264 | 0.1636 | 0.5284 | 0.3648 | [0.3383, 0.3939] | 0.7423 | 0.0062 |
+| fault_injection | normal_variant | 650 | 2956 | 0.1357 | 0.4581 | 0.3224 | [0.308, 0.3373] | 0.7036 | 0.0052 |

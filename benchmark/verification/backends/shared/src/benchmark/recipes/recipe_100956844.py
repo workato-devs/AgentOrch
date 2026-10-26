@@ -15,17 +15,6 @@ SEED_TYPE = "recipe_function_snowflake_role_router_variant"
 TRACK = "workato_recipe_function_snowflake_role_router"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# The one logical live table, referenced by the recipe under TWO spellings.
-# BOTH must be registered as snowflake_live seed keys with an IDENTICAL spec:
-# _parts() maps each to <SNOWFLAKE_DATABASE>.SNOWFLAKE.USER_ROLE_MAPPING (the
-# same physical table), and _rewrite_sql only rewrites REGISTERED spellings --
-# dotted 2-part names are not covered by the bare-name fallback. Live-probe
-# note (2026-07-07): an UNREGISTERED 'snowflake.user_role_mapping' does NOT
-# fail live -- the session database makes the un-rewritten 2-part reference
-# resolve to the same seeded table -- so registration of both spellings is a
-# determinism requirement, not an error-avoidance one, and the catch branch
-# cannot be reached by omitting a spelling (it is reached via
-# force_action_error instead).
 TABLE_SPELLING_3PART = "workato_business_systems.snowflake.user_role_mapping"
 TABLE_SPELLING_2PART = "snowflake.user_role_mapping"
 TABLE_COLUMNS = (
@@ -37,22 +26,6 @@ TABLE_COLUMNS = (
     "CREATED_AT",
     "MODIFIED_AT",
 )
-# Callable recipe function (trigger as b42ceda3; parameters team_id /
-# department_id / role_id -- role_id is declared but never dereferenced).
-# Body wrapped in TRY (step 2):
-#   declare_variable 80adce7c role_id (schema only -> nil)
-#   run_custom_sql ef0f23d9: team-specific lookup (3-part spelling,
-#     team_id + department_id + type='Team' literals interpolated)
-#   IF ef0f23d9.rows.size > 0:
-#     update_variables 05963c6a role_id = first row's snowflake_role
-#   ELSE:
-#     run_custom_sql c8e2fd08: department fallback (2-part spelling,
-#       department_id + type='Department')
-#     update_variables eaa07831 role_id = first row's snowflake_role
-#       (MISSING -> None when the fallback also returns zero rows)
-#   return_result a0ddfd71 {role_id: variable .presence or nil}
-# CATCH (step 11, as 4dc92ee0, max_retry_count 0) -> STOP step 12 with error,
-#   stop_reason = catch message.
 TEAM_SQL = (
     "select * \nfrom workato_business_systems.snowflake.user_role_mapping\nwhere team_id = "
     "'#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"b42ceda3\","

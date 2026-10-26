@@ -19,51 +19,6 @@ TRIGGER_NAME = "execute"
 TRIGGER_AS = "5719e98e"
 ENTITY_TABLE = "ENTITY"
 APP_TABLE = "APP"
-# Callable recipe function (trigger as 5719e98e; parameters.entity_id string):
-#   declare_list "Default App IDs" (step 2, as fc223579)
-#   snowflake.search_rows_sql 6a22d653 (step 3): ENTITY self-LEFT-JOINed to its
-#     parent (EE/P aliases), WHERE EE.ID = :entity_id (bind via
-#     snowflake_parameters), limit 1 -- LIVE Snowflake, seeded table ENTITY
-#   IF (step 4, compound OR): rows size != '1' OR rows.current_item
-#     .entity_status != 'Active' -> STOP step 5 (stop_with_error, multiline
-#     if/else stop_reason formula: "Failed to evaluate Entity" /
-#     "Entity is not Active")
-#   IF (step 6): trigger parameters.entity_id == 'E3' -> insert_to_list
-#     {app_id: "A212"} into Default App IDs (step 7, as a8485e20)
-#   declare_list "Final Apps List" (step 8, as a140d0a9)
-#   IF (step 9): Default App IDs size > '0':
-#     snowflake.search_rows_sql 56fca8b7 (step 10): full APP dump, limit 50000
-#     workato_smart_list.create_list a0b09532 (step 11): 'APP_ENTITY' from
-#       56fca8b7 rows, force overwrite, primary_index app_id
-#     FOREACH fe33f6f6 (step 12) over Default App IDs list_items:
-#       workato_smart_list.query_list e81c59ef (step 13): SELECT * FROM
-#         #{list_name} WHERE APP_ID = '#{foreach app_id}',
-#         output_schema_by=index onto result schema [app_id, app_name, status]
-#       IF (step 14): rows.current_item.status != 'Active' -> STOP step 15
-#         (stop_with_error, 'Inactive app evaluated: #{app_name}')
-#       insert_to_list e36f0750 (step 16): {app_id, app_name} -> Final Apps List
-#   return_result 4ec6a0f1 (step 17): apps = ____source-mapped Final Apps List
-#     with '.presence or nil' field formulas.
-#
-# Snowflake runs LIVE (seed.snowflake_live tables under the exact keys ENTITY
-# and APP; snowflake_live._rewrite_sql maps the bare FROM/JOIN names -- incl.
-# the ENTITY self-join aliases EE/P -- onto the seeded qualified tables;
-# create-or-replace per variant, dropped by harness cleanup in finally). The
-# variable lists, smart list and recipe-function return are deterministic
-# Workato-internal state. The recipe never writes Snowflake.
-#
-# KNOWN ENGINE GAP (reported, NOT worked around here): the exact e81c59ef SQL
-# shape (SELECT * FROM <list> WHERE APP_ID = '...') is served by the regex
-# fast path in raw_executor.smart_list_query (the `compound` branch), which
-# returns the raw dual-case snowflake read-back columns (APP_ID, app_id,
-# APP_NAME, app_name, STATUS, status) as source_columns. The
-# output_schema_by=index alias mapping then re-keys result schema
-# [app_id, app_name, status] onto [APP_ID, app_id, APP_NAME], silently
-# shifting app_name/status values. The wave-1 dual-case dedupe landed only in
-# _smart_list_sqlite_query, which this query never reaches. Until the fast
-# paths dedupe (or route to SQLite), variant_03 (e3_active_happy) produces a
-# wrong stop instead of the correct return -- its committed expects encode the
-# CORRECT groundtruth and will fail dry-replay on the current engine.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("fc223579", "workato_variable", "declare_list"),
     ("6a22d653", "snowflake", "search_rows_sql"),
@@ -92,12 +47,6 @@ REQUIRED_TABLE_COLUMNS: dict[str, set[str]] = {
     APP_TABLE: {"id", "name", "status"},
 }
 
-# --- Verbatim raw-recipe pin: the full normalized node tree (number, keyword,
-# provider, name, as, skip, input for every node). Any upstream drift in the
-# two SQL texts, the multiline stop_reason formula, the IF conditions, the
-# smart-list config (force/primary_index/output_schema_by/result_schema_json)
-# or the '.presence or nil' return mapping fails validation instead of
-# silently changing groundtruth.
 _RAW_PIN_JSON = r"""{"as": "5719e98e", "block": [{"as": "fc223579", "block": [], "input": {"list_item_schema_json": "[{\"control_type\":\"text\",\"label\":\"App ID\",\"name\":\"app_id\",\"type\":\"string\",\"optional\":false}]", "name": "Default App IDs"}, "keyword": "action", "name": "declare_list", "number": 2, "provider": "workato_variable", "skip": false}, {"as": "6a22d653", "block": [], "input": {"limit": "1", "output_schema": "[{\"name\":\"ENTITY_ID\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ENTITY ID\"},{\"name\":\"ENTITY_NAME\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ENTITY NAME\"},{\"name\":\"ENTITY_ALPHA3CODE\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ENTITY ALPHA 3 CODE\"},{\"name\":\"ENTITY_STATUS\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"ENTITY STATUS\"},{\"name\":\"PARENT_ENTITY_ID\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"PARENT ENTITY ID\"},{\"name\":\"PARENT_ENTITY_NAME\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"PARENT ENTITY NAME\"}]", "parameters": {"data": {"entity_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"5719e98e\",\"path\":[\"parameters\", \"entity_id\"]}')}"}, "schema": "[{\"name\":\"entity_id\",\"type\":\"string\",\"optional\":true,\"label\":\"Entity ID\",\"control_type\":\"text\"}]"}, "sql": "SELECT\nEE.ID AS ENTITY_ID,\nEE.NAME AS ENTITY_NAME,\nEE.ALPHA3CODE AS ENTITY_ALPHA3CODE,\nEE.STATUS AS ENTITY_STATUS,\nP.ID AS PARENT_ENTITY_ID,\nP.NAME AS PARENT_ENTITY_NAME\n\nFROM ENTITY EE\nLEFT JOIN ENTITY P\nON EE.PARENT_ID = P.ID\n\nWHERE EE.ID = :entity_id"}, "keyword": "action", "name": "search_rows_sql", "number": 3, "provider": "snowflake", "skip": false}, {"as": "", "block": [{"as": "", "block": [], "input": {"stop_reason": "=if _dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"6a22d653\",\"path\":[\"rows\",{\"path_element_type\":\"size\"}]}') != 1\n  \"Failed to evaluate Entity\"\nelse\n  \"Entity is not Active\"\nend", "stop_with_error": "true"}, "keyword": "stop", "name": "", "number": 5, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"6a22d653\",\"path\":[\"rows\", {\"path_element_type\": \"size\"}]}')}", "operand": "not_equals_to", "rhs": "1"}, {"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"6a22d653\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"entity_status\"]}')}", "operand": "not_equals_to", "rhs": "Active"}], "operand": "or", "type": "compound"}, "keyword": "if", "name": "", "number": 4, "provider": "", "skip": false}, {"as": "", "block": [{"as": "a8485e20", "block": [], "input": {"list_item": {"app_id": "A212"}, "location": "end", "name": "7d8233a9-d4fa-42d4-9314-da093ed1c57a:fc223579"}, "keyword": "action", "name": "insert_to_list", "number": 7, "provider": "workato_variable", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"5719e98e\",\"path\":[\"parameters\", \"entity_id\"]}')}", "operand": "equals_to", "rhs": "E3"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 6, "provider": "", "skip": false}, {"as": "a140d0a9", "block": [], "input": {"list_item_schema_json": "[{\"control_type\":\"text\",\"label\":\"App ID\",\"name\":\"app_id\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"App Name\",\"name\":\"app_name\",\"type\":\"string\",\"optional\":false}]", "name": "Final Apps List"}, "keyword": "action", "name": "declare_list", "number": 8, "provider": "workato_variable", "skip": false}, {"as": "", "block": [{"as": "56fca8b7", "block": [], "input": {"limit": "50000", "output_schema": "[{\"control_type\":\"text\",\"label\":\"APP ID\",\"name\":\"APP_ID\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"APP NAME\",\"name\":\"APP_NAME\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"STATUS\",\"name\":\"STATUS\",\"type\":\"string\",\"optional\":false}]", "sql": "SELECT\nA.ID AS APP_ID,\nA.NAME AS APP_NAME,\nA.STATUS\n\nFROM APP A"}, "keyword": "action", "name": "search_rows_sql", "number": 10, "provider": "snowflake", "skip": false}, {"as": "a0b09532", "block": [], "input": {"force": "true", "list_name": "APP_ENTITY", "list_source": "=_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"56fca8b7\",\"path\":[\"rows\"]}')", "primary_index": "app_id"}, "keyword": "action", "name": "create_list", "number": 11, "provider": "workato_smart_list", "skip": false}, {"as": "fe33f6f6", "block": [{"as": "e81c59ef", "block": [], "input": {"col_sep": "comma", "csv": "false", "headers": "false", "output_schema_by": "index", "result_schema_json": "[{\"control_type\":\"text\",\"label\":\"App ID\",\"name\":\"app_id\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"App Name\",\"name\":\"app_name\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Status\",\"name\":\"status\",\"type\":\"string\",\"optional\":false}]", "sql": "SELECT * FROM #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"a0b09532\",\"path\":[\"list_name\"]}')}\nWHERE APP_ID = '#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"fe33f6f6\",\"path\":[\"app_id\"]}')}'"}, "keyword": "action", "name": "query_list", "number": 13, "provider": "workato_smart_list", "skip": false}, {"as": "", "block": [{"as": "", "block": [], "input": {"stop_reason": "Inactive app evaluated: #{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"e81c59ef\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"app_name\"]}')}", "stop_with_error": "true"}, "keyword": "stop", "name": "", "number": 15, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"e81c59ef\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"status\"]}')}", "operand": "not_equals_to", "rhs": "Active"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 14, "provider": "", "skip": false}, {"as": "e36f0750", "block": [], "input": {"list_item": {"app_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"e81c59ef\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"app_id\"]}')}", "app_name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\",\"line\":\"e81c59ef\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"app_name\"]}')}"}, "location": "end", "name": "eaf6eed0-db75-45e2-bf41-de6c8283830f:a140d0a9"}, "keyword": "action", "name": "insert_to_list", "number": 16, "provider": "workato_variable", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fc223579\",\"path\":[\"list_items\"]}')}"}, "keyword": "foreach", "name": "", "number": 12, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"fc223579\",\"path\":[\"list_items\", {\"path_element_type\": \"size\"}]}')}", "operand": "greater_than", "rhs": "0"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 9, "provider": "", "skip": false}, {"as": "4ec6a0f1", "block": [], "input": {"result": {"apps": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a140d0a9\",\"path\":[\"list_items\"]}')}", "app_id": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a140d0a9\",\"path\":[\"list_items\",{\"path_element_type\":\"current_item\"},\"app_id\"]}').presence or nil", "app_name": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a140d0a9\",\"path\":[\"list_items\",{\"path_element_type\":\"current_item\"},\"app_name\"]}').presence or nil"}}}, "keyword": "action", "name": "return_result", "number": 17, "provider": "workato_recipe_function", "skip": false}], "input": {"parameters_schema_json": "[{\"name\":\"entity_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"}]", "result_schema_json": "[{\"name\":\"apps\",\"type\":\"array\",\"of\":\"object\",\"label\":\"Apps\",\"optional\":false,\"properties\":[{\"control_type\":\"text\",\"label\":\"App ID\",\"name\":\"app_id\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"App Name\",\"name\":\"app_name\",\"type\":\"string\",\"optional\":false}]}]"}, "keyword": "trigger", "name": "execute", "number": 1, "provider": "workato_recipe_function", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 

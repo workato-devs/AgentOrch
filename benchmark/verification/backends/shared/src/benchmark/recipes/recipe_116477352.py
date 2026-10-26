@@ -23,58 +23,6 @@ COMPOSITE_AS = "4eca0c8b"
 USER_SOBJECT = "Workato_User__c"
 TABLE_KEY = "EDW_DB.SALESFORCE.WORKATO_USER"
 
-# STRUCTURAL NEAR-TWIN of the 115850922/101954510 true-twin pair (scale batch
-# 07, batch_D): same 5-node tree (seeded __History trigger -> live SF parent
-# search -> live Snowflake SQL -> single-batch foreach -> composite update)
-# with exactly FOUR executable field deltas, re-proved 2026-07-08 on the
-# working tree via key-by-key node comparison:
-#   1. trigger query: "Field = 'OEM_Account__c' AND Parent.OEM_ID__c != null"
-#      (event on the OEM_Account__c change; NO Is_Admin__c arm),
-#   2. search field_list: Id/Account__c/Data_Center__c/Workspace_ID__c/
-#      OEM_Account__c (Workspace + OEM account instead of OEM_ID__c),
-#   3. SQL: SELECT Id, Account__c, OEM_Account__c ... WHERE Workspace_Id__c =
-#      '<parent Workspace_ID__c>' AND (IFNULL(OEM_Account__c,'') != '<parent
-#      OEM_Account__c>') AND Data_Center__c = '<parent Data_Center__c>' —
-#      the IFNULL arm is NULL-KEEPING (live-probed end-to-end: a NULL-OEM
-#      child row was selected AND updated), the exact opposite of the head
-#      twins' plain NULL-EXCLUDING '!='. Variants pin the delta from both
-#      sides: v0 relinks a NULL-OEM child, v2 relinks one in isolation.
-#   4. update pill: OEM_Account__c = ba2d4881 [Workato_User__c current_item
-#      OEM_Account__c] — the parent search's CONSTANT OEM account.
-# Own as-ids ba2d4881/5d9bd6b7/6e4c63b7/4eca0c8b (trigger keeps 364d5c88).
-#
-# Trigger is a SEEDED event (the engine never polls __History); only ParentId
-# is dereferenced. Trigger-query coherence is enforced on the seed instead:
-# event Field = 'OEM_Account__c', parent with a non-null OEM_ID__c, Old/
-# NewValue = the two live benchmark Account ids, parent's CURRENT
-# OEM_Account__c = NewValue. A null-OEM_ID__c parent is a NON-EVENT upstream
-# of the benchmark, not a reachable branch.
-#
-# Backends: salesforce LIVE (Workato_User__c pre-provisioned; Account__c /
-# OEM_Account__c are live Lookup(Account) fields — seed values MUST be live
-# benchmark-owned Account ids threaded via $REF tokens; a Text value fails
-# fast 'requires a live Salesforce id', live-probed). snowflake LIVE (seeder
-# create-or-replace on EDW_DB.SALESFORCE.WORKATO_USER; runner drops it in a
-# finally; read-only during the run — snapshot equality pinned). The physical
-# Snowflake table is SHARED by the whole trio (115850922/101954510/116477352):
-# never run family variants concurrently. No SOQL evaluates in the SF matcher
-# (Id-filter search with an empty query; the trigger query is seeded-event
-# coherence only), so strict_soql_conditions is intentionally NOT set.
-# live_tools aliases the search records under the 'Workato_User__c' key
-# (probed) so the recipe's [Workato_User__c, current_item, <field>] pills
-# resolve; the engine emits one salesforce.update_record registry call per
-# batch row (bare per-record trace args for 1 row, {sobject, records} for N).
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 relink_two_children_incl_null (LIVE end-to-end probed exactly
-#   this): old-OEM child AND NULL-OEM child BOTH selected (IFNULL arm) ->
-#   1 batch -> 2 live updates; already-new + wrong-DC children excluded.
-# - variant_01 no_rows_noop: already-new + wrong-workspace + wrong-DC decoys
-#   -> 0 rows -> foreach runs ZERO iterations -> composite never traces.
-#   (A NULL-OEM decoy is impossible here — the IFNULL arm would select it.)
-# - variant_02 single_child_relink: a NULL-OEM child is the ONLY qualifying
-#   row -> composite single-record arm pins the IFNULL-admit in isolation
-#   (NULL flips to the parent's OEM account; decoys untouched).
 TABLE_COLUMNS = {
     "id": "string",
     "account__c": "string",

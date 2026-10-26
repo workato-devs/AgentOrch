@@ -15,14 +15,6 @@ SEED_TYPE = "company_type_variant"
 TRACK = "workato_service_company_type"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Callable "CompanyType" service. If the account Name maps to a Type in
-# [DC] Company_Type__c (lookup Value:Name -> Type present), reply that Type
-# and stop (send_reply step 3). Otherwise, when EmployeesNo is present,
-# classify by size against thresholds stored in the same lookup keyed by Type:
-#   EmployeesNo < SMB.Value            -> "SMB"          (send_reply step 7)
-#   MMK.Value[0] < EmployeesNo < [1]   -> "Mid-Market"   (send_reply step 10)
-#   EmployeesNo > Enterprise.Value     -> "Enterprise"   (send_reply step 13)
-# Each branch stops after replying, so at most one send_reply fires.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

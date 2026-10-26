@@ -21,39 +21,6 @@ ACCOUNT_TABLE = "workato_business_systems.salesforce.account"
 USER_TABLE = "workato_business_systems.salesforce.user"
 USER_ROLE_TABLE = "workato_business_systems.salesforce.user_role"
 SEED_TABLES = [CONVERSATION_TABLE, ACCOUNT_TABLE, USER_TABLE, USER_ROLE_TABLE]
-# Weekly (Friday 00:29 America/New_York) scheduled recipe; the trigger is
-# payload-less and no time pills are read (the WHERE date is the recipe's own
-# hardcoded -- and <anon>-anonymized -- constant, kept verbatim).
-#   2  snowflake.search_rows_sql 58f6839f (LIVE): 4-table JOIN
-#      (CONVERSATION x ACCOUNT x USER x USER_ROLE) selecting the DISTINCT
-#      (GROUP BY 1) emails of CS-CSM-% expansion CSMs with federation ids who
-#      participated in Gong calls since the anonymized cutoff that still
-#      require Success Activities. orderby input 'success_owner_email' is
-#      appended as ORDER BY by the executor (engine fix 4d133d1e -- the
-#      multi-row GROUP BY output order is deterministic); limit 50000.
-#   3  FOREACH 87a3b671 over rows (repeat_mode simple):
-#      4  TRY>
-#      5    slack_bot.get_user_by_email b1f3e255 (LIVE users.lookupByEmail;
-#           unknown emails return ok+not_found -- never an exception)
-#      6    IF b1f3e255.id present ->
-#      7      slack_bot.post_bot_message cf34a028: DM to the resolved user id
-#             (block section_with_button_with_long_action; the live text is
-#             the rendered section_text -- button metadata is Workbot-only).
-#             The resolved LIVE user id MUST be redirected through
-#             seed.slack_channel_map {'<uid>': '__override__'} so the post
-#             lands in the benchmark override channel, never a real DM.
-#      8    CATCH b2ccc6d0 (max_retry_count 3, retry_interval 10) ->
-#      9      STOP stop_with_error=true, reason '#{catch.type} : #{catch.message}'
-# CATCH/STOP is proven live-unreachable deterministically: users_not_found
-# returns ok+not_found (IF-false is the reachable negative branch) and posts
-# to the mapped override channel succeed; only a real Slack/API infra failure
-# (with 3 retries) could fire it, which cannot be seeded deterministically.
-# Documented here instead of forcing a fake variant.
-# The anon-wrapped createddate literal '<anon>2024-01-01</anon>' is executed
-# verbatim against live Snowflake; createddate is seeded as a STRING column
-# whose values keep the same '<anon>YYYY-MM-DD</anon>' wrapper, so the >=
-# comparison behaves exactly like the underlying date window (identical
-# prefix, lexicographic tail).
 SQL = (
     "SELECT u.email AS success_owner_email\n"
     "  FROM EDW_DB.SALESFORCE.CONVERSATION c\n"

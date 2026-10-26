@@ -22,62 +22,12 @@ FR_SOBJECT = "Feature_Request__c"
 SEARCH_AS = "596c386d"
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName"}
 CLOSED_STATUSES = {"Done", "Rejected", "Released"}
-# Schema-in-seed contract: Feature_Request__c was mdapi-deployed 2026-07-08
-# (batch-07 provisioning) with Account__c Text(255) + Jira_Status__c
-# Text(255). mdapi-deployed fields are describe-INVISIBLE until FLS is
-# granted, so the seed schema section re-ensures FLS on both columns every
-# run via ensure_custom_field (106603524/88707765 precedent).
 REQUIRED_SCHEMA = [
     {"sobject": FR_SOBJECT, "field": "Account__c", "sf_type": "Text"},
     {"sobject": FR_SOBJECT, "field": "Jira_Status__c", "sf_type": "Text"},
 ]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_recipe_function.execute (as ea80dd69; parameters.AccountList[]
-# {AccountID, AccountName}). Linear body, no if/foreach/try -- TWIN of
-# 98802887 (same 5-step skeleton, payload deltas only):
-#   2  workato_variable.declare_variable a826e077: account_ids_string =
-#      AccountList&.pluck("AccountID").join("','")
-#   3  salesforce.search_sobjects_soql_v2 596c386d (LIVE, limit 2000):
-#      SELECT Account__c AccountID, COUNT(Id) TotalOpenFeatures
-#      FROM Feature_Request__c WHERE IsDeleted = FALSE AND Jira_Status__c
-#      NOT IN ('Done', 'Rejected', 'Released') AND Account__c IN ('<ids>')
-#      GROUP BY Account__c -- aggregate COUNT + SELECT aliases evaluated by
-#      the harness over live-read-back owned rows (_apply_aggregates); every
-#      seeded FR declares read_fields ['IsDeleted'] so the strict boolean
-#      leaf evaluates the LIVE read-back false (106603524/118905064
-#      precedent -- WITHOUT it the row is silently rejected, probe-verified)
-#   4  workato_smart_list.create_list 22b39266 'OpenFeatures' from the
-#      aggregate records (primary AccountID; Workato-internal SQLite)
-#   5  workato_smart_list.query_list f5816674 (output_schema_by index):
-#      SELECT AccountID, TotalOpenFeatures FROM OpenFeatures (identifiers
-#      via columns/list_name pills; plain projection, no window)
-#   6  workato_recipe_function.return_result 004b17c4: result.FeatureRequests
-#      ____source-mapped {AccountID, TotalOpenFeatureRequets} -- the key
-#      'TotalOpenFeatureRequets' is a raw-recipe TYPO kept verbatim -- TERMINAL
-#
-# Branch mapping (linear recipe: coverage = SOQL predicate arms + group
-# shapes; probe-verified end-to-end offline 2026-07-08):
-# - variant_00 counts_per_account: A has 2 open FRs + 1 'Done' (NOT IN
-#   excludes), B has 1 open -> [{A,2},{B,1}] with int counts.
-# - variant_01 account_outside_list_excluded: an open FR on account C not in
-#   AccountList is excluded by the IN pill -> only A's group returns.
-# - variant_02 all_statuses_closed_empty: only Done/Rejected/Released FRs
-#   (all three NOT-IN literals) -> 0 groups -> create_list registers the
-#   EMPTY 2-column table from the node schema -> query [] ->
-#   result.FeatureRequests [].
-# - variant_03 not_in_exact_match_boundary: NOT IN is exact equality --
-#   'Rejection Pending' is COUNTED beside excluded 'Rejected'/'Done'; B
-#   carries only 'Released' so its group is ABSENT (group omission, not a
-#   zero row).
-#
-# GROUP BY output order = owned-record iteration order in the harness
-# (insertion-ordered dict, 106603524 precedent): seed FRs grouped by account
-# in the order the expected rows are pinned. Backends: salesforce LIVE
-# (benchmark-owned Account + Feature_Request__c records; cleanup deletes
-# owned seeds in a finally block -- read-only recipe, but owned records must
-# not leak); workato_smart_list / workato_variable / workato_recipe_function
-# are Workato-internal in-process.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

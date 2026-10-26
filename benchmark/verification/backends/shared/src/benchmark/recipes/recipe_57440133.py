@@ -10,12 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_57440133
 
 
-# Slack bot dynamic menu "List of Employees" (optional parameter status,
-# typeahead.value): try { IF status present -> snowflake.search_rows on
-# PUBLIC.EMPLOYEE filtered by STATUS + email LIKE typeahead ->
-# generate_menu_options(email as label+value); ELSE -> search_rows filtered by
-# email LIKE typeahead only -> generate_menu_options } catch { EMPTY block —
-# errors are swallowed and the run completes without executing any action }.
 RECIPE_ID = "57440133"
 SEED_TYPE = "dynamic_menu_snowflake_employee_list_variant"
 TRACK = "live_snowflake_slack_dynamic_menu"

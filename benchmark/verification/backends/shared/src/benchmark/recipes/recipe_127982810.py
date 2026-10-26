@@ -18,52 +18,6 @@ TRACK = "workato_db_monthly_process_metrics"
 TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "scheduled_event"
 TRIGGER_AS = "01defda5"
-# Monthly scheduler (day 1, 00:00) -> two repeat/while pagination loops over
-# mock Workato data tables -> one add_record with nine computed metrics:
-#   #2  declare_variable dda3ad96: period_start "=1.months.ago",
-#       period_end "=1.days.ago", next_token (nil) -- seed now MUST be pinned
-#   #3  declare_list d8e2644f "Usage Metrics"
-#   #4  REPEAT> #5 get_records e9a69756 table 37040 (Created-at gte
-#       period_start; continuation_token "=next_token.presence"; limit 200)
-#       > #6 insert_to_list_batch 4e440342 > #7 update_variables 58e05796
-#       WHILE #8 continuation_token present
-#   #9  declare_variable 081b7c80 next_token#2, #10 declare_list 4001b581
-#       "Conversation History"
-#   #11 REPEAT> #12 get_records 9d4f7dca table 34765 (Genie eq project
-#       property GenieName AND Created-at gte period_start) > #13 insert
-#       d1fe1903 > #14 update caa690d5 WHILE #15 present
-#   #16 declare_variable 2286b831: average_ticket_resolution_time
-#       (where-!=nil pluck .sum/.length ternary or SKIP), ticketing count
-#       (uniq), total count (uniq conversation ids)
-#   #17 declare_variable cc1734de: non_ticketing = total - ticketing
-#   #18 declare_variable 48f84dd7: deflection = total != 0 ?
-#       (non_ticketing*100/total).to_i : skip
-#   #19 add_record 1a865f7f table 37039: 9 metric fields incl. the
-#       feedback-participation formula (integer division, NO .to_i) and the
-#       hours-saved ternary (avg.present? ? avg.to_f*non_ticketing.to_f/3600000
-#       : skip)
-#
-# All backends are Workato-internal (data-table mock + variables): fully mock
-# replay, no live SaaS, no cleanup (per-variant isolated table state).
-# TWIN of 128226603: logic byte-identical, ONLY the table ids differ
-# (37040/34765/37039 here).
-#
-# Determinism notes (probe-verified):
-# - seed now pinned; 1.months.ago/1.days.ago derive the period window.
-# - seed.project_properties.GenieName feeds the Genie eq filter (fail-fast
-#   when unseeded).
-# - The mock returns the FULL filtered table on every page, so two-page
-#   variants duplicate accumulated rows; all four derived metrics are
-#   uniq/average/ratio-based and duplicate-invariant.
-# - Integer-division parity: the feedback-participation formula has NO .to_i
-#   and the engine evaluates it via Decimal division while Ruby floors
-#   Integer/Integer -- every variant seeds counts whose divisions are EXACT so
-#   engine and Workato agree. Same for hours-saved (Ruby Float rendering):
-#   variants pick non-integer exact results (e.g. 1.5, 0.75).
-# - ERROR PATH (documented, never seeded): an empty Conversation History list
-#   makes the feedback-participation formula divide by size 0 -> job error,
-#   exactly like real Workato. Every variant seeds >= 1 matching conversation
-#   row; the deflection zero-total skip arm is unreachable as a pass path.
 USAGE_TABLE_ID = "37040"
 CONV_TABLE_ID = "34765"
 SINK_TABLE_ID = "37039"

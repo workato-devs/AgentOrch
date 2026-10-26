@@ -31,31 +31,6 @@ BIND_FORMULA = (
     "\"path\":[\"typeahead\",\"value\"]}').unicode_normalize.downcase+'%'"
 )
 
-# slack_bot.dynamic_menu 'getinstances' (trigger payload seeded; the declared
-# 'query' parameter is NEVER dereferenced by any step -- seeded for faith,
-# provably inert):
-#   2  snowflake.run_custom_sql 1a519773 (LIVE): SELECT ID, NAME FROM
-#      PUBLIC.DEMOINFRA_INSTANCES WHERE LOWER(NAME) LIKE :value with the
-#      named bind parameters.data.value =
-#      '%'+typeahead.value.unicode_normalize.downcase+'%' (Ruby NFC default;
-#      apply_dp_methods probe: 'Café' -> 'café' composed, while
-#      .downcase alone leaves the combining mark). The 2-part table key maps
-#      to <SNOWFLAKE_DATABASE>.PUBLIC.DEMOINFRA_INSTANCES and the literal
-#      table name in the SQL is rewritten inside the live adapter only -- the
-#      trace keeps the recipe's verbatim SQL; :value binds via pyformat.
-#   3  slack_bot.generate_menu_options a1b9af44: flat ____source = step-2
-#      rows, label = current_item.name, value = current_item.id (int -- the
-#      output_schema declares integer with integer_conversion and Snowflake
-#      NUMBER round-trips to int). Deterministic validation-only Workbot
-#      echo, no Slack API call.
-# Linear, no block branches: the only boundary is the LIKE match count
-# (0/1/N). The SELECT has no ORDER BY: multi-row menus are pinned as a
-# MULTISET (menu_options_ordered false), single/empty pin exact order.
-# IN-BATCH SHAPE-TWINS: 108871514 (DEMOINFRA_APPLICATIONS) and 108564927
-# (DEMOINFRA_PROVIDERS) share the same select-bind-menu shape with string id
-# columns; this recipe keys off registered 102760065 ('[CB] Search by User',
-# same run_custom_sql-with-:bind + downcased typeahead + menu tail), plus the
-# .unicode_normalize link that landed in raw_executor apply_dp_methods.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "af9da3a9", "skip": false, "input": {"dynamic_menu_name": "getinstances", "parameters": "[{\"name\":\"query\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Query\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "1a519773", "skip": false, "input": {"output_schema": "[{\"name\":\"id\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\",\"label\":\"ID\",\"parse_output\":\"integer_conversion\"},{\"name\":\"name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Name\"}]", "parameters": {"data": {"value": "='%'+_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"af9da3a9\",\"path\":[\"typeahead\",\"value\"]}').unicode_normalize.downcase+'%'"}, "schema": "[{\"name\":\"value\",\"type\":\"string\",\"optional\":true,\"label\":\"value\",\"details\":{\"real_name\":\"value\"},\"control_type\":\"text\"}]"}, "sql": "SELECT ID, NAME FROM PUBLIC.DEMOINFRA_INSTANCES WHERE LOWER(NAME) LIKE :value", "update_only": "false"}, "block": []}, {"number": 3, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "a1b9af44", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"1a519773\",\"path\":[\"rows\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"1a519773\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"name\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"1a519773\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}"}}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -84,10 +59,6 @@ BRANCHES = (
     "unicode_nfc",
     "zero_match",
 )
-# The typeahead feeds the LIKE bind as '%'+value.unicode_normalize.downcase+'%':
-# LIKE metacharacters and quoting characters are rejected so groundtruth stays
-# a plain (binary, post-NFC) substring match. Combining marks are the point of
-# this recipe and stay allowed.
 _FORBIDDEN_TYPEAHEAD_CHARS = "%_'\"\\"
 
 

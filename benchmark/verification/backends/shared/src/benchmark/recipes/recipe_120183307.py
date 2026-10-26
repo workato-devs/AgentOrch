@@ -29,9 +29,6 @@ ADD_ENTRY_STEP_AS = "c7e5734b"
 DEAD_DECLARE_AS = "8038a067"
 DEAD_SQL_LATEST_AS = "d5877211"
 DEAD_SQL_SNAPSHOT_AS = "74bc10f8"
-# resolved_parameters does NOT strip the anonymizer wrapper (only
-# workato_db filters / primary_field_id do), so the mock lookup table stores
-# this literal VERBATIM. Never de-tag it; only snowflake_live de-tags SQL.
 ANON_DEMO_CUSTOMER = "<anon>Acme Corp (Demo customer)</anon>"
 RAW_SQL = (
     "select \n"
@@ -53,38 +50,6 @@ RAW_SQL = (
     "    ;"
 )
 
-# clock.scheduled_event (as 3be5e081, daily 17:00) -- payload-less; NO trigger
-# field is ever dereferenced (trigger_input must be exactly {}).
-#   2  lookup_table.truncate c508a22e table 3300555
-#   3  workato_variable.declare_variable 8038a067 computes the benchmark date
-#      as yesterday; the final demo row uses this stable value.
-#   4  snowflake.run_custom_sql 64fd1130 (LIVE): RAW_SQL -- both the FROM and
-#      the max() subselect reference the literal 3-part name; _rewrite_sql
-#      maps BOTH occurrences to the registered seed table. rows_affected =
-#      len(rows) for run_custom_sql (live_tools), so the IF condition below
-#      is exactly the empty-result test. No CURRENT_* in the SQL -> no
-#      seed.snowflake_live.current_time. Trailing ';' passes through live.
-#   IF 5 (64fd1130.rows_affected equals_to '0'):
-#     6  snowflake.run_custom_sql d5877211 skip:true (DEAD)
-#     7  snowflake.run_custom_sql 74bc10f8 skip:true (DEAD)
-#     8  lookup_table.add_batch_of_entries 66dcea69: ____source over
-#        64fd1130.rows -> col1..col10; rows is [] on this branch, so the
-#        batch is always EMPTY in practice
-#   ELSE 9:
-#     10 lookup_table.add_batch_of_entries fadff562: the IDENTICAL mapping
-#        over the same rows -- the branch discriminator is the step as-id in
-#        the trace (66dcea69 vs fadff562), pinned via expect.batch_step_as
-#   11 lookup_table.add_entry c7e5734b: col1 = the step-3 current_date
-#      (yesterday under the variant-pinned clock), independent of whether the
-#      snapshot query returned rows;
-#      col2 = ANON_DEMO_CUSTOMER stored verbatim.
-#
-# Backends: Snowflake runs LIVE (seed under the LITERAL 3-part key, dropped
-# in the runner's finally). Lookup table 3300555 is Workato-internal ->
-# deterministic per-variant mock. SELECT-row ORDER is not guaranteed by
-# Snowflake (no ORDER BY), so batch entries / final rows are pinned as exact
-# MULTISETS keyed on col10 (account_id, seed-enforced distinct); col1 of the
-# add_entry row is order-independent by the max() argument above.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "3be5e081", "skip": false, "input": {"time_unit": "days", "trigger_at": "17:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "lookup_table", "name": "truncate", "as": "c508a22e", "skip": false, "input": {"lookup_table_id": "3300555"}, "block": []}, {"number": 3, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "8038a067", "skip": true, "block": []}, {"number": 4, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "64fd1130", "skip": false, "input": {"output_schema": "[{\"control_type\":\"text\",\"label\":\"entry_date\",\"name\":\"entry_date\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"customer\",\"name\":\"customer\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"owner_id\",\"name\":\"owner_id\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"owner\",\"name\":\"owner\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"active_subscription\",\"name\":\"active_subscription\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"subscription_start_date\",\"name\":\"subscription_start_date\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"current_plan\",\"name\":\"current_plan\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"current_arr\",\"name\":\"current_arr\",\"type\":\"string\",\"optional\":true},{\"control_type\":\"text\",\"label\":\"cat_company_size\",\"name\":\"cat_company_size\",\"type\":\"string\",\"optional\":true},{\"name\":\"account_id\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\"}]", "sql": "select \n    entry_date\n    , account_name as customer\n    , owner_id\n    , owner\n    , active_subscription\n    , subscription_start_date\n    , current_plan\n    , current_arr_usd as current_arr\n    , cat_company_size\n    , account_id as account_id\nfrom edw_db.workato_usage_intermediate.accounts_snapshot\nwhere 1=1\n    and entry_date = (select max(entry_date) from edw_db.workato_usage_intermediate.accounts_snapshot)\n    and is_direct\n    and is_paying\n    ;", "update_only": "false"}, "block": []}, {"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows_affected\"]}')}", "operand": "equals_to", "rhs": "0"}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "d5877211", "skip": true, "block": []}, {"number": 7, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "74bc10f8", "skip": true, "block": []}, {"number": 8, "keyword": "action", "provider": "lookup_table", "name": "add_batch_of_entries", "as": "66dcea69", "skip": false, "input": {"entries": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\"]}')}", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"entry_date\"]}')}", "col10": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"account_id\"]}')}", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"customer\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"owner_id\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"owner\"]}')}", "col5": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"active_subscription\"]}')}", "col6": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"subscription_start_date\"]}')}", "col7": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"current_plan\"]}')}", "col8": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"current_arr\"]}')}", "col9": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"cat_company_size\"]}')}"}}, "lookup_table_id": "3300555"}, "block": []}, {"number": 9, "keyword": "else", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 10, "keyword": "action", "provider": "lookup_table", "name": "add_batch_of_entries", "as": "fadff562", "skip": false, "input": {"entries": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\"]}')}", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"entry_date\"]}')}", "col10": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"account_id\"]}')}", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"customer\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"owner_id\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"owner\"]}')}", "col5": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"active_subscription\"]}')}", "col6": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"subscription_start_date\"]}')}", "col7": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"current_plan\"]}')}", "col8": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"current_arr\"]}')}", "col9": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"cat_company_size\"]}')}"}}, "lookup_table_id": "3300555"}, "block": []}]}]}, {"number": 11, "keyword": "action", "provider": "lookup_table", "name": "add_entry", "as": "c7e5734b", "skip": false, "input": {"lookup_table_id": "3300555", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"64fd1130\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"entry_date\"]}')}", "col2": "<anon>Acme Corp (Demo customer)</anon>"}}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -128,7 +93,6 @@ ALLOWED_TOOLS: list[str] = [
     "lookup_table.add_entry",
 ]
 DEAD_STEP_IDS = (DEAD_SQL_LATEST_AS, DEAD_SQL_SNAPSHOT_AS)
-# lowercase SELECT alias -> lookup column (col1..col10 in recipe order)
 SQL_ALIAS_TO_COL = {
     "entry_date": "col1",
     "customer": "col2",
@@ -155,7 +119,6 @@ SNAPSHOT_COLUMNS = {
     "is_direct": "boolean",
     "is_paying": "boolean",
 }
-# seed column -> SELECT alias (identity except the two AS renames)
 SEED_COLUMN_TO_ALIAS = {
     "entry_date": "entry_date",
     "account_name": "customer",
@@ -186,7 +149,6 @@ REQUIRED_EXPECT_KEYS = (
     "dead_steps_traced_skipped",
     "steps_absent_from_trace",
 )
-# Corpus lint: targeting keys + value keys allowed on tool_expectations items.
 _EXPECTATION_TARGET_KEYS = {"tool", "table_id", "lookup_table_id", "match_fields", "channel"}
 _EXPECTATION_VALUE_KEYS = {
     "args_contains",

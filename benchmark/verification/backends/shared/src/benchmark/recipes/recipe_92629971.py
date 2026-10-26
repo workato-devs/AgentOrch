@@ -16,34 +16,6 @@ TRACK = "live_slack_recipe_function_user_avatars"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "6f6ae674"
-# Callable recipe function (trigger as 6f6ae674; parameters.Users[] with
-# per-item placeholder_title/email/name).
-#   2  FOREACH b0c1c7a4 over parameters.Users (repeat_mode simple):
-#      3  TRY>
-#      4    IF name.downcase not_contains 'scale' ->
-#      5      [slack.get_user_by_email 2113b4ba -- skip:true, traced skipped]
-#      6      slack_bot.get_user_by_email 891f2787 (LIVE users.lookupByEmail;
-#             found users expose top-level profile -- engine fix 4d133d1e --
-#             so ["profile","image_512"] resolves; unknown emails return
-#             ok+not_found with NO profile key)
-#      7      IF 891f2787.profile.image_512 present ->
-#      8        workato_list.accumulate_list_items e7a6c22d 'Results'
-#               {placeholder_title, email, image_url}
-#      9    CATCH a4978a61 (max_retry_count 0; body is a single skip:true
-#           no-op action, step 10)
-#   11 workato_recipe_function.return_result 5a9e5dac:
-#      Users ____source-mapped over e7a6c22d.list_items; when nothing was
-#      accumulated the pill is MISSING -> Users [] (probe-verified).
-# DEAD BRANCHES (documented, not forced):
-# - CATCH: users_not_found does NOT raise (slack_live returns ok+not_found),
-#   so the catch is live-unreachable deterministically; only a real Slack
-#   infra failure could fire it. Its body is a skipped no-op anyway.
-# - IF7-false for a FOUND user: Slack always serves a gravatar image_512 for
-#   real workspace users, so the reachable IF7-false case is the not-found
-#   shape (no profile key), covered by the ghost-email variants.
-# Live seeds: found-user variants use the benchmark workspace member
-# jamie.lee@corp.example (U0B91BSRGF8); its image_512 URL is deterministic per
-# user and pinned exactly in expects. Lookups are read-only -- no cleanup.
 LOOKUP_EMAIL_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"b0c1c7a4\","
     "\"path\":[\"email\"]}')}"

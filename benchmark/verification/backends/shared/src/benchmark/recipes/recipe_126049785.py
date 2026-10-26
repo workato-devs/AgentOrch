@@ -88,8 +88,6 @@ TABLE_COLUMNS: dict[str, dict[str, str]] = {
         "app_tier": "integer",
     },
 }
-# Columns that may be seeded as null (JSON null -> SQL NULL; _clean_row drops
-# them from the INSERT so the declared column type must carry them):
 NULLABLE_COLUMNS = {
     APPS_TABLE: {"category"},
     TIER_TABLE: {"category"},
@@ -110,40 +108,6 @@ CREATED_LISTAGG_COLUMNS = (
     "tier_5_apps_connected",
 )
 
-# workato_recipe_function.execute (as 2511c130; NO parameters schema, result
-# schema [Result:string]) -- the trigger carries no pills; trigger_input {}.
-#   2  workato_variable.declare_variable a2d14c5e: days_threshold '30' (unused
-#      downstream) + snap_date =now.strftime("%Y-%m-%d") -- fails fast
-#      without seed.now (probed on HEAD); traced as
-#      workato_runtime.declare_variable WITHOUT a registry tool call, so it
-#      appears in expect.trace_tools / executed_action_count but NOT in
-#      expect.tools.
-#   3  snowflake.run_custom_sql 920ebe3a (LIVE): CREATE OR REPLACE TABLE
-#      plg.chi_2024_first_connections_operational AS <9-CTE SQL over the five
-#      workato_usage.* sources + plg.recipe_sophistication_app_tier>.
-#      Args pin the RESOLVED sql (snap_date pill interpolated; the
-#      <anon>2024-02-01</anon> inline tag stays in the ARGS and is stripped
-#      by the live client's rewrite -- re-probed on HEAD along with the CTAS
-#      target mapping and current_date pinning). current_date -1 -> the app
-#      join entry date, so seed.snowflake_live.current_time is REQUIRED and
-#      must equal seed.now (one instant, both UTC). Live-probed features from
-#      triage: trailing comma before FROM, GROUP BY ALL + QUALIFY,
-#      listagg(case...), alias 'at'.
-#   4  snowflake.run_custom_sql_async_v2 495e1405 skip:TRUE -- a byte-
-#      duplicate of step 3's CTAS, PROVABLY DEAD (execute_node's skip guard
-#      traces {skipped: true} and never dispatches; a live duplicate would
-#      re-create the table, so the single-run_custom_sql pin is the proof).
-#   5  workato_recipe_function.return_result 48439cd5: literal
-#      {Result: 'success'} -- TERMINAL.
-# Verification = snapshot of the CREATED table (registered in the tables spec
-# with empty columns: the seeder DROPS any leftover, so the pre-run snapshot
-# is [] and rewrite/snapshot/cleanup cover the target) + the return literal.
-# The final SELECT has no top-level ORDER BY -> created-table contents are
-# pinned as a MULTISET; listagg column order is not guaranteed either, so
-# expect.created_rows carries the three *_apps_connected columns as SORTED
-# LISTS of titles ('' -> []).
-# The five source tables are READ-ONLY (snapshot equality before/after);
-# cleanup drops all seven registered names in the runner's finally.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_recipe_function", "name": "execute", "as": "2511c130", "skip": false, "input": {"result_schema_json": "[{\"name\":\"Result\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Result\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "a2d14c5e", "skip": false, "input": {"variables": {"data": {"days_threshold": "30", "snap_date": "=now.strftime(\"%Y-%m-%d\")"}, "schema": "[{\"name\":\"days_threshold\",\"type\":\"string\",\"optional\":true,\"label\":\"days_threshold\",\"details\":{\"real_name\":\"days_threshold\"},\"control_type\":\"text\"},{\"name\":\"snap_date\",\"type\":\"string\",\"optional\":true,\"label\":\"snap_date\",\"details\":{\"real_name\":\"snap_date\"},\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "920ebe3a", "skip": false, "input": {"sql": "create or replace table plg.chi_2024_first_connections_operational as\n\nwith account_data as (\n    select a.*, max(startdate) latest_start_date, row_number() over (partition by account_id order by latest_start_date desc) rn \n    from workato_usage.accounts_dim a\n    where\n        a.startdate >= '<anon>2024-02-01</anon>'\n        and a.startdate <= '#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a2d14c5e\",\"path\":[\"snap_date\"]}')}'\n        and is_paying = true\n    and is_direct /*we exclude embed because the thresholds are very different*/\n    group by all\n    qualify rn = 1\n)\n\n, first_sha_dates as ( \n/* there will be some situations where the provider for shared account changed. e.g 1092207, 917004, 921790, 976401, 977622, 986193 in US dc. Not sure why that happens \n    we are also only looking at situations where authorization status = success, i.e a successful connection is made. This will not include when a connection is ATTEMPTEd, but only when the connection is SUCCESSFUL.\n*/\nselect id sha_id, data_center, user_id, provider, min(authorized_at) sha_first_auth_at, authorization_status, min(created_at) conn_created_at\nfrom workato_usage.shared_accounts_snapshot\nwhere authorization_status = 'success'\ngroup by all\norder by sha_id\n)\n\n, mapped_first_sha_dates as (\nselect fsd.*, coalesce(app.title, fsd.provider) title, app.category\nfrom first_sha_dates fsd\nleft join workato_usage.applications_snapshot app\n    on fsd.data_center = app.data_center and fsd.provider = app.name\n    and app.entry_date = current_date -1\ngroup by all\n)  \n\n, app_first_events as (\nselect data_center, user_id, title, category, date(min(sha_first_auth_at)) app_first_connected_date, date(min(conn_created_at)) app_first_creation_date\nfrom mapped_first_sha_dates \ngroup by all\n)\n\n, app_interim as (\n    select \n          afe.data_center\n        , afe.user_id\n        , afe.title\n        , afe.category\n        , afe.app_first_connected_date\n        , c2.date belonging_week_snapshot_first_connection\n        , afe.app_first_creation_date\n        , c4.date belonging_week_snapshot_first_creation\n    from app_first_events afe\n    join workato_usage.calendar_dim c1\n        on afe.app_first_connected_date = c1.date\n    join workato_usage.calendar_dim c2\n        on c1.year = c2.year and c1.week = c2.week and c2.dayname = 'Mon'\n    join workato_usage.calendar_dim c3\n        on afe.app_first_creation_date = c3.date\n    join workato_usage.calendar_dim c4\n        on c3.year = c4.year and c3.week = c4.week and c4.dayname = 'Mon'\n    group by all\n)\n\n, app_interim2 as (\n    select w.sales_account_id account_id, ai.*\n    from app_interim ai\n    join workato_usage.workspace_dim w \n        on w.is_latest = true\n        and w.workspace_id = ai.user_id and w.data_center = ai.data_center\n        and w.is_paid_workspace = true\n    group by all\n)\n\n, app_interim3 as (\n    select ai2.account_id, ad.account_name, ad.subscription_start_date, min(belonging_week_snapshot_first_connection) belonging_week_snapshot_first_connection , ai2.title, ai2.category\n        , case when belonging_week_snapshot_first_connection < ad.subscription_start_date then 0 else 1 end connected_after_subscription_start /* connections may happen prior to subscription start as part of trial/poc/go-live */\n    -- , belonging_week_snapshot_first_creation /* we dont add in created connection, but when they successfully connect then its an indication that they're ready and able to do something. */\n        , case when at.category in ('workato', 'others') or at.category is null then 5\n            else coalesce(at.app_tier, 5) end as app_tier\n            \n    from app_interim2 ai2\n    join account_data ad \n        on ai2.account_id = ad.account_id\n    left join plg.recipe_sophistication_app_tier at\n        on ai2.title = at.title\n    where 1=1\n    group by all\n    order by belonging_week_snapshot_first_connection\n)\n, app_interim4 as (\n    select *\n        , rank() over (partition by ai3.account_id, ai3.title order by belonging_week_snapshot_first_connection asc) app_connection_rank\n    from app_interim3 ai3\n)\n\n, app_interim5 as (\n    select account_id, account_name, subscription_start_date, connected_after_subscription_start, belonging_week_snapshot_first_connection\n        , sum(case when ai4.category in ('app', 'custom') and app_tier in (1,2) and app_connection_rank = 1 then 1 else 0 end) n_tier_1_2_app_connected\n        , listagg(case when ai4.category in ('app', 'custom') and app_tier in (1,2) and app_connection_rank = 1 then ai4.title end, ';') tier_1_2_apps_connected\n        \n        , sum(case when ai4.category in ('app', 'custom') and app_tier in (3,4) and app_connection_rank = 1 then 1 else 0 end) n_tier_3_4_app_connected\n        , listagg(case when ai4.category in ('app', 'custom') and app_tier in (3,4) and app_connection_rank = 1 then ai4.title end, ';') tier_3_4_apps_connected\n        \n        , sum(case when app_tier in (5) and app_connection_rank = 1 then 1 else 0 end) n_tier_5_app_connected\n        , listagg(case when app_tier in (5) and app_connection_rank = 1 then ai4.title end, ';') tier_5_apps_connected\n        , \n    from app_interim4 ai4\n    group by all\n    order by belonging_week_snapshot_first_connection\n)\n\nselect * \nfrom app_interim5\n", "update_only": "false"}, "block": []}, {"number": 4, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql_async_v2", "as": "495e1405", "skip": true, "block": []}, {"number": 5, "keyword": "action", "provider": "workato_recipe_function", "name": "return_result", "as": "48439cd5", "skip": false, "input": {"result": {"Result": "success"}}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -157,13 +121,11 @@ EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     (SQL_STEP_AS, "snowflake", "run_custom_sql"),
     (RETURN_STEP_AS, "workato_recipe_function", "return_result"),
 ]
-# Trace tool sequence (includes the registry-less declare step):
 EXPECTED_RAW_TOOLS: list[str] = [
     "workato_runtime.declare_variable",
     "snowflake.run_custom_sql",
     "workato_recipe_function.return_result",
 ]
-# Registry tool sequence (what expect.tools / tool_expectations pin):
 EXPECTED_REGISTRY_TOOLS: list[str] = [
     "snowflake.run_custom_sql",
     "workato_recipe_function.return_result",

@@ -17,25 +17,6 @@ SEED_TYPE = "rpa_error_api_snowflake_slack_variant"
 TRACK = "live_snowflake_slack_api_rpa_error"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API endpoint 'record an RPA job error': receive_request (request.job_id
-# required; message/type/value/traceback optional) -> snowflake.search_rows
-# RPA.QUEUE where job_id = :job_id (bind parameter) -> IF(rows size == 1)
-# { IF(message present) { update QUEUE status='Error: RPA'/status_info=message
-# + slack post to #bt-rpa-errors } IF(type present AND message blank) { update QUEUE
-# status_info=type\nvalue\ntraceback + slack post } return_response 200 } ->
-# snowflake.search_rows RPA.NETSUITE_QUEUE where job_id = :job_id ->
-# IF(netsuite size == 1) { same message/type branches against NETSUITE_QUEUE }
-# -> return_response 404.
-#
-# Each branch dereferences the search that guards it. The NETSUITE branch
-# therefore updates and reports the matching NETSUITE row instead of reading
-# an empty current-item from the earlier QUEUE search.
-#
-# return_response is TERMINAL in the executor (TERMINAL_TOOLS): the first
-# return_response ends the run, so queue-match variants stop at the 200 and
-# never reach the NETSUITE search or the trailing 404. Ground truth pins the
-# FIRST response (expect.first_response_status), matching Workato
-# first-response-wins semantics.
 QUEUE_TABLE = "RPA.QUEUE"
 NETSUITE_TABLE = "RPA.NETSUITE_QUEUE"
 SEARCH_WHERE = "job_id = :job_id"

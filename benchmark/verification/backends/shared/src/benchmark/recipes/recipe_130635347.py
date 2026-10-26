@@ -40,10 +40,6 @@ ALLOWED_TOOLS = [
     "salesforce.search_records",
     "workato_genie.workflow_return_result",
 ]
-# `status` is OPTIONAL (Genie schema): the falsy-render fix landed —
-# `.presence` of an absent pill yields nil, nil-compacted at the SF update
-# boundary; the branch-aware verify_130635347 covers both arms. A status-
-# absent variant exists on the byte-twin 131787576 (variant_06).
 REQUIRED_PARAMETERS = ("lead_id", "description")
 
 

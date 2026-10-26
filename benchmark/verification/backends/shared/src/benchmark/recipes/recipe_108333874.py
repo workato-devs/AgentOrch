@@ -22,9 +22,6 @@ SEARCH_STEP_AS = "5a86b1ad"
 SUCCESS_RETURN_AS = "426432f0"
 CATCH_AS = "c96801ed"
 CATCH_RETURN_AS = "1c0a9f98"
-# The literal 3-part names the SQL references; MUST be the registered
-# snowflake_live table keys so _rewrite_sql maps them onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.WORKATO_USAGE.RECIPE_DIM / .WORKSPACE_DIM).
 RECIPE_DIM_TABLE = "product.workato_usage.recipe_dim"
 WORKSPACE_DIM_TABLE = "product.workato_usage.workspace_dim"
 SEED_TABLE_KEYS = sorted([RECIPE_DIM_TABLE, WORKSPACE_DIM_TABLE])
@@ -32,10 +29,6 @@ ACCOUNT_ID_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\","
     "\"line\":\"" + TRIGGER_AS + "\",\"path\":[\"request\", \"account_id\"]}')}"
 )
-# Verbatim recipe SQL: the single request pill interpolates into the SQL
-# TEXT (parameters.schema is [] — no bind parameters); account_id lands
-# inside single quotes. vs twin head 108516287 the LISTAGG workspaces column
-# and the wd.workspace_id IN (...) predicate are ABSENT.
 RAW_SQL_TEMPLATE = (
     "select \ncount_if(rd.running) running,\n"
     "count_if(rd.is_callable or rd.is_function) function_recipe,\n"
@@ -80,8 +73,6 @@ WORKSPACE_DIM_COLUMNS = {
     "is_internal": "boolean",
     "sales_account_id": "string",
 }
-# response key -> count_if flag, in the recipe's mapping (function_recipe is
-# the only OR-composite). NO workspaces field in this twin (no LISTAGG).
 COUNT_KEYS = (
     "running",
     "function_recipe",
@@ -96,61 +87,6 @@ COUNT_KEYS = (
 )
 SQL_SAFE_TEXT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9 ._-]*")
 
-# workato_api_platform.receive_request (as 458af9a1, request schema pins ONE
-# required string account_id, dereferenced INSIDE the SQL text of step 3 —
-# parameters.schema is [], no bind parameters). NEAR byte-twin of head
-# 108516287 (SAME as-ids 458af9a1/5a86b1ad/426432f0/c96801ed/1c0a9f98 and
-# uuids; 93-line raw delta, probe 2026-07-08: (1) SQL drops the
-# 'LISTAGG(distinct wd.workspace_name ...) workspaces,' select line and the
-# 'and wd.workspace_id in (#{request.workspace_ids})' predicate; (2)
-# workspaces removed from every schema + the response mapping (10 fields,
-# not 11); (3) trigger request schema drops workspace_ids; (4) 426432f0
-# carries a vestigial toggleCfg block — dead editor cruft referencing fields
-# this response does not even have; _structure() pins keyword/as/input so it
-# is invisible and behavior-free; (5) CSV metadata). Derived mechanically
-# from the 108516287 build. Body = one TRY (step 2):
-#   3  snowflake.search_rows_sql 5a86b1ad (LIVE): RAW_SQL_TEMPLATE with the
-#      account_id pill interpolated, limit '1' offset '0' (' limit 1'
-#      appended by _append_limit_offset — harmless on the single aggregate
-#      row). 10x count_if over recipe_dim LEFT JOIN workspace_dim (the wd.*
-#      WHERE arms make the left join effectively inner); the account-wide
-#      filter is sales_account_id ONLY — every paid external latest
-#      workspace of the account counts. An aggregate SELECT always returns
-#      EXACTLY ONE row.
-#   4  workato_api_platform.return_response 426432f0 (mock, TERMINAL): 200,
-#      response = OBJECT of 10 count fields via rows[current_item].<col_hash>
-#      pills. Full-pill fields resolve NATIVELY: on matched rows count_if
-#      Decimals -> int (_json_value), so all 10 values are INTS despite the
-#      schema's float_conversion. ZERO-MATCH SHAPE IS LIVE-PROBED
-#      (output/108333874/variant_01, 2026-07-08): the aggregate still
-#      returns ONE row but every count_if column is NULL (NOT int 0) and
-#      the typed None row values render JSON null in the response.
-#      No LISTAGG -> no ordering hazard in this twin.
-#   CATCH c96801ed (max_retry_count 0):
-#   6  return_response 1c0a9f98 (TERMINAL): 500 with NO response input —
-#      the adapter renders response {} (bodyless 500). No trailing stop.
-#
-# Branch mapping:
-# - aggregates_200: matched recipes across the account's workspaces ->
-#   pinned counts; decoys prove the account filter (other-account
-#   workspace), the internal/not-paid arms, the non-latest recipe arm and
-#   the LEFT-JOIN-miss arm.
-# - zero_counts_200: near-miss decoys only -> 1 aggregate row where every
-#   count_if is NULL (live-probed shape, NOT int 0s); still 2 actions
-#   (data-independent 200 path).
-# - catch_500: seed.force_action_error on 5a86b1ad -> bodyless 500 after
-#   1 action.
-#
-# DETERMINISM: workspace ids must be unique across workspace_dim rows so the
-# join can never fan out (same rule as the head build).
-#
-# Backends: Snowflake runs LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally). The API platform
-# trigger/responses are deterministic Workato-internal mocks. READ-ONLY on
-# Snowflake. The physical WORKATO_USAGE.RECIPE_DIM / WORKSPACE_DIM tables
-# are SHARED with twin head 108516287 — never run the pair's lanes
-# concurrently. The SQL uses no CURRENT_DATE/TIMESTAMP:
-# seed.snowflake_live.current_time is rejected.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

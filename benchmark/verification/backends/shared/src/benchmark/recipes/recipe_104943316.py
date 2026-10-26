@@ -24,54 +24,8 @@ UPDATE_STEP_AS = "0acbf52d"
 SOBJECT = "Campaign_Activity__c"
 LOOKUP_TABLE_ID = "3817174"
 CA_ID_TOKEN = "$CA_ID"
-# The deliberate non-owned Campaign_Activity__c id the record_not_found
-# variant sends: the harness search over owned records returns 0 matches
-# DETERMINISTICALLY for it (read-only search, no ownership guard fires) --
-# same NON_OWNED_ID pattern as registered recipe_88708198.
 NON_OWNED_ID = "a0X000000000000AAA"
 
-# salesforce.new_custom_object (as eb620bea, sobject Campaign_Activity__c,
-# since_offset -3600, trigger field_list Id/Name/CreatedDate/Email__c/
-# Browser_Timezone__c) with a TRIGGER FILTER: Browser_Timezone__c present.
-# The trigger payload dereferences exactly TWO fields: Id (step-2 search
-# filter) and Browser_Timezone__c (the filter condition) -- trigger_input
-# carries exactly those two keys and the filter always matches (a blank
-# timezone would mean the trigger simply never fires: zero actions, not a
-# recipe branch).
-#   2  salesforce.search_sobjects 00734942 (LIVE): Campaign_Activity__c,
-#      filter Id = trigger.Id, limit 150, 38-field field_list -> engine
-#      routes to salesforce.search_records {sobject, filters:[{field:'Id',
-#      value}], limit '150'} (field_list is SELECT-column metadata only).
-#      Result exposes rows under result['Campaign_Activity__c'] +
-#      list_size (live_tools sf_search_records).
-#   IF 3 (00734942.list_size greater_than '0'):
-#     4  lookup_table.search_entries 149f4719 (mock table 3817174 'CA
-#        Region<>Browser Timezone'): col1 = search current_item
-#        Browser_Timezone__c (the LIVE re-read record's timezone, not the
-#        trigger's -- variants keep them equal by seeding the record).
-#     IF 5 (149f4719.entries size greater_than '0'):
-#       6  salesforce.update_sobject 0acbf52d (LIVE): id = search
-#          current_item Id, Region__c = entries current_item entry.col2,
-#          Person_Country__c = entry.col3 -> salesforce.update_record.
-#          current_item on entries OUTSIDE a foreach = FIRST entry.
-# No catch -- a live failure fails the job (fail-fast; force_action_error
-# is rejected).
-#
-# Live backend: Campaign_Activity__c EXISTS in the benchmark org (2026-07-08
-# EntityDefinition probe: 47 fields). Exactly 6 of the recipe's 38 search
-# fields are missing -- Worked_By__c, Opportunity__c, Manager_Notes__c,
-# Meeting_Attended_At__c, Meeting_Scheduled_At__c, Opportunity_Created_At__c
-# -- all plain unmanaged __c fields, re-ensured on every seed via the
-# schema-in-seed ensure_custom_field path (idempotent; 8-recipe precedent
-# incl. recipe_88708198). The Bizible_*__c fields here are ORDINARY custom
-# fields ON Campaign_Activity__c (already present), NOT bizible2__ managed-
-# package fields -- no stand-in mapping needed. The recipe never issues a
-# SOQL query text (the search is an Id FILTER), so strict_soql_conditions
-# is NOT seeded (it would be dead state).
-# Workato-internal mock: lookup table 3817174.
-# Cleanup: the seed-created Campaign_Activity__c record is benchmark-owned
-# and deleted in the runner's finally; provisioned SCHEMA persists by
-# design (it is schema, not data).
 
 _STRUCTURE_PINS_JSON = r"""[
  {
@@ -182,12 +136,6 @@ _STRUCTURE_PINS_JSON = r"""[
 
 STRUCTURE_PINS: list[dict[str, Any]] = json.loads(_STRUCTURE_PINS_JSON)
 
-# Schema-in-seed: the 6 recipe search fields missing from the live org's
-# 47-field Campaign_Activity__c (2026-07-08 probe). ensure_custom_field is
-# idempotent (re-ensures FLS, never redeploys). Types are benchmark
-# stand-ins: the recipe only ever SELECTS these columns (they read back
-# null); Opportunity__c/Worked_By__c would be lookups in the source org --
-# a Text stand-in keeps provisioning dependency-free.
 SF_SCHEMA: list[dict[str, str]] = [
     {"sobject": SOBJECT, "field": "Worked_By__c", "sf_type": "Text"},
     {"sobject": SOBJECT, "field": "Opportunity__c", "sf_type": "Text"},
@@ -196,9 +144,6 @@ SF_SCHEMA: list[dict[str, str]] = [
     {"sobject": SOBJECT, "field": "Meeting_Scheduled_At__c", "sf_type": "DateTime"},
     {"sobject": SOBJECT, "field": "Opportunity_Created_At__c", "sf_type": "DateTime"},
 ]
-# Fields a variant may seed on the benchmark-owned record: writable plain
-# columns from the recipe's search field_list (system audit fields and the
-# 6 provisioned select-as-null stand-ins excluded).
 ALLOWED_SEED_FIELDS = {
     "Name",
     "Browser_Timezone__c",
@@ -246,9 +191,6 @@ REQUIRED_EXPECT_KEYS = (
     "record_untouched",
     "steps_absent_from_trace",
 )
-# trigger_filter_false never starts the job: the step-level pins
-# (search/lookup/update) do not exist, only the zero-action contract and the
-# untouched seeded record.
 FILTER_FALSE_EXPECT_KEYS = (
     "case",
     "executed_action_count",

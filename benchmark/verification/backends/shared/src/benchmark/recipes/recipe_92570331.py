@@ -27,45 +27,6 @@ DATE_COL = "col10"
 CUTOFF_DAYS = 365
 ROW_COLS = ("col1", "col2", "col3", "col4", "col5", "col10")
 
-# clock.scheduled_event 73e5c27a (weekly Mon-Fri 06:00 America/Los_Angeles,
-# payload-less) ->
-#   2 lookup_table.get_entries a39f8379 (mock table 3424183 '[GTM Automation]
-#     Alerts - Log'; entries expose id + nested entry.col1..col5+col10 + flat
-#     colN copies)
-#   3 FOREACH e89b1cf4 over a39f8379.entries (simple; zero entries -> zero
-#     iterations)
-#     4 IF =_('data.foreach.e89b1cf4.entry.col10').to_date less_than
-#         =365.days.ago
-#       5 lookup_table.delete_entry c66fb912 (id = foreach.id pill,
-#         ignore_not_found 'true', table 3424183)
-#
-# BYTE-LEVEL TWIN of head 92570340 (identical as-ids 73e5c27a/a39f8379/
-# e89b1cf4/c66fb912 and uuids). Exact functional deltas on the normalized
-# tree (probe-diffed): lookup_table_id 3424183 vs 3417234 (x2), IF lhs
-# entry.col10 vs entry.col5, IF rhs =365.days.ago vs =180.days.ago. The
-# schema labels (+1 col10 column) and toggleCfg/dynamicPickListSelection
-# noise are cosmetic and normalize away. Derived mechanically per triage.
-#
-# FULL MOCK (Workato-internal only): the lookup table is per-variant seeded
-# mock state; the clock trigger is payload-less and determinism comes from the
-# REQUIRED seed['now'] (=365.days.ago fail-fasts without it). No live lane,
-# no cleanup (the mock table is rebuilt from the variant seed on every run —
-# rerun-identical, probe-verified).
-#
-# Probe findings pinned by seeder/variants (current tree, 2026-07-08):
-# - delete ids are the integer _row_ids the mock assigns in seed order
-#   (0-based); the variants pin them per run via expect.deleted_ids.
-# - BOUNDARY IS CLOCK-COUPLED: the IF compares '.to_date' (renders
-#   'YYYY-MM-DD') against the ago cutoff rendered as a UTC ISO datetime
-#   string; a row dated exactly the cutoff DATE compares less_than (deleted,
-#   probe-verified on the head's boundary probe; same engine path). The seeder
-#   therefore requires every date to sit >= 2 days clear of the cutoff date.
-# - BLANK col10 would silently DELETE (''.to_date -> '' -> '' less_than
-#   '<cutoff>' is a string compare -> true) where real Workato errors the job
-#   on ''.to_date — the seeder forbids blank col10 (probe-verified).
-# - non-ISO col10 raises ValueError fail-fast (probe-verified) — the seeder
-#   requires strict YYYY-MM-DD.
-# - a missing seed['now'] fail-fasts inside =365.days.ago (probe-verified).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "73e5c27a", "skip": false, "input": {"days_of_week": "1,2,3,4,5", "time_unit": "weeks", "timezone": "America/Los_Angeles", "trigger_at": "06:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "lookup_table", "name": "get_entries", "as": "a39f8379", "skip": false, "input": {"lookup_table_id": "3424183"}, "block": []}, {"number": 3, "keyword": "foreach", "provider": "", "name": "", "as": "e89b1cf4", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"a39f8379\",\"path\":[\"entries\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"a39f8379\",\"path\":[\"entries\"]}')}", "block": [{"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_('data.foreach.e89b1cf4.entry.col10').to_date", "operand": "less_than", "rhs": "=365.days.ago"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "lookup_table", "name": "delete_entry", "as": "c66fb912", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e89b1cf4\",\"path\":[\"id\"]}')}", "ignore_not_found": "true", "lookup_table_id": "3424183"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

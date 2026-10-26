@@ -16,36 +16,6 @@ TRACK = "workato_recipe_function_fte_default_apps"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 APP_TABLE = "BENCH.APP"
-# Callable recipe function (trigger as a753c75f; parameters.full_time_equivalent
-# boolean). Templateable sibling of 116263482 — same TRY/Default App IDs/APP/
-# inactive-stop family; differences: single boolean trigger IF (no inner
-# employment-type IF) and TWO hardcoded inserts. Body wrapped in TRY (step 2):
-#   declare_list "Default App IDs" (step 3, as c556d2b4)
-#   declare_list "Final Apps List" (step 4, as a140d0a9)
-#   IF full_time_equivalent is_true (step 5):
-#     insert_to_list {app_id:"A113"} -> Default App IDs (step 6, "Pave")
-#     insert_to_list {app_id:"A298"} -> Default App IDs (step 7,
-#       "LinkedIn Learning")
-#   IF Default App IDs size > 0 (step 8):
-#     declare_variable where_clause = list.pluck('app_id').uniq
-#       .smart_join("', '") (step 9, as c32cdbf8)
-#     snowflake.search_rows_sql APP WHERE A.ID IN ('<where_clause>')
-#       limit 50000 (step 10, as 8c579c0a) -- LIVE Snowflake, BENCH.APP
-#     FOREACH rows (step 11, as 47a5b050):
-#       IF status != 'Active' (step 12) -> STOP with error
-#         "Inactive app evaluted: <app_name>" (step 13; sic in the raw recipe)
-#       insert_to_list {app_id, app_name} -> Final Apps List (step 14)
-#   return_result {apps: ____source-mapped Final Apps List} (step 15)
-# CATCH (step 16, as 3b0db497, max_retry_count=0) -> STOP with error =
-#   catch message (step 17).
-# ORDER NOTE: when the where_clause matches multiple APP rows the foreach
-# iterates them in the order Snowflake returns them. The benchmark seeds tiny
-# freshly-created tables where Snowflake returns insertion order, and the
-# multi-row variant expects that order; stop-with-error variants seed a single
-# matching row so the stop is order-proof.
-# Snowflake runs LIVE (seed.snowflake_live via harness.snowflake_live.
-# seed_tables + harness cleanup); variable lists and the recipe-function return
-# are deterministic Workato-internal mocks.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("workato_variable", "declare_list", "c556d2b4"),
     ("workato_variable", "declare_list", "a140d0a9"),

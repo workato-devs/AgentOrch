@@ -22,28 +22,6 @@ CATCH_AS = "2da14745"
 ERROR_RESPONSE_AS = "57671952"
 STOP_AS = "8ce124ba"
 
-# Structural sibling of family head 118162472 (same 684-line try/catch/return
-# skeleton; BYTE-twin 117566168 differs only in CSV header metadata). Shape:
-#   workato_api_platform.receive_request 751ec271 (request schema [] — no
-#   params; trigger seed is exactly {"request": {}})
-#   TRY(2)> snowflake.search_rows_sql d8a6f6bf (LIVE): SELECT BU_CODE AS NAME,
-#     CEIL(AVG(COMPLETION_PERCENTAGE)) AS SCORE FROM BUSINESS_PROCESS_DASHBOARD
-#     GROUP BY BU_CODE ORDER BY SCORE DESC — the DESC ranking is the
-#     observable ordering; an empty table yields businessUnitRankings [].
-#   return_response 83954e0e: 200 {businessUnitRankings: ____source over rows,
-#     name/score current_item pills} + CORS headers.
-#   CATCH 2da14745 (max_retry_count 0)> return_response 57671952: 400
-#     {error: catch message pill}; stop 8ce124ba is DEAD (return_response is
-#     terminal — catch variants expect executed_action_count 1, no stop row).
-# LOAD-BEARING seed typing (triage-proven): COMPLETION_PERCENTAGE must be a
-# NUMERIC column so CEIL(AVG(...)) returns an integral Decimal -> native int
-# (a string column implicit-casts to FLOAT and pins float 63.0). NUMBER(38,0)
-# rounds fractional seeds on insert (45.5 -> 46), so the seeder only accepts
-# whole-number completion percentages.
-# Backends: Snowflake LIVE (seeder create-or-replace, runner drops in
-# finally, READ-ONLY — snapshot equality pinned); api_platform is the
-# Workato-internal mock. Physical table name is shared across the
-# AUTOMATION_COMPASS family — never run family variants concurrently.
 DASHBOARD_TABLE = "AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD"
 DASHBOARD_COLUMNS = {
     "PROCESS_ID": "string",

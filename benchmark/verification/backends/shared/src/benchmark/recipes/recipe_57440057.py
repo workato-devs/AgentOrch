@@ -15,12 +15,6 @@ SEED_TYPE = "slack_bot_command_rerun_variant"
 TRACK = "live_slack_bot_delete_and_rerun"
 TRIGGER_PROVIDER = "slack_bot"
 TRIGGER_NAME = "bot_command_v2"
-# 'firefighter rerun' bot command (scope job, required parameters recipe_id +
-# job_id). IF the trigger ts is present the recipe deletes the original
-# command message (post_bot_reply_v2 delete_original=true, live Slack), then
-# workato_app.rerun_jobs (controlled Workato-internal mock) ALWAYS runs.
-# The ts-present variant seeds a live Slack message and threads its real
-# ts/channel into the trigger; a ts is never fabricated.
 SEED_TS_TOKEN = "$SEED_MESSAGE_TS"
 SEED_CHANNEL_TOKEN = "$SEED_MESSAGE_CHANNEL"
 EXPECTED_ACTIONS: list[tuple[str, str]] = [

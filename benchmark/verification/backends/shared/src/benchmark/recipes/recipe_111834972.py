@@ -26,16 +26,8 @@ LOOP_UPDATE_AS = "c5c84e5b"
 SEARCH2_AS = "9cd61e14"
 FINAL_UPDATE_AS = "ef42b08e"
 RETURN_AS = "c6c7d67d"
-# Anonymizer-mangled variable line, SELF-CONSISTENT by design: the update
-# target AND every read pill use the same tagged token, so the engine stores
-# the accumulation under the VERBATIM tagged id (owners==0 fallback; the
-# schema-only declare c9233398 stays nil/untouched). Do NOT "fix" the tags.
 ANON_LINE = "<anon>b1a2c3d4</anon>"
 ANON_TARGET = "<anon>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</anon>:<anon>b1a2c3d4</anon>:connection_cell"
-# Label-headed benchmark tab (the faithful production layout). The raw-
-# executor search adapter additively aliases result rows with the node
-# schema's col_<header> names, so the foreach col_Connection derefs resolve
-# while the update adapters label-decode writes into these same columns.
 SHEET_HEADERS = [
     "First Name",
     "Last Name",
@@ -48,43 +40,6 @@ SHEET_HEADERS = [
     "Recipe Note",
 ]
 
-# workato_recipe_function.execute (as edb926d8) -- dereferences
-# parameters.URL (both sheet searches); parameters.Row is declared but
-# unused. Body:
-#   2  declare_variable c9233398: connection_cell, SCHEMA ONLY (no data) ->
-#      the declared variable is nil and the declare result is {}.
-#   3  google_sheets.search_spreadsheet_rows_v4_new 2cf1ef12 (LIVE,
-#      env-redirected benchmark tab): data {col_URL: #{parameters.URL}},
-#      count 200 -> every row whose URL cell equals the trigger URL.
-#   4  logger f78d1fc6: "#{rows size}" -> the match count as a STRING.
-#   FOREACH 5 (as 80b3e785) over 2cf1ef12.rows, repeat_mode simple:
-#      6  update_variables ae4bdbd4: name = the verbatim ANON_TARGET; value =
-#         "#{var <anon line>.connection_cell}\n#{foreach.col_Connection}".
-#         Iteration 1 reads the never-written anon line -> MISSING renders ''
-#         (matching the nil declare), so the cell accumulates with a LEADING
-#         newline: '\nA' -> '\nA\nB' -> '\nA\nB\nC' (pinned verbatim).
-#      7  update_row c5c84e5b: row_number = #{foreach.row_number}; data
-#         {'col_Recipe Note': #{foreach_meta.index}} -- the whole-pill index
-#         resolves to the RAW INT 0/1/2 (USER_ENTERED stores the number; the
-#         read-back is the string '0'/'1'/'2' that step 8 matches).
-#   8  search 9cd61e14: data {'col_Recipe Note': '0', col_URL: URL} -> the
-#      index-0 row ONLY (both filters AND; a decoy with Recipe Note '0' but
-#      a different URL must not match).
-#   9  update_row ef42b08e: row_number = 9cd61e14.rows current_item
-#      row_number (current_item outside a foreach = first matched row); data
-#      {col_Connection: #{var <anon line>.connection_cell} -- the full
-#      accumulated multi-line string -- , 'col_Recipe Note': 'KEEP'}.
-#   10 return_result c6c7d67d (empty result {}).
-#
-# UNGUARDED EDGE (documented, not forced): with ZERO URL matches the foreach
-# runs 0 iterations, step-8 returns no rows, and the step-9 row_number pill
-# resolves MISSING -> the live update_row faithfully errors the job (Workato
-# has no guard here). That is a job error, not a recipe branch, so the
-# seeder requires at least one matching row.
-#
-# Backends: google_sheets LIVE (the seed fully overwrites the tab per run ->
-# deterministic reruns, no cleanup step needed per the cleanup principle);
-# workato_variable + logger + workato_recipe_function are in-executor mocks.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_recipe_function", "name": "execute", "as": "edb926d8", "skip": false, "input": {"parameters_schema_json": "[{\"name\":\"URL\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"URL\"},{\"name\":\"Row\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Row\"}]", "result_schema_json": "[]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "c9233398", "skip": false, "input": {"variables": {"schema": "[{\"name\":\"connection_cell\",\"type\":\"string\",\"optional\":true,\"label\":\"Connection Cell\",\"details\":{\"real_name\":\"Connection Cell\"},\"control_type\":\"text\",\"parent\":[\"variables\",\"data\"]}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "google_sheets", "name": "search_spreadsheet_rows_v4_new", "as": "2cf1ef12", "skip": false, "input": {"count": "200", "data": {"col_URL": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"edb926d8\",\"path\":[\"parameters\", \"URL\"]}')}"}, "sheet": "Sheet2", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "block": []}, {"number": 4, "keyword": "action", "provider": "logger", "name": "log_message", "as": "f78d1fc6", "skip": false, "input": {"message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"2cf1ef12\",\"path\":[\"rows\", {\"path_element_type\": \"size\"}]}')}", "user_logs_enabled": "false"}, "block": []}, {"number": 5, "keyword": "foreach", "provider": "", "name": "", "as": "80b3e785", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"2cf1ef12\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"2cf1ef12\",\"path\":[\"rows\"]}')}", "block": [{"number": 6, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "ae4bdbd4", "skip": false, "input": {"connection_cell": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"<anon>b1a2c3d4</anon>\",\"path\":[\"connection_cell\"]}')}\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"80b3e785\",\"path\":[\"col_Connection\"]}')}", "name": "<anon>aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee</anon>:<anon>b1a2c3d4</anon>:connection_cell"}, "block": []}, {"number": 7, "keyword": "action", "provider": "google_sheets", "name": "update_row_v4_new", "as": "c5c84e5b", "skip": false, "input": {"data": {"col_Recipe Note": "#{_dp('{\"pill_type\":\"foreach_meta\",\"provider\":\"foreach\",\"line\":\"80b3e785\",\"key\":\"index\"}')}"}, "row_number": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"80b3e785\",\"path\":[\"row_number\"]}')}", "sheet": "Sheet2", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "block": []}]}, {"number": 8, "keyword": "action", "provider": "google_sheets", "name": "search_spreadsheet_rows_v4_new", "as": "9cd61e14", "skip": false, "input": {"count": "200", "data": {"col_Recipe Note": "0", "col_URL": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_recipe_function\",\"line\":\"edb926d8\",\"path\":[\"parameters\", \"URL\"]}')}"}, "sheet": "Sheet2", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "block": []}, {"number": 9, "keyword": "action", "provider": "google_sheets", "name": "update_row_v4_new", "as": "ef42b08e", "skip": false, "input": {"data": {"col_Connection": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"<anon>b1a2c3d4</anon>\",\"path\":[\"connection_cell\"]}')}", "col_Recipe Note": "KEEP"}, "row_number": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"9cd61e14\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"row_number\"]}')}", "sheet": "Sheet2", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>", "team_drives": "my_drive"}, "block": []}, {"number": 10, "keyword": "action", "provider": "workato_recipe_function", "name": "return_result", "as": "c6c7d67d", "skip": false, "input": {}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

@@ -48,8 +48,6 @@ ADAPTERS_COLUMNS = {
     "data_center": "string",
     "name": "string",
 }
-# SELECT alias (lowercase, as _fetch_rows exposes it) -> lookup column, in
-# recipe col order (verbatim ____source parameters, current_item):
 COL_TO_ALIAS = {
     "col1": "data_center_alpha2code",
     "col2": "adapter_id",
@@ -58,28 +56,6 @@ COL_TO_ALIAS = {
     "col5": "key",
 }
 
-# clock.scheduled_event (as e809962b, daily, trigger_at/timezone inline-anon'd
-# in the TRIGGER INPUT ONLY -- the clock trigger takes no pills, so nothing
-# de-tags into SQL or seed values) -- payload-less; trigger_input must be {}.
-#   2  snowflake.run_custom_sql ec7952c8 (LIVE): verbatim 3-part JOIN over
-#      EDW_DB.WORKATO_USAGE.{ADAPTERS_MAPPING,ADAPTERS} -- _rewrite_sql maps
-#      BOTH to BENCH_DB.WORKATO_USAGE.* (longest-name-first keeps
-#      ADAPTERS_MAPPING from being clobbered by the ADAPTERS pattern;
-#      re-probed on HEAD). Composite join key (ADAPTER_ID, DATA_CENTER); the
-#      alias KEY is valid live (probed). No limit/offset on this node. The SQL
-#      has NO top-level ORDER BY: live row order is NOT guaranteed, so batch
-#      entries / final lookup rows are pinned as exact MULTISETS keyed on
-#      (col2, col1, full row); the seeder requires the projected 5-tuples to
-#      be pairwise distinct.
-#   3  lookup_table.truncate 0e4cf73e table 2257706 (mock, Workato-internal):
-#      always runs -- proven by pre-seeded stale rows (deleted_rows pin).
-#   4  lookup_table.add_batch_of_entries 4bfb1cef: ____source over
-#      ec7952c8.rows -> col1..col5 (data_center_alpha2code, adapter_id,
-#      display_name, category, key). Empty rows -> faithful no-op add.
-# IN-BATCH sibling of 130008586 (same truncate+add_batch tail; delta is the
-# read step: run_custom_sql JOIN here vs search_rows+orderby there, 5 vs 4
-# mapped columns). Snowflake is READ-ONLY here: snapshot equality
-# before/after; cleanup drops exactly the two seeded tables.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "e809962b", "skip": false, "input": {"time_unit": "days", "timezone": "<anon>Asia/Tokyo</anon>", "trigger_at": "<anon>12:00:00</anon>", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "ec7952c8", "skip": false, "input": {"output_schema": "[{\"name\":\"data_center_alpha2code\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"adapter_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"display_name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"category\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"},{\"name\":\"key\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\"}]", "sql": "SELECT\nAM.DATA_CENTER AS DATA_CENTER_ALPHA2CODE,\nAM.ADAPTER_ID,\nAM.DISPLAY_NAME,\nAM.CATEGORY,\nA.NAME AS KEY\n\nFROM EDW_DB.WORKATO_USAGE.ADAPTERS_MAPPING AM\nJOIN EDW_DB.WORKATO_USAGE.ADAPTERS A\nON AM.ADAPTER_ID = A.ID\nAND AM.DATA_CENTER = A.DATA_CENTER", "update_only": "false"}, "block": []}, {"number": 3, "keyword": "action", "provider": "lookup_table", "name": "truncate", "as": "0e4cf73e", "skip": false, "input": {"lookup_table_id": "2257706"}, "block": []}, {"number": 4, "keyword": "action", "provider": "lookup_table", "name": "add_batch_of_entries", "as": "4bfb1cef", "skip": false, "input": {"entries": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"ec7952c8\",\"path\":[\"rows\"]}')}", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"ec7952c8\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"data_center_alpha2code\"]}')}", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"ec7952c8\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"adapter_id\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"ec7952c8\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"display_name\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"ec7952c8\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"category\"]}')}", "col5": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"ec7952c8\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"key\"]}')}"}}, "lookup_table_id": "2257706"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

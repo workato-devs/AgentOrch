@@ -27,9 +27,6 @@ EXPECTED_RAW_TOOLS = [
     "workato_genie.workflow_return_result",
 ]
 ALLOWED_TOOLS = ["salesforce.search_records", "salesforce.create_record", "workato_genie.workflow_return_result"]
-# The published Genie schema requires only LastName.  AccountId is optional
-# and the raw recipe explicitly branches on its presence; keeping every field
-# fixture-required made that public branch impossible to exercise.
 REQUIRED_PARAMETERS = ("last_name",)
 
 

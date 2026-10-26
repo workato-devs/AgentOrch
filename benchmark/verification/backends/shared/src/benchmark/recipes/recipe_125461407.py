@@ -33,51 +33,6 @@ MESSAGE_FIELDS = (
 )
 REQUIRED_NON_BLANK = ("error", "recipe_name")
 
-# workato_pub_sub.subscribe_to_topic (as dc957003, topic 49960 'Agentic |
-# Errors', since_offset -3600). Body:
-#   2  declare_list f9b72e2e 'Fields' (item schema name/value)
-#   3  IF message.conversation_id present -> 4 insert_to_list ecc2e786
-#      {name 'Conversation ID', value message.conversation_id}
-#   5  IF message.skill_name present -> 6 insert_to_list 37102d1a
-#      {name 'Skill', value message.skill_name}
-#   7  IF message.tags present -> 8 insert_to_list b61832fa
-#      {name 'Tags', value message.tags}
-#   9  IF message.job_id present AND message.job_url present (compound AND)
-#      -> 10 insert_to_list c47fbcde {name 'Job', value '<job_url|job_id>'}
-#   11 slack_bot.post_bot_message edf02c48 (LIVE slack):
-#      channel = message.error_channel.presence ||
-#                account_property 'Agentic.error.channel'
-#      message pretext '*Error in Recipe `recipe_name`*',
-#      title '::  Error Details  ::',
-#      attachment_text 'error\n***************************', color danger;
-#      attachment_fields ____source = f9b72e2e.list_items
-#      (title = item.name / value = item.value).
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 full_payload_explicit_channel: all four IFs true; error_channel
-#   non-blank -> the .presence arm wins. The account property is deliberately
-#   NOT seeded: the engine's `a.presence || b` is lazy (probed), so an eager
-#   property read would fail loudly here. 6 actions; 4 field lines.
-# - variant_01 minimal_property_fallback: conversation_id/skill_name/tags
-#   blank -> IFs 3/5/7 false; job pair present -> IF 9 true; error_channel ''
-#   -> account_property fallback (seeded). 3 actions; only the Job field line.
-# - variant_02 job_pair_incomplete: job_id present but job_url blank -> the
-#   compound AND of IF 9 is false; skill_name present -> IF 5 true. Explicit
-#   channel again (property unseeded). 3 actions; only the Skill field line.
-# - variant_03 tags_and_conversation_only: conversation_id + tags present,
-#   skill_name blank, job_url present but job_id blank (IF 9 false via its
-#   FIRST condition). Property fallback channel. 4 actions; Conversation ID +
-#   Tags field lines.
-#
-# Live isolation: the resolved channel never starts with 'U', so the executor
-# routes the post to SLACK_CHANNEL_OVERRIDE regardless of which formula arm
-# won (raw_executor.slack_post_message); the variant's channel_source is
-# asserted structurally (error_channel blank vs non-blank + property seeding).
-# slack_text render order is pinned verbatim in expect.slack_text: pretext,
-# title, attachment_text, then one 'Name: value' line per inserted field.
-# No cleanup: an ordinary Slack post that is never re-read, and the Fields
-# list / pub-sub trigger are per-run Workato-internal state (cleanup
-# principle: no persistent state affects reruns).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

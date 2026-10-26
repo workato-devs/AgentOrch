@@ -22,27 +22,17 @@ SEARCH_STEP_AS = "5a86b1ad"
 SUCCESS_RETURN_AS = "426432f0"
 CATCH_AS = "c96801ed"
 CATCH_RETURN_AS = "1c0a9f98"
-# The literal 3-part name the SQL references; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.WORKATO_USAGE.ACCOUNTS_DIM).
 ACCOUNTS_TABLE = "product.workato_usage.accounts_dim"
 ACCOUNT_ID_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\","
     "\"line\":\"" + TRIGGER_AS + "\",\"path\":[\"request\", \"account_id\"]}')}"
 )
-# Verbatim recipe SQL: select * with a table alias, the account_id pill
-# interpolated inside single quotes (parameters.schema [] — no binds) and a
-# BARE boolean predicate `and ad.is_latest`.
 RAW_SQL_TEMPLATE = (
     "select *\nfrom product.workato_usage.accounts_dim ad\n"
     "where ad.account_id = '" + ACCOUNT_ID_PILL + "'\nand ad.is_latest"
 )
 RAW_LIMIT = "1"
 RAW_OFFSET = "0"
-# The 42 response fields, keyed exactly like the physical columns (each
-# response pill is <column>_<8hex> and the executor strips the suffix). The
-# seed spec is the FULL column set: `select *` returns whatever the physical
-# table has, and a missing column would silently null its response field.
 STRING_KEYS = (
     "account_id",
     "account_name",
@@ -97,56 +87,9 @@ ACCOUNTS_COLUMNS: dict[str, str] = (
     | {key: "float" for key in FLOAT_KEYS}
 )
 RESPONSE_KEYS = tuple(sorted(ACCOUNTS_COLUMNS))
-# String columns that may legitimately be EMPTY ('' round-trips as '' on a
-# VARCHAR column — probe-backed; a live account that was never hard-deleted
-# carries '').
 EMPTY_OK_STRING_KEYS = {"hard_deleted_date"}
 SQL_SAFE_TEXT_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9 ._-]*")
 
-# workato_api_platform.receive_request (as 458af9a1, request schema pins ONE
-# required string account_id, dereferenced once INSIDE the SQL text of step
-# 3). Shares the exact as-id skeleton 458af9a1/5a86b1ad/426432f0/c96801ed/
-# 1c0a9f98 with the 108516287/108333874 twin pair but is NOT a byte-twin
-# (1781/1758 diff lines — different table, `select *`, and a 42-field
-# response) — fresh build. Body = one TRY (step 2):
-#   3  snowflake.search_rows_sql 5a86b1ad (LIVE): select * from
-#      product.workato_usage.accounts_dim ad where ad.account_id = '<pill>'
-#      and ad.is_latest — table alias + bare BOOLEAN predicate + pill in
-#      quotes; limit '1' offset '0' (' limit 1' appended by
-#      _append_limit_offset; offset 0 is dropped). The seeder allows at most
-#      ONE is_latest row per account, so `limit 1` never has to choose
-#      between matches (order-non-determinism guard).
-#   4  workato_api_platform.return_response 426432f0 (mock, TERMINAL): 200,
-#      response = OBJECT of ALL 42 fields via rows[current_item].<col_hash>
-#      pills (account_id_54508f65 ... is_deleted_60962d1e). Full-pill fields
-#      resolve NATIVELY: BOOLEAN -> true/false, FLOAT -> floats (ints seeded
-#      into FLOAT columns come back x.0 — NUMBER(38,0) would round
-#      fractional seeds, so every numeric column is seeded FLOAT), VARCHAR
-#      -> verbatim strings incl. ''. On the empty-account path every pill is
-#      MISSING and the response renders ALL 42 keys as JSON null (pin nulls,
-#      NOT '' — resolve_value maps MISSING dict values to None).
-#   CATCH c96801ed (max_retry_count 0):
-#   6  return_response 1c0a9f98 (TERMINAL): 500 with NO response input —
-#      the adapter renders response {} (bodyless 500). No trailing stop.
-#
-# Branch mapping:
-# - account_found_200: 1 is_latest row for the requested account + 1 STALE
-#   row (is_latest false, different plan/arr — proves the bare boolean
-#   bites) + 1 other-account latest decoy (proves the account_id filter) ->
-#   200 with all 42 typed fields pinned.
-# - account_not_found_200: the requested account has ONLY a stale row (plus
-#   another account's latest row) -> 0 rows -> 200 with all 42 fields null.
-# - catch_500: seed.force_action_error on 5a86b1ad -> bodyless 500 after 1
-#   action.
-#
-# Backends: Snowflake runs LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally). The API platform
-# trigger/responses are deterministic Workato-internal mocks. READ-ONLY on
-# Snowflake. ACCOUNTS_DIM is not shared with any other registered recipe
-# today, but it lives in the same WORKATO_USAGE schema as the
-# 108516287/108333874 dim tables — keep the cluster's live lanes serial.
-# The SQL uses no CURRENT_DATE/TIMESTAMP: seed.snowflake_live.current_time
-# is rejected.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

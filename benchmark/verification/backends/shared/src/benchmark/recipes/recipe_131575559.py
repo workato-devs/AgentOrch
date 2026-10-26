@@ -17,22 +17,6 @@ TRIGGER_PROVIDER = "google_sheets"
 TRIGGER_NAME = "updated_polling_spreadsheet_row_v4_2"
 COUNT_TABLE_ID = "60578"
 PROFILES_TABLE_ID = "28114"
-# Sheets updated-row trigger (as 5624e739, watchfield 3 = UTM Medium) with a
-# TRIGGER FILTER col_3 equals_to 'attendee-referral'. Body wrapped in TRY:
-#   get_records 43bf3ae3 (table 60578 'Referral Programme Count',
-#     UTM Source ID eq col_2)
-#   IF records.size != '1':
-#     logger.log_message 0f8004fb ('Error: <size> found, Referral number
-#       <col_2>,<col_9>')
-#     get_records 3bf8cc33 (table 28114 'Profiles', Record ID eq col_2)
-#     add_record 5945946c (table 60578: UTM Source ID/Name/Email from the
-#       Profiles first row pills, Number of Referrals Registered = '1')
-#   ELSE:
-#     update_record 4cf28e5c (table 60578, record_id = first matched row's
-#       Record ID, Number of Referrals Registered = current + 1)
-# CATCH (step 10, max_retry_count 0) -> STOP (step 11, stop_with_error false).
-# Both tables are Workato-internal datatable mocks; the trigger row is a
-# deterministic seeded payload (no live Sheets state is read or written).
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("workato_db_table", "get_records", "43bf3ae3"),
     ("logger", "log_message", "0f8004fb"),

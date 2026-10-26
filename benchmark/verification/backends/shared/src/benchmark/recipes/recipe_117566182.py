@@ -22,9 +22,6 @@ SUCCESS_RETURN_AS = "83954e0e"
 CATCH_AS = "2da14745"
 CATCH_RETURN_AS = "57671952"
 STOP_STEP_AS = "8ce124ba"
-# The literal 2-part name the SQL references; MUST be the registered
-# snowflake_live table key so _rewrite_sql maps it onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD).
 DASHBOARD_TABLE = "AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD"
 RAW_SQL = (
     "SELECT \n  STATUS AS NAME,\n  COUNT(*) AS VALUE\n"
@@ -35,9 +32,6 @@ RAW_SQL = (
     "    ELSE 4\n  END"
 )
 RAW_LIMIT = "50000"
-# ORDER BY CASE buckets, in recipe order. NOTE the status literal is
-# 'In Progress' (space) — sibling 118162476 uses 'In-Progress' (hyphen);
-# never cross-contaminate the seed statuses.
 CASE_BUCKETS = ("Completed", "In Progress", "Planned")
 EXPECTED_COLUMNS = {
     "PROCESS_ID": "string",
@@ -46,44 +40,6 @@ EXPECTED_COLUMNS = {
     "STATUS": "string",
 }
 
-# workato_api_platform.receive_request (as 751ec271, request schema [] — NO
-# request field is ever dereferenced). Byte-identical BODY twin of 118162479
-# (original flow 61021192 v10; raw_recipe.md differs only in header lines
-# 1 + 11-14); structural sibling
-# of registered 118162478 (same shell as-ids/uuids, delta = comment/sql/
-# output_schema/response mapping). Body = one TRY (step 2):
-#   3  snowflake.search_rows_sql d8a6f6bf (LIVE): RAW_SQL, limit '50000' —
-#      WHERE PROCESS_HIERARCHICAL_LEVEL = 4 filters to level-4 "projects";
-#      GROUP BY STATUS; ORDER BY CASE Completed->1, 'In Progress'->2,
-#      Planned->3, ELSE 4 (any other status sorts LAST).
-#   4  workato_api_platform.return_response 83954e0e (mock, TERMINAL): 200,
-#      response.projectsByStatus = ____source over rows, one {name, value}
-#      per group. Full-pill fields resolve NATIVELY: COUNT(*) arrives
-#      Decimal -> int (_json_value), so `value` is an INT in the response
-#      (probe-verified 2026-07-08; the "pin strings" note in the batch_C
-#      triage is wrong for this shape — 118162478's string pins come from
-#      string-TYPED seed columns, not from interpolation).
-#   CATCH 2da14745 (max_retry_count 0):
-#   6  return_response 57671952 (TERMINAL): 400 {error: catch.message}
-#   7  stop 8ce124ba: DEAD CODE — return_response is terminal, so the stop
-#      never traces (probe-verified; the catch trace is exactly 1 action).
-#
-# Branch mapping:
-# - status_counts_200: level-4 rows across the named buckets (+ at most ONE
-#   ELSE-bucket status) + non-level-4 decoys; seed insertion order differs
-#   from CASE order so the live ORDER BY is proven. 2 actions.
-# - no_level4_200: only non-level-4 rows (WHERE bites, table NOT empty) ->
-#   GROUP BY yields 0 rows -> 200 {projectsByStatus: []}. 2 actions.
-# - catch_400: seed.force_action_error on d8a6f6bf (the static SQL has no
-#   trigger-controllable live failure) -> 400 {error} after 1 action; NO
-#   snowflake state is seeded (the forced error fires before the adapter).
-#
-# Backends: Snowflake runs LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally). The API platform
-# trigger/responses are deterministic Workato-internal mocks. READ-ONLY on
-# Snowflake (snapshot equality verifier-pinned). The physical
-# AUTOMATION_COMPASS tables are SHARED with 118162477/118162478/118162479 —
-# never run family lanes concurrently.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

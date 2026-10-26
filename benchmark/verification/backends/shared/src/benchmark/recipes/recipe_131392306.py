@@ -16,51 +16,6 @@ TRACK = "live_google_sheets_slack_webhook_event_registration"
 TRIGGER_PROVIDER = "workato_webhooks"
 TRIGGER_NAME = "new_event"
 WEBHOOK_SUFFIX = "formfills-apj"
-# APJ event-registration form-fill webhook (trigger as a933e72a; payload
-# firstname/lastname/email/company/campaign_id/phone/comments/time_zone/
-# leadid/sfdcid/joinURL) with a RUNTIME TRIGGER FILTER:
-#   payload.campaign_id equals_to job_context.parameters.marketo_id
-# (a non-matching campaign_id runs ZERO actions). -> TRY:
-#   #3 google_sheets.search_spreadsheet_rows_v4_new (as 4cd73a31) sheet
-#      '01 Registration List - Exec Program' by col_Email = payload.email,
-#      count 200. The raw spreadsheet id comes from
-#      job_context.parameters.event_kit_gsheet_id but the live adapter targets
-#      the configured SHEETS_SPREADSHEET_ID/SHEETS_TAB (redirect-inert).
-#   #4 workato_service.call_service flow 45178540 'Get Collaboration Tools &
-#      Job Title' (as 33035003) request {lead_id: payload.leadid}; the reply
-#      is deterministic Workato-internal seed state
-#      (seed.workato_service_replies keyed '33035003').
-#   IF#5 search rows size != '0' ->
-#     #6 update_row_v4_new on the found row_number: 19 col_* values (webhook
-#        names, service reply fields, col_Status PASSED THROUGH from the found
-#        row's col_Status) — the adapter writes col_-stripped headers, so the
-#        live sheet carries the seeded col_* search columns AND the stripped
-#        write columns (86735472 precedent).
-#   ELSE#7 -> #8 add_spreadsheet_row_v4: same values plus col_Status
-#        'Waitlisted' and col_ID = payload.leadid.
-#   #9 slack_bot.post_bot_message (as 35a6b894) channel C02FSQ910JH (live
-#      override), 2 attachment_buttons (bot_command 66973554 Accept/Reject
-#      with leadid+email params — buttons/title_link/color are not part of
-#      rendered slack_text), title 'JPN-#{event_date}-Women Leadership Luncheon',
-#      6 attachment_fields.
-# CATCH#10 (as 36d3b7d0, max_retry_count=3; engine single-shot convention) ->
-#   #11 workato_service.call_service flow 45178280 'APJ Recipe Errors' (as
-#       50073cae) error_message '(first last - email)#{catch.message}' +
-#       job_context job_id/job_url/recipe_id pills, stop_recipe 'false'
-#   #12 stop (stop_with_error=true, trace-only stop marker).
-#
-# TWIN of 131392307 (byte-identical skeleton; diff = bot_command id 66973554
-# vs 66675913, button command string literal, slack title suffix 'Women
-# Leadership Luncheon' vs 'Executive Program').
-#
-# KNOWN ENGINE GAP (dry-replay confirmed, blocks the ELSE/add variants at
-# output-write time): the add step's sheet_name pill reads search output
-# ['sheet'], which the live sheets client does not expose ('tab' instead);
-# google_sheets_add_row passes the raw resolve_value result into args, so the
-# MISSING sentinel lands in args['sheet'] / the trace and run_recipe's
-# json.dumps(result) raises TypeError. Needs the MISSING->None coercion in
-# raw_executor.google_sheets_add_row before the add-branch variants can run.
-# Expectations here deliberately omit args['sheet'] so they hold once fixed.
 SEARCH_AS = "4cd73a31"
 CALL_AS = "33035003"
 UPDATE_AS = "fb8e9257"
@@ -123,7 +78,6 @@ ALLOWED_TOOLS: list[str] = [
     "slack.post_message",
 ]
 
-# --- verbatim raw pill templates (drift -> RuntimeError) ---
 
 
 def _payload_pill(field: str) -> str:
@@ -177,7 +131,6 @@ ERROR_MESSAGE_TEMPLATE = (
     "(" + _payload_pill("firstname") + " " + _payload_pill("lastname") + " - "
     + _payload_pill("email") + ")" + CATCH_MESSAGE_PILL
 )
-# The shared write mapping (update data / add columns): col_* -> pill.
 _SHARED_WRITE_PILLS: dict[str, str] = {
     "col_City": _reply_pill("Company", "city"),
     "col_Collaboration Tool used": _reply_pill("Company", "tools"),

@@ -33,8 +33,6 @@ F_VIEW = "e0388988_bb54_4e13_942a_71a7a50db3b7"
 F_CREATED = "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
 F_UPDATED = "61aae604_a95e_4519_9091_bb0bf754a67f"
 EXCEPTION_ROW_KEYS = (F_RECID, F_EMAIL, F_TEAM, F_VIEW, F_CREATED, F_UPDATED)
-# The exact SQL text the trace must carry after pill interpolation
-# (workspace_ids inline + privatequery suffix); :parameter stays a bind.
 SQL_TEMPLATE = (
     "SELECT distinct(r.relationid), u.username, a.name as application_name, "
     "w.name as workspace_name\n"
@@ -49,8 +47,6 @@ SQL_TEMPLATE = (
     "AND wu.workspaceid in ({ws})\n"
     "{suffix}"
 )
-# Bare 1-part names in the SQL: snowflake_live maps each registered key onto
-# <SNOWFLAKE_DATABASE>.BENCH.<NAME> (identifier redirect probe-verified).
 TABLE_SPECS: dict[str, dict[str, str]] = {
     "DEMOINFRA_RELATION": {"RELATIONID": "integer", "USERID": "integer", "INSTANCEID": "integer"},
     "DEMOINFRA_USERS_WORKSPACES": {"RELATIONID": "integer", "WORKSPACEID": "integer"},
@@ -60,43 +56,6 @@ TABLE_SPECS: dict[str, dict[str, str]] = {
     "DEMOINFRA_WORKSPACES": {"ID": "integer", "NAME": "string"},
 }
 
-# slack_bot.dynamic_menu '[CB] Search by User' (as 28312336), parameters
-# {uemail optional, workspace_ids required} + typeahead.value.
-#   2 workato_variable.declare_variable 97ffa775: privatequery declared with
-#     SCHEMA ONLY (no data) -> nil; a nil pill interpolates '' in the SQL.
-#   3 workato_db_table.get_records 3c62d745 (mock table 12788 '[CB] | DT-001
-#     | User Exception'): filter email eq =parameters.uemail.downcase.
-#   IF 4: records[current_item].RecordID blank (current_item = FIRST record;
-#     zero rows -> blank true):
-#     5 workato_variable.update_variables 7f8ed08b privatequery =
-#       'AND u.isprivate = FALSE' targeting the DECLARED step.
-#   6 snowflake.run_custom_sql 18dd84d9 (LIVE): 6 bare DEMOINFRA_* tables,
-#     :parameter bind = '%'+typeahead.value.downcase+'%', workspace_ids pill
-#     interpolated inline into IN (...), privatequery pill appended (nil ->
-#     '').
-#   7 slack_bot.generate_menu_options 9c70908d: options ____source = rows;
-#     label = username.gsub(".onmicrosoft.com", "") + ' || ' +
-#     application_name + ' || ' + workspace_name; value = relationid pill
-#     (single-pill interpolation preserves the INT type - live NUMBER comes
-#     back as int).
-#
-# Branch mapping (probe-verified on the current tree):
-# - not_excepted_private_hidden / zero_matches_menu_empty: no exception row
-#   matches uemail.downcase -> IF true -> suffix appended -> private users
-#   hidden; 5 executed actions.
-# - excepted_private_visible: an exception row matches -> IF false -> suffix
-#   renders '' -> private users visible; 4 executed actions.
-# Twin note: 102760065 is the mechanical near-twin (table 13516, SQL drops
-# the DEMOINFRA_WORKSPACES join, 2-segment labels).
-#
-# Live semantics pinned by variants:
-# - The SQL carries NO ORDER BY: multi-row menus are verified as a MULTISET
-#   (expect.menu_options_ordered false); single/empty results pin exact
-#   order.
-# - lower() on both LIKE arms: a mixed-case typeahead matches case-
-#   insensitively against usernames AND application names.
-# - The exception-table filter downcases uemail before the eq match.
-# - isprivate is a real BOOLEAN column; the suffix compares = FALSE.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "28312336", "skip": false, "input": {"dynamic_menu_name": "[CB] Search by User", "parameters": "[{\"name\":\"uemail\",\"type\":\"string\",\"optional\":true,\"control_type\":\"text\",\"label\":\"Uemail\"},{\"name\":\"workspace_ids\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Workspace ids\"}]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "97ffa775", "skip": false, "input": {"variables": {"schema": "[{\"name\":\"privatequery\",\"type\":\"string\",\"optional\":true,\"label\":\"privatequery\",\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "workato_db_table", "name": "get_records", "as": "3c62d745", "skip": false, "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "15ca98b2-7c7b-4c04-b713-f5d783b6b318": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "79c522be-02a9-4d35-b94b-8dfa4960a2c2": "string", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "e0388988-bb54-4e13-942a-71a7a50db3b7": "string", "filters": [{"field_id": "79c522be-02a9-4d35-b94b-8dfa4960a2c2", "op_default": "eq", "value_default": "=_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"28312336\",\"path\":[\"parameters\",\"uemail\"]}').downcase"}], "limit": "100", "order_direction": "asc", "table_id": "12788"}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3c62d745\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}", "operand": "blank", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "7f8ed08b", "skip": false, "input": {"name": "690f29ef-508d-4f97-854a-2cc692253a3c:97ffa775:privatequery", "privatequery": "AND u.isprivate = FALSE"}, "block": []}]}, {"number": 6, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "18dd84d9", "skip": false, "input": {"output_schema": "[{\"control_type\":\"number\",\"label\":\"Relationid\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"relationid\"},{\"control_type\":\"text\",\"label\":\"Username\",\"type\":\"string\",\"name\":\"username\"},{\"control_type\":\"text\",\"label\":\"Application Name\",\"type\":\"string\",\"name\":\"application_name\",\"optional\":false},{\"name\":\"workspace_name\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Workspace name\"}]", "parameters": {"data": {"parameter": "='%' + _dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"28312336\",\"path\":[\"typeahead\",\"value\"]}').downcase + '%'"}, "schema": "[{\"name\":\"parameter\",\"type\":\"string\",\"optional\":true,\"label\":\"parameter\",\"details\":{\"real_name\":\"parameter\"},\"control_type\":\"text\"}]"}, "sql": "SELECT distinct(r.relationid), u.username, a.name as application_name, w.name as workspace_name\nFROM DEMOINFRA_RELATION r \nINNER JOIN DEMOINFRA_USERS_WORKSPACES wu ON wu.relationid = r.relationid \nLEFT JOIN DEMOINFRA_USERS u ON u.id = r.userid \nLEFT JOIN DEMOINFRA_INSTANCES i ON r.instanceid = i.id \nLEFT JOIN DEMOINFRA_APPLICATIONS a ON i.applicationid = a.id\nINNER JOIN DEMOINFRA_WORKSPACES w ON w.id = wu.workspaceid\nWHERE (lower(u.username) like :parameter \nOR lower(a.name) like :parameter) \nAND wu.workspaceid in (#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"28312336\",\"path\":[\"parameters\", \"workspace_ids\"]}')})\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"97ffa775\",\"path\":[\"privatequery\"]}')}", "update_only": "false"}, "block": []}, {"number": 7, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "9c70908d", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\"]}')}", "label": "=_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"username\"]}').gsub(\".onmicrosoft.com\", \"\")+ ' || ' + _dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"application_name\"]}') + ' || ' + _dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"workspace_name\"]}')", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"relationid\"]}')}"}, "use_option_groups": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

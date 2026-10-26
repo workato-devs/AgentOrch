@@ -31,44 +31,10 @@ QUEST_CODE_VALUE = "SOCIAL_FOLLOW_X"
 CREDITED_TZ = "Asia/Tokyo"
 CREDITED_FMT = "%m/%d/%Y"
 
-# google_sheets.new_spreadsheet_row_v4 (as 887471b0, anon-tagged sheet name —
-# trigger identity only; the recipe dereferences ONLY columns.col_1 Username,
-# seeded trigger event, no live sheet read):
-#   2  workato_db_table.get_records 326a6292 table 28116 '[WWW] Quest List',
-#      filter dfbaed6a… Quest Code op_default eq value_default
-#      'SOCIAL_FOLLOW_X' (LITERAL). UNGUARDED: an empty quest list still runs
-#      and add_record silently writes null Quest Name/Code (probe-verified;
-#      the mock then DROPS the null cells) — the seeder therefore requires
-#      exactly ONE SOCIAL_FOLLOW_X config row in every seed.
-#   3  workato_db_table.get_records 81cd7472 table 28114 'Profiles', filter
-#      849bb2f2… X Handle op_default eq #{columns.col_1}.
-#   IF 4: 81cd7472 records size equals_to '0' ->
-#     STOP 5 (as a1d17201, stop_with_error 'false'). ENGINE SEMANTICS
-#     (probe-verified 2026-07-08): traces as the bare marker
-#     {number: 5, as: 'a1d17201', keyword: 'stop', stopped: true}, LAST row.
-#   6  workato_db_table.add_record f6259b09 table 28115 '[WWW] Quest
-#      Activity' with EXACTLY five parameters: Quest Name/Quest Code from the
-#      quest-list FIRST record (current_item outside foreach), User ID from
-#      the profile FIRST record's Email (multi-match keeps the first —
-#      probe-verified), Status literal 'CREDITED', Credited Date =
-#      =now.in_time_zone('Asia/Tokyo').strftime('%m/%d/%Y') — a CLEAN IANA
-#      zone (unlike family siblings 128894355/131671865 whose tz literal is
-#      corrupted); every variant pins seed.now and the engine refuses to run
-#      without it (probe-verified fail-fast). NO Points Earned field.
-#
-# NOT a twin of 128894355 despite adjacent ids (different step trees: 355
-# gates on col_2=='WOWCampaign', dedupes against 28115 and credits from
-# SHEET col_9 with Points '150'; 356 reads quest config + profile and
-# credits from the PROFILE email without points). Same family as 131671865
-# (tables 28114/28115) — variant data kept semantically disjoint (d356
-# handles/emails). All backends are Workato-internal (three db tables +
-# seeded trigger): full mock per backend policy, per-variant isolated state
-# files, no cleanup (every seed fully overwrites all three tables).
 
 _RAW_PIN_JSON = r"""{"as": "887471b0", "block": [{"as": "326a6292", "block": [], "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "12845ae7-4502-4d82-ae72-1a498541a729": "string", "219c0b22-aec2-49c6-8e0a-c3d72ed54d05": "string", "21f15718-0e6b-4dc5-bda7-9f6042f9693e": "string", "3fe31194-805d-4246-9854-ab50c86c9335": "string", "4078529a-a6f3-47d8-a6c6-4b18a2fcbcd3": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "64a44694-6402-4f3f-8e14-ba3c8d40930c": "string", "6fc4cac9-667d-4fcf-8b95-bc9f153bd894": "string", "7c5a3d20-b3fc-482a-adff-f81ac9ffbeda": "string", "8fa38c33-de3b-4b26-ba48-f97a1cb3735a": "integer", "9419ff83-3758-47d8-9fb8-921029e44da2": "string", "98a72f25-f740-4196-be2c-e2a9564c015e": "date_time", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "bf9f57b0-3c95-4ed5-8506-fbd53810c3fc": "string", "dfbaed6a-6b14-4c0c-8688-58198110c5a8": "string", "e00beaa8-ab54-4084-b92f-02f9e6619834": "string", "f25f6faa-a46d-43a0-abe0-fbdcec31a54f": "date_time", "filters": [{"field_id": "dfbaed6a-6b14-4c0c-8688-58198110c5a8", "op_default": "eq", "value_default": "SOCIAL_FOLLOW_X"}], "limit": "100", "order_direction": "asc", "table_id": "28116"}, "keyword": "action", "name": "get_records", "number": 2, "provider": "workato_db_table", "skip": false}, {"as": "81cd7472", "block": [], "input": {"0401fed3-ffdb-4fa6-af29-bad39ca1c77c": "string", "0581d990-661f-4227-b771-7356ae2cdc0f": "string", "11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "30950d95-ace6-4205-b040-8e1a791882ea": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "6d2ae745-a253-4612-95bc-12c77b1d6fc6": "integer", "849bb2f2-0bed-4f2d-8bd1-7ddad17d212b": "string", "928cfe04-a1da-4cb6-aecd-4ced8c098d3a": "date_time", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "cd1bee5a-435e-4d8d-a4cd-39d297e6d8c3": "string", "eda7541e-cc46-47d8-a221-aa2ff0f19a66": "string", "filters": [{"field_id": "849bb2f2-0bed-4f2d-8bd1-7ddad17d212b", "op_default": "eq", "value_default": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"google_sheets\",\"line\":\"887471b0\",\"path\":[\"columns\", \"col_1\"]}')}"}], "limit": "100", "order_direction": "asc", "table_id": "28114"}, "keyword": "action", "name": "get_records", "number": 3, "provider": "workato_db_table", "skip": false}, {"as": "", "block": [{"as": "a1d17201", "block": [], "input": {"stop_with_error": "false"}, "keyword": "stop", "name": "", "number": 5, "provider": "", "skip": false}], "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"81cd7472\",\"path\":[\"records\", {\"path_element_type\": \"size\"}]}')}", "operand": "equals_to", "rhs": "0"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": "", "number": 4, "provider": "", "skip": false}, {"as": "f6259b09", "block": [], "input": {"parameters": {"13b82b43_2f7a_4d98_a50d_1a5af68bc4c3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"326a6292\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"3fe31194_805d_4246_9854_ab50c86c9335\"]}')}", "3c779a6b_a7ca_44fc_acb8_69ce179d9584": "=now.in_time_zone('Asia/Tokyo').strftime('%m/%d/%Y')", "614e8425_fe37_4acd_b67b_1ed72fc8568a": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"81cd7472\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"30950d95_ace6_4205_b040_8e1a791882ea\"]}')}", "68240f61_d77a_49f4_8252_24fc373a730d": "CREDITED", "acc76697_ddd7_4d13_87fc_5a6e0b5d6860": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"326a6292\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"dfbaed6a_6b14_4c0c_8688_58198110c5a8\"]}')}"}, "table_id": "28115"}, "keyword": "action", "name": "add_record", "number": 6, "provider": "workato_db_table", "skip": false}], "input": {"sheet": "<anon>John Smith (SocialMedia)</anon>", "spreadsheet": "<anon>2AbC3DeF4GhI5JkL6MnO7PqR8StU9VwX0YzA1BcD2EfG</anon>"}, "keyword": "trigger", "name": "new_spreadsheet_row_v4", "number": 1, "provider": "google_sheets", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
 
-# Quest List 28116 columns (underscored output-schema ids).
 QL_RECORD_ID = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 QL_QUEST_NAME = "3fe31194_805d_4246_9854_ab50c86c9335"
 QL_QUEST_DESC = "219c0b22_aec2_49c6_8e0a_c3d72ed54d05"
@@ -93,7 +59,6 @@ QUEST_COLUMNS = (
     QL_END, QL_TYPE, QL_TRACKING, QL_UTM, QL_CREATED, QL_UPDATED,
 )
 
-# Profiles 28114 columns.
 PR_RECORD_ID = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 PR_NAME = "0581d990_661f_4227_b771_7356ae2cdc0f"
 PR_EMAIL = "30950d95_ace6_4205_b040_8e1a791882ea"
@@ -110,7 +75,6 @@ PROFILE_COLUMNS = (
     PR_LINKEDIN, PR_X_HANDLE, PR_INVITE_TS, PR_STATUS, PR_CREATED, PR_UPDATED,
 )
 
-# Quest Activity 28115 columns (add_record parameter ids).
 AC_RECORD_ID = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 AC_QUEST_NAME = "13b82b43_2f7a_4d98_a50d_1a5af68bc4c3"
 AC_QUEST_CODE = "acc76697_ddd7_4d13_87fc_5a6e0b5d6860"

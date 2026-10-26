@@ -24,46 +24,12 @@ LIST_STEP_AS = "a75ef396"
 INSERT_STEP_AS = "6e2a450c"
 MENU_STEP_AS = "c4692198"
 FOREACH_AS = "0fcffae4"
-# Data-table 6258 'Persona Data Table' columns, UNDERSCORE-normalized (the
-# raw filter carries the dash form; workato_db_filters normalizes dashes to
-# underscores, and the record and foreach pills read the underscore keys).
 RECORD_ID_FIELD = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 PERSONA_FIELD = "4e0b03d5_c280_4c9c_8cec_90f04ab70632"
 CREATED_AT_FIELD = "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
 UPDATED_AT_FIELD = "61aae604_a95e_4519_9091_bb0bf754a67f"
 ROW_FIELDS = (RECORD_ID_FIELD, PERSONA_FIELD, CREATED_AT_FIELD, UPDATED_AT_FIELD)
 
-# slack_bot.dynamic_menu 'Persona List X-Ray' (as 0b7d4ee2; parameter
-# persona_input declared optional and NEVER dereferenced — only
-# typeahead.value is read, via the underscore data-call
-# _('data.slack_bot.0b7d4ee2.typeahead.value').downcase):
-#   2  workato_db_table.get_records def244aa table 6258 (MOCK), filter
-#      [{field_id 4e0b03d5-…, op_default isnotnull}] — rows whose Persona is
-#      null, '' or MISSING are dropped by the mock filter BEFORE the loop
-#      (probed; limit '200'/order_direction 'asc' are editor inputs the
-#      executor does not forward — mock returns seed order).
-#   3  workato_variable.declare_list a75ef396 'Persona'
-#      (item schema {persona_type}) — starts empty on every run.
-#   FOREACH 4 (as 0fcffae4) over step-2 records, repeat_mode simple:
-#     IF 5: persona.downcase CONTAINS typeahead.downcase (BOTH sides
-#        downcased; contains('') is TRUE, so a blank typeahead admits every
-#        filtered row — faithful Ruby semantics):
-#       6  workato_variable.insert_to_list 6e2a450c {persona_type: persona}
-#          location end, target 'b4cd73d3-…:a75ef396' (no field suffix —
-#          appends to the declared list's list_items).
-#   7  slack_bot.generate_menu_options c4692198 (ALWAYS runs): vestigial
-#      `option_groups [{}]` + use_option_groups 'false' routes to the FLAT
-#      options path (engine fix 88467916, re-probed on this recipe
-#      verbatim); options ____source = a75ef396.list_items, label = value =
-#      persona_type; an empty list is a valid [] options payload.
-#
-# All backends are Workato-internal (data table read-only + variable list +
-# deterministic menu payload): mock per backend policy, no cleanup. The
-# recipe never writes to table 6258, so the mock snapshot must be identical
-# before and after every variant. Menu option order is DETERMINISTIC: seed
-# row order -> filtered record order -> insert order.
-# The recipe has no try/catch: force_action_error would fail the whole run
-# instead of exercising a branch, so the seeder rejects it.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "0b7d4ee2", "skip": false, "input": {"dynamic_menu_name": "Persona List X-Ray", "parameters": "[\n  {\n    \"control_type\": \"text\",\n    \"label\": \"Persona Input\",\n    \"name\": \"persona_input\",\n    \"type\": \"string\",\n    \"optional\": true\n  }\n]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_db_table", "name": "get_records", "as": "def244aa", "skip": false, "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "4e0b03d5-c280-4c9c-8cec-90f04ab70632": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "filters": [{"field_id": "4e0b03d5-c280-4c9c-8cec-90f04ab70632", "op_default": "isnotnull"}], "limit": "200", "order_direction": "asc", "table_id": "6258"}, "block": []}, {"number": 3, "keyword": "action", "provider": "workato_variable", "name": "declare_list", "as": "a75ef396", "skip": false, "input": {"list_item_schema_json": "[{\"name\":\"persona_type\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Persona type\"}]", "name": "Persona"}, "block": []}, {"number": 4, "keyword": "foreach", "provider": "", "name": "", "as": "0fcffae4", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"def244aa\",\"path\":[\"records\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"def244aa\",\"path\":[\"records\"]}')}", "block": [{"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_('data.foreach.0fcffae4.4e0b03d5_c280_4c9c_8cec_90f04ab70632').downcase", "operand": "contains", "rhs": "=_('data.slack_bot.0b7d4ee2.typeahead.value').downcase"}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "workato_variable", "name": "insert_to_list", "as": "6e2a450c", "skip": false, "input": {"list_item": {"persona_type": "=_('data.foreach.0fcffae4.4e0b03d5_c280_4c9c_8cec_90f04ab70632')"}, "location": "end", "name": "b4cd73d3-a40c-4d76-9336-739ad0a1f9f4:a75ef396"}, "block": []}]}]}, {"number": 7, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "c4692198", "skip": false, "input": {"option_groups": [{}], "options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a75ef396\",\"path\":[\"list_items\"]}')}", "label": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a75ef396\",\"path\":[\"list_items\", {\"path_element_type\": \"current_item\"}, \"persona_type\"]}')}", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a75ef396\",\"path\":[\"list_items\", {\"path_element_type\": \"current_item\"}, \"persona_type\"]}')}"}, "use_option_groups": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

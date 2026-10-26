@@ -10,19 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_97310724
 
 
-# Weekly clock trigger runs a Snowflake custom SQL aggregate -- an UNALIASED
-# SPACED count ('count (distinct ad.account_id)') over workato_usage
-# workspace_dim/accounts_dim/flows/flow_settings joins filtered to running
-# flows with zero_retention enabled, with ORDER BY ad.current_arr_usd on the
-# implicit-GROUP-BY aggregate (live-accepted) -- then loops the single result
-# row and appends Count/LastRunAt to the live Google Sheet
-# (google_sheets.add_spreadsheet_row_v4, sheet ZeroRetention).
-# Derived mechanically from REGISTERED recipe_97310640.py: identical node
-# skeleton and as-ids (f71a8fa2/a41835e7/08e8617f/f28be309); deltas = SQL
-# text, the unaliased spaced count column (schema + foreach pill path), the
-# sheet name, and the foreach OMITTING repeat_mode (only 'batch' is
-# special-cased by the executor, absence == per-item like the twin's
-# 'simple').
 RECIPE_ID = "97310724"
 SEED_TYPE = "clock_snowflake_sql_to_sheet_zero_retention_variant"
 TRACK = "live_snowflake_read_sheet_append"

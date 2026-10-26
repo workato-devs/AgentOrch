@@ -114,7 +114,7 @@ def main() -> int:
                 "benchmark/results/results.csv + training/results/training.csv; "
                 "all rows: frozen harness, simulated backend, greedy decoding, "
                 "3,220 variants, failed rows score 0\n")
-        w = csv.DictWriter(f, fieldnames=COLUMNS)
+        w = csv.DictWriter(f, fieldnames=COLUMNS, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
         csv_bytes = f.getvalue().encode("utf-8")

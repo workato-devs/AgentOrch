@@ -21,10 +21,6 @@ TRIGGER_PROVIDER = 'clock'
 TRIGGER_NAME = 'scheduled_event'
 SNOWFLAKE_TABLE = 'NETSUITE.PAYMENT_TERM'
 TABLE_ID = '1677'
-# The raw upsert's primary_field_id is anonymized (<anon>...</anon>); the raw
-# executor resolves it from dynamicPickListSelection.primary_field_id
-# ("Internal ID") against the extended_input_schema, which must map to this
-# parameter field.
 PRIMARY_FIELD = 'e27bdcc5_8890_4cb8_a414_69d170b2e911'
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ('snowflake', 'search_rows'),

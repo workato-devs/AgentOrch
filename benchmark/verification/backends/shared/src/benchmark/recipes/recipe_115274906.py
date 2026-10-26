@@ -19,8 +19,6 @@ TRIGGER_NAME = "new_event"
 TRIGGER_AS = "93dc1a39"
 LOOKUP_STEP_AS = "eb098e27"
 DECLARE_STEP_AS = "613f2945"
-# The four sibling severity IFs and the post step each guards. equals_to makes
-# them mutually exclusive: at most ONE post per run.
 SEVERITY_POST_STEPS: dict[str, str] = {
     "Severity 4": "f46f05e4",
     "Severity 2": "c8daa35f",
@@ -28,45 +26,9 @@ SEVERITY_POST_STEPS: dict[str, str] = {
     "Severity 1": "d8a49677",
 }
 RAW_CHANNEL = "CCXAQPNPJ"
-# The ONLY live-proven benchmark-workspace member email -> Slack user id.
-# users.lookupByEmail fails fast on unknown emails (faithful), and the
-# workspace bot (U0B973TLN7N) has NO profile email, so variants must seed
-# this member as the ticket agent.
 LIVE_AGENT_EMAIL = "jamie.lee@corp.example"
 LIVE_AGENT_USER_ID = "U0B91BSRGF8"
 
-# workato_webhooks.new_event (as 93dc1a39, suffix automation-institute-ticket)
-# carrying a Freshdesk webhook payload. Steps:
-#   2  slack_bot.get_user_by_email eb098e27 (LIVE users.lookupByEmail on
-#      payload.freshdesk_webhook.ticket_agent_email)
-#   3  workato_variable.declare_variable 613f2945:
-#      description = ticket_description.strip_tags (batch-04 engine fix,
-#      re-probed verbatim: tags stripped, HTML entities like &amp; kept as-is)
-#   4  IF severity == 'Severity 4'  -> 5 post_bot_message f46f05e4 (:large_blue_circle:)
-#   6  IF severity == 'Severity 2'  -> 7 post_bot_message c8daa35f (:red_circle:)
-#   8  IF severity == 'Severity 3'  -> 9 post_bot_message ed4ce889 (:large_yellow_circle:)
-#  10  IF severity == 'Severity 1' -> 11 post_bot_message d8a49677 (:fire:)
-#
-# Branch mapping: one variant per severity post (3 actions each) plus an
-# unmatched severity (all four IFs false -> 2 actions, no post; the verifier
-# proves the dead branches via the absence of any slack.post_message row).
-#
-# ENGINE FIDELITY (probed on HEAD, pinned verbatim):
-# - blocks rendering: slack_text renders only the section_text line of the
-#   single section_with_text block (button metadata contributes nothing);
-#   expect.post_text pins the fully rendered text exactly, including the
-#   step-specific emoji/spacing quirks (Severity 3's ' | ' after the portal
-#   URL and double spaces after some emoji) and the <@Uxxx> mention from the
-#   live lookup plus the _stripped description_ segment.
-# - channel routing: the hardcoded channel 'CCXAQPNPJ' does not start with
-#   'U', so the executor routes the post to SLACK_CHANNEL_OVERRIDE
-#   (benchmark isolation; the verifier rejects raw-channel posts).
-# - ticket_id is a NUMBER in the payload schema; variants seed an int so it
-#   renders without a decimal point (e.g. `481523`).
-#
-# Backends: Slack runs LIVE (users.lookupByEmail fail-fast + chat.postMessage
-# into the override channel). workato_webhooks trigger and workato_variable
-# are Workato-internal mocks. No cleanup: ordinary posts, never re-read.
 
 _STRUCTURE_PINS_JSON = r"""[
  {
@@ -285,8 +247,6 @@ EXPECT_KEYS = (
     "post_step_as",
     "post_text",
 )
-# payload.freshdesk_webhook fields the recipe dereferences (trigger pills +
-# section_text interpolations). Variants must seed every one explicitly.
 DEREFERENCED_FIELDS = (
     "ticket_agent_email",
     "ticket_description",

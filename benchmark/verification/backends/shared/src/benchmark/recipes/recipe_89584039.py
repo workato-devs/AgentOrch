@@ -15,16 +15,6 @@ SEED_TYPE = "sfdc_picklist_sync_lookup_variant"
 TRACK = "workato_service_call_service"
 TRIGGER_PROVIDER = "clock"
 TRIGGER_NAME = "timer"
-# 5-minute clock timer -> six independent try/catch blocks. Each block calls a
-# callable recipe (flow 45626516) that returns a Salesforce picklist as
-# `reply.picklist_value`, then searches a shared Workato lookup table (id
-# 3298524) by a config key (col1). When a matching entry exists the block
-# UPDATES its col2 with the (optionally .where(...)-filtered) picklist JSON;
-# otherwise it ADDS a new entry. On any error the block's catch invokes an
-# error-notification callable (flow 45626497). The callable replies are
-# deterministic Workato-internal seed state (seed.workato_service_replies keyed
-# by each call step's `as` id, since several steps share flow 45626516). The
-# lookup table is a Workato-internal mock seeded per variant.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "call_service"),
     ("lookup_table", "search_entries"),

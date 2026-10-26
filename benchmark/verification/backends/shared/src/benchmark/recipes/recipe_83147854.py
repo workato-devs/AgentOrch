@@ -17,28 +17,11 @@ TRACK = "live_slack_app_home_snowflake_department_gate"
 TRIGGER_PROVIDER = "slack_bot"
 TRIGGER_NAME = "new_event"
 TRIGGER_EVENT = "app_home_opened"
-# The recipe's SQL references the source org's fully-qualified table
-# workato_business_systems.public.employee; seeding under that exact 3-part
-# name makes snowflake_live._rewrite_sql/_parts remap the database component to
-# the benchmark database (SNOWFLAKE_DATABASE), while the bare `department` join
-# target is remapped through the registered-table bare-name rewrite.
 EMPLOYEE_TABLE = "workato_business_systems.public.employee"
 DEPARTMENT_TABLE = "PUBLIC.DEPARTMENT"
 ADMIN_DEPARTMENT = "Business Technology"
 ADMIN_BOT_COMMAND = "36925586"
 REQUEST_BOT_COMMANDS = ("36925598", "36925589", "36925599")
-# slack_bot.new_event app_home_opened (trigger as 1f66aace, dereferences
-# app_home_opened.user):
-#   slack.get_user_by_email (step 2, as 2456d6be, input id = trigger user;
-#     live users.info) -> profile.email pill feeds the SQL bind
-#   snowflake.run_custom_sql (step 3, as 749ee203):
-#     SELECT d.name as department FROM workato_business_systems.public.employee e
-#     JOIN department d ON d.id = e.department_id WHERE e.email = :email
-#   IF department present AND == 'Business Technology' (step 4)
-#     -> open_bot_app_home step 5 (admin home: greeting, 3 request buttons,
-#        ":lock: Admin use only" + Approve section-with-button -> 36925586)
-#   ELSE -> open_bot_app_home step 7 (standard home, no admin section)
-# Slack + Snowflake run LIVE; the App Home publish targets the trigger user.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("slack", "get_user_by_email"),
     ("snowflake", "run_custom_sql"),

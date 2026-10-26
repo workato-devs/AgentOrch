@@ -25,59 +25,7 @@ SOBJECT = "Survey_Response__c"
 SLACK_PROPERTY = "GEARS_V2_SLACK_ERROR"
 SLACK_TITLE = "Salesforce Logger Error"
 
-# workato_pub_sub.subscribe_to_topic (as e3dee984, topic 34038 '[GEARS-V2]
-# Salseforce Logger' [sic], since_offset -3600; Workato-internal -> the
-# variant seeds the message payload). Dereferences message.{account_id,
-# contact_id, responder_email, type, score, assessment_id, assessment_date}
-# -- exactly the 7 string fields of the topic schema.
-#   TRY 2:
-#     3  salesforce.create_custom_object 1e300d60 (LIVE):
-#        sobject Survey_Response__c; Account__c/Contact__c/Score__c/
-#        Source_ID__c/Survey_Response_Date__c straight message pills,
-#        Comments__c 'Responder: #{responder_email}', Type__c literal
-#        'GEARS Assessment' (toggleCfg custom value), Name =
-#        ="GEARS:" + message.type.titleize (both separator arms probed:
-#        'gears assessment' -> 'GEARS:Gears Assessment',
-#        'half_yearly_check' -> 'GEARS:Half Yearly Check').
-#   CATCH 4 (as 0dd86881, max_retry_count 0):
-#     5  slack_bot.post_bot_message d9474a4f (LIVE): channel =
-#        account_property GEARS_V2_SLACK_ERROR pill, attachment message
-#        {title 'Salesforce Logger Error', attachment_text = catch.message,
-#        color danger, title_link = job_context.job_url}. The established
-#        attachment flattening posts 'Salesforce Logger Error\n<catch
-#        message>' (title_link + color dropped); the property VALUE must be
-#        seeded (its name has 'slack' but not 'channel', so the unseeded-
-#        property override affordance does NOT apply -- raw_executor raises;
-#        probed), and the non-'U' channel text then routes to the benchmark
-#        override channel in slack_post_message (probed).
-#
-# Live backend (Salesforce): Survey_Response__c was mdapi-deployed
-# 2026-07-06/07 and RE-PROBED READ-ONLY 2026-07-08 for this build:
-# EntityDefinition carries Account__c / Contact__c / Comments__c / Score__c
-# / Source_ID__c as Text(255) and Survey_Response_Date__c as Date, all
-# describe-INVISIBLE (no FLS yet) -- exactly the ensure_custom_field
-# tooling-exists branch (grant FLS + prime caches), so every create variant
-# re-ensures the schema in the seed. Type__c is NOT part of the deploy:
-# the schema section Tooling-creates it as Text on first seed (the
-# established custom-FIELD path; only custom OBJECTS are banned from
-# self-serve creation). Because Account__c/Contact__c/Score__c are TEXT,
-# message ids stay free strings and Score__c reads back the STRING '8.5',
-# never a float.
-# Live backend (Slack): catch-path post to the override channel (live-
-# verified at triage). The post is never re-read/updated/deleted -> no
-# slack cleanup per policy.
-# Workato-internal mock/seed: pub_sub trigger payload, account_properties,
-# job_context, sanctioned force_action_error on the create (the catch is
-# not naturally reachable from seedable state).
-# Cleanup: the recipe-created Survey_Response__c record is benchmark-owned
-# (created through the harness registry) and deleted in the runner's
-# finally; catch variants prove NOTHING was created. Schema persists by
-# design.
 
-# Schema-in-seed for the create variants: FLS re-ensure for the 6 mdapi
-# fields + Tooling-create for the missing Type__c. Types pinned to the
-# DEPLOYED types (probe 2026-07-08), so the primed describe caches stay
-# faithful.
 SF_SCHEMA: list[dict[str, str]] = [
     {"sobject": SOBJECT, "field": "Account__c", "sf_type": "Text"},
     {"sobject": SOBJECT, "field": "Contact__c", "sf_type": "Text"},
@@ -96,9 +44,6 @@ MESSAGE_KEYS = (
     "type",
     "contact_id",
 )
-# message.type must stay in deterministic titleize territory (lowercase
-# word runs split by single spaces or underscores) so the module-side Name
-# derivation below mirrors the engine byte-for-byte.
 _TYPE_RE = re.compile(r"[a-z0-9]+(?:[ _][a-z0-9]+)*")
 _DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 

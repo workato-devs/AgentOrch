@@ -15,11 +15,6 @@ SEED_TYPE = "bounced_outreach_mailing_variant"
 TRACK = "workato_service_pub_sub_publish"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# "Bounced_outreach_mailing" callable service. Inside a single try block it
-# republishes the request payload to the "Outreach Bounced Emails" pub/sub
-# topic (step 3), replies success with posted=true (step 4), and on any error
-# the catch (step 5) hard-stops (step 6). Static action order:
-#   workato_pub_sub.publish_to_topic (3) then workato_service.send_reply (4).
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_pub_sub", "publish_to_topic"),
     ("workato_service", "send_reply"),

@@ -23,10 +23,6 @@ LOGGER_STEP_AS = "586bdf86"
 FOREACH_AS = "15e7f8fc"
 COMPOSITE_AS = "d30ad505"
 SF_SOBJECT = "Workato_User__c"
-# 3-part physical Snowflake seed keys the CTE reads (WORKATO_USER must
-# declare the ACCOUNT column even though only account_id feeds the outer
-# select -- probed live by triage: 'invalid identifier WU1.ACCOUNT' without
-# it, because the outer select projects wu1.account).
 MUG_TABLE = "BI_DB.MASTER_DATA.MANAGED_USER_GRANTS_COMB_D"
 WORKATO_USER_TABLE = "BI_DB.SALESFORCE.WORKATO_USER"
 ACCOUNT_TABLE = "BI_DB.SALESFORCE.ACCOUNT"
@@ -57,70 +53,6 @@ REQUIRED_COLUMNS = {
     CPQ_TABLE: ("ACCOUNTID", "STATUS", "STARTDATE"),
 }
 
-# clock.scheduled_event 7f8a4207 (weekly 08:42 America/Los_Angeles) --
-# payload-less; NO trigger field is ever dereferenced (trigger_input must be
-# exactly {}). The SQL uses current_date, so seed.snowflake_live.current_time
-# is REQUIRED (rewritten to TO_DATE(<pinned>) by the live client).
-#   2 snowflake.search_rows_sql f07d9d06 (LIVE, limit 10000, connector
-#     orderby 'account2'): giant CTE -- mug = UNION ALL x3 over grant_type
-#     team / federation_manager / customer_manager (each joining
-#     MANAGED_USER_GRANTS_COMB_D -> [FEDERATED_ACCOUNTS_COMB_D |
-#     ACCOUNTS_COMB_D] -> WORKATO_USER via try_to_decimal -> ACCOUNT with
-#     IFNULL(name,'') NOT IN ('TESTING ONLY',...,'Workato')), deduped by
-#     QUALIFY ROW_NUMBER() OVER (PARTITION BY user_id,data_center ORDER BY
-#     IFNULL(active_subscription,FALSE) DESC, created_at) = 1; outer select
-#     relinks FREE workspaces (wu1: workato_embed_id IS NULL, plan 'free',
-#     email NOT ILIKE '%==%' / '%workato.com%'; a1: record_type !=
-#     '012o0000000tYvxAAE', active != true; a2: active = true; account
-#     mismatch; NOT IN future_contracts = CPQ_CONTRACT Inactive AND
-#     startdate > current_date).
-#     ENGINE REGRESSION GUARD: the raw SQL has NO top-level ORDER BY -- only
-#     window ORDER BYs inside OVER(...) -- so the connector's separate
-#     Order-by input MUST be appended (' ORDER BY account2'). This recipe was
-#     NEEDS-ENGINE until _sql_has_top_level_order_by (paren-depth-0 scan)
-#     replaced the naive regex; re-probed on this tree 2026-07-08: appended.
-#     The append pins the row order, the logger message and the update order.
-#   3 logger.log_message 586bdf86: =rows.pluck("user_id_dc").join(",") --
-#     ORDER-SENSITIVE observable ('' for zero rows; probed).
-#   4 FOREACH 15e7f8fc over rows, repeat_mode batch (engine: ENTIRE source in
-#     ONE iteration, batch_size ignored -- faithful for seeds << 2000)>
-#       5 salesforce.composite_update_sobject d30ad505 (LIVE): records
-#         ____source = batch; per row Id = row.id (the wu1 Workato_User__c
-#         live id), Account__c = row.account_id2 (live Account id --
-#         Account__c is a Lookup(Account) in the benchmark org). allOrNone
-#         'false' + batch_size project-property pill are metadata (never
-#         resolved -- raw_executor metadata_keys; probed). ONE trace row;
-#         one salesforce.update_record registry call per record.
-#
-# Branch mapping (offline dry-replay re-probed on this tree 2026-07-08):
-# - two_relinks_ordered_log (3 actions): 2 qualifying workspaces; account2
-#   names chosen so ORDER BY REVERSES seed order -> log + updates pin the
-#   append. A PAST-dated Inactive CPQ contract on one old account proves the
-#   future_contracts arm evaluates against the PINNED current_date.
-# - zero_rows (2 actions): a full grant chain exists but the workspace user
-#   is non-free -> outer join empty -> log '' -> foreach runs ZERO iterations.
-# - qualify_dedupe_active_wins (3 actions): same user_id/dc holds 2 grants --
-#   team grant -> ACTIVE-subscription manager account (LATER created_at) vs
-#   customer_manager grant -> inactive manager account (EARLIER created_at).
-#   QUALIFY keeps the ACTIVE one (first ORDER key dominates created_at; the
-#   loser's manager account is inactive, so a wrong dedupe would yield 0
-#   rows, not 1). Exercises the team + customer_manager UNION arms.
-# - exclusion_battery (3 actions): one poisoned workspace per outer WHERE/JOIN
-#   arm (workato.com email, '==' embed email, non-free plan, embed-id set,
-#   account matching the manager's, active a1, future-contract account,
-#   partner record type, mug-level 'Workato' account-name exclusion) + one
-#   clean row -> exactly the clean row survives and is relinked.
-# Variant 1 covers the federation_manager arm; variant 3 the customer_manager
-# arm; team is exercised everywhere.
-#
-# Backends: snowflake LIVE (create-or-replace 6 seed tables + pinned
-# current_time, dropped in the runner's finally; READ-ONLY -- snapshot
-# equality pinned). salesforce LIVE (schema-in-seed Account__c on the
-# pre-provisioned Workato_User__c custom object; seed creates benchmark-owned
-# Account + Workato_User__c records, live ids thread through $REF_ID tokens
-# into the snowflake rows AND the expect block; updates hit only
-# benchmark-owned records -- non-owned ids are refused fail-fast; cleanup
-# deletes owned records). logger is Workato-internal.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "7f8a4207", "skip": false, "input": {"days_of_week": "0,1,2,3,4,5,6", "time_unit": "weeks", "timezone": "America/Los_Angeles", "trigger_at": "08:42:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "search_rows_sql", "as": "f07d9d06", "skip": false, "input": {"limit": "10000", "orderby": "account2", "sql": "WITH mug AS (\nSELECT * FROM\n(\nSELECT mug.user_id,\n       mug.managed_user_id::int AS managed_user_id,\n       mug.data_center,\n       mug.created_at,\n       a.active_subscription\n  FROM BI_DB.MASTER_DATA.MANAGED_USER_GRANTS_COMB_D mug\n INNER JOIN BI_DB.SALESFORCE.WORKATO_USER wu\n    ON mug.managed_user_id = try_to_decimal(wu.workato_user_id)\n   AND mug.data_center = wu.data_center\n INNER JOIN BI_DB.SALESFORCE.ACCOUNT a\n    ON COALESCE(wu.account_id,wu.embed_salesforce_account_id) = a.id -- Embedded empoloyees often add just as collaborators to child workspaces (and not to OEM Admin)\n   AND IFNULL(a.name,'') NOT IN ('TESTING ONLY','TESTING ONLY - Embedded','Workato') -- Exclude where customer User workspaces were granted access to workato workspaces (e.g. contests)\n WHERE mug.grant_type = 'team'\nUNION ALL\nSELECT mug.user_id,\n        fa.admin_id AS managed_user_id,\n        mug.data_center,\n        mug.created_at,\n        a.active_subscription\n  FROM BI_DB.MASTER_DATA.MANAGED_USER_GRANTS_COMB_D mug\n INNER JOIN BI_DB.MASTER_DATA.FEDERATED_ACCOUNTS_COMB_D fa\n    ON mug.federated_account_id = fa.id\n   AND mug.data_center = fa.data_center\n INNER JOIN BI_DB.SALESFORCE.WORKATO_USER wu\n    ON fa.admin_id = try_to_decimal(wu.workato_user_id)\n   AND fa.data_center = wu.data_center\n INNER JOIN BI_DB.SALESFORCE.ACCOUNT a\n    ON COALESCE(wu.account_id,wu.embed_salesforce_account_id) = a.id -- Embedded empoloyees often add just as collaborators to child workspaces (and not to OEM Admin)\n   AND IFNULL(a.name,'') NOT IN ('TESTING ONLY','TESTING ONLY - Embedded','Workato')\n WHERE mug.grant_type = 'federation_manager'\nUNION ALL\nSELECT mug.user_id,\n       oem.admin_id AS managed_user_id,\n       mug.data_center,\n       mug.created_at,\n       a.active_subscription\n  FROM BI_DB.MASTER_DATA.MANAGED_USER_GRANTS_COMB_D mug\n INNER JOIN BI_DB.MASTER_DATA.ACCOUNTS_COMB_D oem\n    ON mug.account_id = oem.id\n   AND mug.data_center = oem.data_center\n INNER JOIN BI_DB.SALESFORCE.WORKATO_USER wu\n    ON oem.admin_id = try_to_decimal(wu.workato_user_id)\n   AND oem.data_center = wu.data_center\n INNER JOIN BI_DB.SALESFORCE.ACCOUNT a\n    ON COALESCE(wu.account_id,wu.embed_salesforce_account_id) = a.id -- Embedded empoloyees often add just as collaborators to child workspaces (and not to OEM Admin)\n   AND IFNULL(a.name,'') NOT IN ('TESTING ONLY','TESTING ONLY - Embedded','Workato') \n WHERE mug.grant_type = 'customer_manager'\n)\nQUALIFY ROW_NUMBER() OVER (PARTITION BY user_id,data_center ORDER BY IFNULL(active_subscription,FALSE) DESC,created_at) = 1\n),\n\nfuture_contracts AS (\nSELECT accountid AS account_id\n  FROM BI_DB.SALESFORCE.CPQ_CONTRACT\n WHERE status = 'Inactive'\n   AND startdate > current_date\n)\n   \nSELECT mug.user_id || '-' || mug.data_center as user_id_dc,\n       mug.managed_user_id,\n       wu1.id,\n       wu1.name,\n       wu1.workato_user_email,\n       wu1.workato_plan,\n       wu1.account_id,\n       wu1.account,\n       a1.active_subscription,\n       wu2.id AS id2,\n       wu2.name AS name2,\n       wu2.workato_user_email AS workato_user_email2,\n       wu2.workato_plan AS workato_plan2,\n       COALESCE(wu2.account_id,wu2.embed_salesforce_account_id) AS account_id2, -- Embedded empoloyees often add just as collaborators to child workspaces (and not to OEM Admin)\n       a2.name AS account2,\n       wu2.workato_embed_id AS workato_embed_id2,\n       wu2.embed_salesforce_account_id AS embed_salesforce_account_id2,\n       a2.active_subscription AS active_subscription2\n  FROM mug\n INNER JOIN BI_DB.SALESFORCE.WORKATO_USER wu1\n    ON mug.user_id = try_to_decimal(wu1.workspace_id) -- Link to workspace_id so that all child environments get relinked as well\n   AND mug.data_center = wu1.data_center\n   AND wu1.workato_embed_id IS NULL  -- workspaces with and OEM Id are not \"User\" workspaces so they should be excluded\n   AND IFNULL(wu1.workato_plan,'') = 'free' -- Only consider \"free\" workspaces\n   AND IFNULL(wu1.workato_user_email,'') NOT ILIKE '%==%' -- Exclude embed child user workspaces\n   AND IFNULL(wu1.workato_user_email,'') NOT ILIKE '%workato.com%' -- Do not re-link Workato User workspaces for Workato employees\n INNER JOIN BI_DB.SALESFORCE.WORKATO_USER wu2\n    ON mug.managed_user_id = try_to_decimal(wu2.workato_user_id)\n   AND mug.data_center = wu2.data_center\n   AND IFNULL(wu1.account_id,'') != IFNULL(wu2.account_id,'') -- User Account doesn't match the first active subscription Account\n INNER JOIN BI_DB.SALESFORCE.ACCOUNT a1\n    ON wu1.account_id = a1.id\n   AND IFNULL(a1.account_record_type,'') != '012o0000000tYvxAAE' -- Exclude Partners\n   AND IFNULL(a1.active_subscription,false) != true  -- Only re-link Account if current Account link is not and active subscription\n INNER JOIN BI_DB.SALESFORCE.ACCOUNT a2\n    ON COALESCE(wu2.account_id,wu2.embed_salesforce_account_id) = a2.id -- Embedded empoloyees often add just as collaborators to child workspaces (and not to OEM Admin)\n   AND a2.active_subscription = true -- Only re-link Account if the User has access to an Account with an active subscription\n WHERE wu1.account_id NOT IN (SELECT account_id FROM future_contracts)"}, "block": []}, {"number": 3, "keyword": "action", "provider": "logger", "name": "log_message", "as": "586bdf86", "skip": false, "input": {"message": "=_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"f07d9d06\",\"path\":[\"rows\"]}').pluck(\"user_id_dc\").join(\",\")", "user_logs_enabled": "false"}, "block": []}, {"number": 4, "keyword": "foreach", "provider": "", "name": "", "as": "15e7f8fc", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"f07d9d06\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "batch", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"f07d9d06\",\"path\":[\"rows\"]}')}", "block": [{"number": 5, "keyword": "action", "provider": "salesforce", "name": "composite_update_sobject", "as": "d30ad505", "skip": false, "input": {"advanced_configuration": {"allOrNone": "false"}, "batch_size": "#{_dp('{\"pill_type\":\"project_property\",\"property_name\":\"Batch Size - Salesforce Update\"}')}", "records": {"Account__c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"15e7f8fc\",\"path\":[\"batch\", {\"path_element_type\": \"current_item\"}, \"account_id2\"]}')}", "Id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"15e7f8fc\",\"path\":[\"batch\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"15e7f8fc\",\"path\":[\"batch\"]}')}", "attributes": {"Workato_User__c": "Workato_User__c"}}, "sobject_name": "Workato_User__c"}, "block": []}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)
@@ -130,9 +62,6 @@ EXPECTED_ACTIONS: list[tuple[int, str, str, str]] = [
     (3, LOGGER_STEP_AS, "logger", "log_message"),
     (5, COMPOSITE_AS, "salesforce", "composite_update_sobject"),
 ]
-# workato_runtime.log_message is a trace-only Workato-internal action (never a
-# registry tool call); the registry tools are the snowflake read + one
-# salesforce.update_record call per composite record.
 EXPECTED_RAW_TOOLS: list[str] = [
     "snowflake.search_rows_sql",
     "workato_runtime.log_message",

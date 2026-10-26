@@ -24,9 +24,6 @@ EXPECTED_RAW_TOOLS: list[str] = [
     "google_sheets.update_row_v4_new",
 ]
 ALLOWED_TOOLS: list[str] = ["google_sheets.update_row_v4_new", "salesforce.search_records"]
-# Live env-bound benchmark tab, seeded with the S&P500 layout the raw recipe
-# reads/writes (trigger schema labels in order). The update label-decodes
-# col_Customer / "col_SFDC Record" into the "Customer" / "SFDC Record" headers.
 SHEET_HEADERS: list[str] = [
     "Symbol",
     "Account Name",

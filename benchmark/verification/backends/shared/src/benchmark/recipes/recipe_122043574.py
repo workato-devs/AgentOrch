@@ -24,39 +24,7 @@ RESPONSE_STEP_AS = "return_response_5"
 STOP_STEP_AS = "c5aec6a6"
 CATCH_STEP_AS = "catch_6"
 LOG_STEP_AS = "log_message_7"
-# TWIN NOTE: 121973430 is a byte-identical twin of this recipe (diff verified
-# against both raw_recipe.md files): only CSV metadata and the upsert
-# table_id (29375 there vs 30554 here) differ. Each module pins ITS OWN
-# table id and verbatim raw tree so twin drift between the two deployed
-# recipes is caught by validation, never papered over.
 
-# workato_api_platform.receive_request (as 98519657, JSON schema {job_id!,
-# application_id!, role!, resume_url}):
-#   TRY 2 (catch at 7, max_retry_count 0):
-#     IF 3: '=request.job_id.to_s.match?(/7984378002|7983026002|7951510002|
-#            7953119002|7829658002|6171798002/)' is_true — Ruby match? is
-#            UNANCHORED, so a job_id merely CONTAINING an allowlisted id
-#            (e.g. 'x7984378002y') matches too (probe-verified, variant 04).
-#       4  workato_db_table.upsert_record 9c05c139 table 30554, primary
-#          Application ID (dash-form '3ac3e90c-8e9b-...' normalized against
-#          the underscore record keys): Application ID/Job ID/Role/Resume URL
-#          from the request + literal Status 'New'.
-#       5  workato_api_platform.return_response 200 (ENGINE-TERMINAL: the run
-#          stops here, so the trailing STOP 6 never appears in match-branch
-#          traces — observably identical to Workato, which would run the stop
-#          next with no further actions; pinned via executed_action_count +
-#          the absence of a stop trace row).
-#     STOP 6 (stop_with_error 'false') — unconditional try tail: the ONLY
-#          path to it is IF-3 false (0 actions, stop marker, no response).
-#   CATCH 7 -> 8 logger.log_message 'Type/Message/Step/App/Action' — the
-#          engine catch payload carries ONLY {type, message};
-#          line_number/adapter/action are MISSING and interpolate as ''
-#          (raw_executor execute_try). Deterministically exercised via
-#          seed.force_action_error on 9c05c139 (the mock upsert cannot fail
-#          organically).
-#
-# All backends are Workato-internal (api_platform trigger/response, db table,
-# logger): mock per backend policy, per-variant isolated, no cleanup.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_api_platform", "name": "receive_request", "as": "98519657", "skip": false, "input": {"request": {"content_type": "json", "schema": "[{\"control_type\":\"text\",\"label\":\"job_id\",\"name\":\"job_id\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"application_id\",\"name\":\"application_id\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Role\",\"name\":\"role\",\"type\":\"string\",\"optional\":false},{\"control_type\":\"text\",\"label\":\"Resume URL\",\"name\":\"resume_url\",\"type\":\"string\",\"optional\":true}]"}, "response": {"content_type": "json", "responses": [{"http_status_code": "200", "name": "success"}]}}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "try_3", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"98519657\",\"path\":[\"request\",\"job_id\"]}').to_s.match?(/7984378002|7983026002|7951510002|7953119002|7829658002|6171798002/)", "operand": "is_true"}], "operand": "and", "type": "compound"}, "block": [{"number": 4, "keyword": "action", "provider": "workato_db_table", "name": "upsert_record", "as": "9c05c139", "skip": false, "input": {"parameters": {"3ac3e90c_8e9b_4b58_b019_715ecd63b3d4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"98519657\",\"path\":[\"request\", \"application_id\"]}')}", "7b20b969_f842_4eaa_8f35_753fe911fbee": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"98519657\",\"path\":[\"request\", \"resume_url\"]}')}", "a7ba4bb3_7e03_4298_8f2e_f302d17fff39": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"98519657\",\"path\":[\"request\", \"job_id\"]}')}", "c90c7596_43bf_466c_8a8f_b6d9819e2169": "New", "fe5cbb7e_f1ba_4cc2_8cd3_509e81f6b4d1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"98519657\",\"path\":[\"request\", \"role\"]}')}"}, "primary_field_id": "3ac3e90c-8e9b-4b58-b019-715ecd63b3d4", "table_id": "30554"}, "block": []}, {"number": 5, "keyword": "action", "provider": "workato_api_platform", "name": "return_response", "as": "return_response_5", "skip": false, "input": {"http_status_code": "200"}, "block": []}]}, {"number": 6, "keyword": "stop", "provider": "", "name": "", "as": "c5aec6a6", "skip": false, "input": {"stop_with_error": "false"}, "block": []}, {"number": 7, "keyword": "catch", "provider": "", "name": "", "as": "catch_6", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 8, "keyword": "action", "provider": "logger", "name": "log_message", "as": "log_message_7", "skip": false, "input": {"message": "Type: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"catch_6\",\"path\":[\"type\"]}')}\nMessage: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"catch_6\",\"path\":[\"message\"]}')}\nStep: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"catch_6\",\"path\":[\"line_number\"]}')}\nApp: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"catch_6\",\"path\":[\"adapter\"]}')}\nAction: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"catch_6\",\"path\":[\"action\"]}')}", "user_logs_enabled": "false"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

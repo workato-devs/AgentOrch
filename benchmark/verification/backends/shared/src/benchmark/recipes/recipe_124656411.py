@@ -27,24 +27,6 @@ DELETE_ADD_AS = "b3736696"
 FOREACH_CLOSED_LOST_AS = "1dcefa34"
 FOREACH_ADD_AS = "199f5fa3"
 
-# clock.scheduled_event (as 102b132e, monthly day-1 09:00) — payload-less
-# trigger, no formulas anywhere in the recipe:
-#   2  lookup_table.get_entries 0245afa5 table 3959191
-#      'RevOps Closed Lost - Opportunities' (col1 Account ID .. col7 Timestamp)
-#   FOREACH 3 (as 1dcefa34, repeat_mode simple, no condition) over the entries:
-#     4  lookup_table.delete_entry 3d46f38a (id = foreach id, ignore_not_found
-#        'false') — unconditional purge; the foreach source is materialized
-#        from the get_entries OUTPUT before iteration, so mid-loop deletes are
-#        stable (replay-verified) and an empty table runs zero iterations.
-#   5  lookup_table.get_entries 14e2b445 table 4350535
-#      'RevOps Add - Opportunities'
-#   FOREACH 6 (as 199f5fa3) over those entries:
-#     7  lookup_table.delete_entry b3736696 (same shape, table 4350535)
-#
-# All backends are Workato-internal lookup tables: mock per backend policy,
-# per-variant isolated (every variant seeds BOTH tables explicitly), no
-# cleanup. There are no conditionals, so branch coverage = foreach
-# cardinality coverage (0/1/many per table, plus both-empty).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "102b132e", "skip": false, "input": {"days_of_month": "1", "time_unit": "months", "trigger_at": "09:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "lookup_table", "name": "get_entries", "as": "0245afa5", "skip": false, "input": {"lookup_table_id": "3959191"}, "block": []}, {"number": 3, "keyword": "foreach", "provider": "", "name": "", "as": "1dcefa34", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"0245afa5\",\"path\":[\"entries\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"0245afa5\",\"path\":[\"entries\"]}')}", "block": [{"number": 4, "keyword": "action", "provider": "lookup_table", "name": "delete_entry", "as": "3d46f38a", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"1dcefa34\",\"path\":[\"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "3959191"}, "block": []}]}, {"number": 5, "keyword": "action", "provider": "lookup_table", "name": "get_entries", "as": "14e2b445", "skip": false, "input": {"lookup_table_id": "4350535"}, "block": []}, {"number": 6, "keyword": "foreach", "provider": "", "name": "", "as": "199f5fa3", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"14e2b445\",\"path\":[\"entries\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"14e2b445\",\"path\":[\"entries\"]}')}", "block": [{"number": 7, "keyword": "action", "provider": "lookup_table", "name": "delete_entry", "as": "b3736696", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"199f5fa3\",\"path\":[\"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "4350535"}, "block": []}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

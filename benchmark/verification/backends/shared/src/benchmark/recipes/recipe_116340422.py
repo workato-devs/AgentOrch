@@ -22,54 +22,6 @@ COUNT_AS = "ac48f6d0"
 RETURN_AS = "58bc5c59"
 TABLE_KEY = "DEMOINFRA_WORKSPACES"
 
-# workato_api_platform.receive_request (as c9054fed; request schema [] — the
-# five OPTIONAL path_params name/sort/page/pagesize/order are the only
-# trigger derefs). Linear body, terminal return:
-#   2  workato_variable.declare_variable c05d07c2 (MOCK Workato-internal):
-#      limit  = path_params.page || 10       (integer_conversion -> int)
-#      offset = path_params.pagesize || 0    (leading-space '= _dp' form,
-#                                             integer_conversion -> int)
-#      order  = path_params.order || 'ASC'
-#      sort   = path_params.sort || 'PRIORITY'
-#      query  = name.present? ? "lower(name) like '%<name>%'" : '1=1'
-#               (escaped-quote ternary; the input is NOT lowered — LIKE
-#               matches the literal against lower(name), the faithful quirk)
-#      NOTE the page->LIMIT / pagesize->OFFSET naming swap is the recipe's
-#      own quirk, replayed verbatim.
-#   3  snowflake.search_rows_sql 4a921ec5 (LIVE): SELECT id, name,
-#      environment, description, priority FROM DEMOINFRA_WORKSPACES WHERE
-#      #{query}; the connector's separate orderby input '#{sort} #{order}'
-#      is APPENDED as ORDER BY (no top-level ORDER BY in the SQL); limit/
-#      offset pills applied. Output pills are hash-suffixed
-#      (id_b497e547/name_77b1dd6c/…) and resolve via the _<8hex>-suffix
-#      stripping in lookup_path (re-probed 2026-07-08).
-#   4  snowflake.search_rows_sql ac48f6d0 (LIVE): SELECT count(1) row_count
-#      FROM DEMOINFRA_WORKSPACES WHERE #{query} — no orderby/limit/offset;
-#      total row count is UNAFFECTED by pagination.
-#   5  workato_api_platform.return_response 58bc5c59 (MOCK, TERMINAL): 200,
-#      result = ____source over the search rows {id,name,environment,
-#      description} (priority selected but not returned), total = count-rows
-#      current_item row_count_8c45cb0e — current_item OUTSIDE a ____source =
-#      FIRST row; the aggregate always returns exactly one row, and a
-#      zero-match count resolves natively to int 0 (full-pill, no
-#      falsy-render exposure; re-probed).
-#
-# Branch mapping: no block-level branches; the formula-level branch in query
-# (name.present? LIKE vs 1=1) and the || defaults each get a variant:
-# - v0 name_filter_sorted: all params -> LIKE + ORDER BY NAME DESC + params
-# - v1 defaults_all: path_params {} -> 1=1 + ORDER BY PRIORITY ASC + 10/0
-# - v2 zero_match: LIKE matches nothing -> result [] + total 0
-# - v3 pagination_slice: page=1&pagesize=1 -> LIMIT 1 OFFSET 1 second row
-# - v4 case_sensitivity_like: 'ACME' uppercase never matches lower(name) —
-#   total 0 while the table is non-empty (proves the recipe does NOT lower
-#   the input)
-#
-# Backends: snowflake LIVE (bare 1-part DEMOINFRA_WORKSPACES -> BENCH_DB.
-# <env schema>; create-or-replace seed, dropped in the runner's finally,
-# fail-fast; READ-ONLY during the run — snapshot equality pinned). API
-# platform trigger + return_response are mocks (Workato-internal). The
-# %-literals in LIKE survive the bind-less path (_bind_sql doubles,
-# _executable_sql un-doubles; triage live probe + offline re-probe).
 TABLE_COLUMNS = {
     "id": "number",
     "name": "string",

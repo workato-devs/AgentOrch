@@ -41,7 +41,6 @@ RAW_SQL = (
     "where j.issuetype = 'Enhancement'"
 )
 
-# Mock table 33563 'PSM Enhancements Data' record fields (underscored ids).
 FIELD_KEY = "4fd3d64a_5fa4_4a8f_b5db_22a214b39b9f"
 FIELD_TICKET_URL = "45e4add0_f5a6_4d3d_bcd0_2ed9e0cc15a8"
 FIELD_SUMMARY = "75551508_f290_41de_88fd_d77306bebea5"
@@ -98,64 +97,6 @@ SLA_COLUMNS = {
     "BREACHTIME": "timestamp",
 }
 
-# clock.scheduled_event (as e31aafaf, daily 00:00) -- payload-less trigger
-# (seed.trigger MUST be exactly {}). Body = one TRY (step 2):
-#   3  snowflake.run_custom_sql 2a246498 (LIVE Snowflake): static CTE --
-#      breach_times = jsm_psm_issues_sla WHERE sla_name='PM_TRIAGE_SLA' with
-#      row_number() OVER (PARTITION BY key ORDER BY breachtime DESC) -> rn=1
-#      keeps the LATEST breach row per key; final SELECT = 13 j.* columns +
-#      b.breached pm_triage_breach + b.breachtime pm_triage_breach_time FROM
-#      jsm_psm_issues j LEFT JOIN breach_time b ON b.key = j.key WHERE
-#      j.issuetype = 'Enhancement'. The 3-part bi_db.atlassian.* names map to
-#      <BENCH_DB>.ATLASSIAN.* live.
-#   4  FOREACH 38f87cc5 over rows (repeat_mode simple; 0..N iterations) ->
-#   5  workato_db_table.upsert_record 747954b2 (MOCK table 33563 'PSM
-#      Enhancements Data', primary key = 4fd3d64a-... 'key'): 10 #{pill}
-#      fields (typed passthrough -- pm_triage_breach lands the JSON boolean),
-#      created/updated/pm_triage_breach_time via =pill formula mode (live
-#      TIMESTAMP_NTZ read-back isoformat strings, null passes through), and
-#      description via the ternary
-#        =pill.present? ? pill.gsub('"', "'")[0,9999] : null
-#      (single/mixed-quote gsub args + two-arg slice -- the two engine gaps
-#      fixed for this recipe; blank description takes the null arm).
-#   6  CATCH 9e9e7b09 (max_retry_count 3 -- the engine executes try/catch as
-#      a single attempt, observably identical for a deterministic forced
-#      error) -> 7 STOP 6b5e3996 stop_with_error true, reason
-#      '#{catch.type}: #{catch.message} (Retry count: #{catch.retry_count})'.
-#      ENGINE SEMANTICS PINNED: the stop trace row carries stopped:true only;
-#      stop_reason is not resolved into the trace, and the catch payload has
-#      only {type, message}.
-#
-# Branch mapping (all reachable paths covered):
-# - variant_00 upsert_mixed: 3 Enhancement rows -> 3 upserts (PSM-1 UPDATE of
-#   a pre-seeded stale mock row created:false; PSM-3 + PSM-4 INSERTs
-#   created:true); PSM-2 'Bug' decoy excluded by the WHERE; PSM-1 has TWO
-#   PM_TRIAGE_SLA rows (rn=1 picks the LATEST breachtime -> breached true)
-#   plus an OTHER_SLA decoy that would win rn=1 if the sla_name filter broke;
-#   PSM-4 has NO sla row -> LEFT JOIN nulls -> breach fields null (dropped
-#   from the stored mock row); PSM-1/PSM-3 descriptions carry double quotes
-#   -> gsub swaps them to single quotes.
-# - variant_01 blank_description_null_arm: description '' -> present? false
-#   -> ternary null arm -> description None in the upsert args and ABSENT
-#   from the stored row. 1 insert.
-# - variant_02 zero_rows: no Enhancement rows -> SQL 0 rows -> foreach runs 0
-#   iterations -> no upserts; the pre-seeded mock row must be byte-identical
-#   after the run.
-# - variant_03 catch_stop: seed.force_action_error on 2a246498 (static SQL --
-#   no trigger-controllable live failure) -> the error raises BEFORE the tool
-#   call (NO snowflake row in the trace) -> CATCH -> STOP with error. 0
-#   executed actions.
-#
-# ROW-ORDER NOTE (live lane): the final SELECT has no ORDER BY; expects pin
-# the seed insertion order ([PSM-1, PSM-3, PSM-4]), which the triage live
-# probe observed for these single-micro-partition seed tables. The live lane
-# must confirm order stability before registering.
-#
-# Backends: Snowflake LIVE (harness.snowflake_live.seed_tables
-# create-or-replace; dropped in the runner's finally -- READ-ONLY here, live
-# snapshot equality verifier-pinned); workato_db_table 33563 MOCK
-# (Workato-internal, per-variant seeded state). No current_time seed needed:
-# the SQL never references current date/time.
 
 _RAW_PIN_JSON = r"""{"as": "e31aafaf", "block": [{"as": "", "block": [{"as": "2a246498", "block": [], "input": {"output_schema": "[{\"control_type\":\"text\",\"label\":\"Ticket URL\",\"type\":\"string\",\"name\":\"ticket_url\"},{\"control_type\":\"text\",\"label\":\"Key\",\"type\":\"string\",\"name\":\"key\"},{\"control_type\":\"text\",\"label\":\"Summary\",\"type\":\"string\",\"name\":\"summary\"},{\"control_type\":\"text\",\"label\":\"Description\",\"type\":\"string\",\"name\":\"description\"},{\"control_type\":\"text\",\"label\":\"Product area\",\"type\":\"string\",\"name\":\"product_area\"},{\"control_type\":\"text\",\"label\":\"Pe team\",\"type\":\"string\",\"name\":\"pe_team\"},{\"control_type\":\"text\",\"label\":\"Target project\",\"type\":\"string\",\"name\":\"target_project\"},{\"control_type\":\"text\",\"label\":\"Product manager\",\"type\":\"string\",\"name\":\"product_manager\"},{\"control_type\":\"text\",\"label\":\"Status\",\"type\":\"string\",\"name\":\"status\"},{\"control_type\":\"text\",\"label\":\"Created\",\"render_input\":\"date_time_conversion\",\"parse_output\":\"date_time_conversion\",\"type\":\"date_time\",\"name\":\"created\"},{\"control_type\":\"text\",\"label\":\"Updated\",\"render_input\":\"date_time_conversion\",\"parse_output\":\"date_time_conversion\",\"type\":\"date_time\",\"name\":\"updated\"},{\"control_type\":\"text\",\"label\":\"Source of enhancement request\",\"type\":\"string\",\"name\":\"source_of_enhancement_request\"},{\"control_type\":\"text\",\"label\":\"Customer company\",\"type\":\"string\",\"name\":\"customer_company\"},{\"control_type\":\"text\",\"label\":\"Pm triage breach\",\"render_input\":null,\"parse_output\":null,\"toggle_hint\":\"Select from option list\",\"toggle_field\":{\"label\":\"Pm triage breach\",\"control_type\":\"text\",\"toggle_hint\":\"Use custom value\",\"type\":\"boolean\",\"name\":\"pm_triage_breach\",\"render_input\":null,\"parse_output\":null},\"type\":\"boolean\",\"name\":\"pm_triage_breach\"},{\"control_type\":\"text\",\"label\":\"Pm triage breach time\",\"render_input\":\"date_time_conversion\",\"parse_output\":\"date_time_conversion\",\"type\":\"date_time\",\"name\":\"pm_triage_breach_time\"}]", "sql": "with \n\nbreach_times as (\n    select key, sla_name, breached, breachtime, row_number() over (partition by key order by breachtime desc) as rn\n    from bi_db.atlassian.jsm_psm_issues_sla\n    where sla_name = 'PM_TRIAGE_SLA'\n    order by key\n),\n\nbreach_time as (\n    select *\n    from breach_times\n    where rn = 1\n)\n\nselect \nj.ticket_url, \nj.key,\nj.summary, \nj.description,\nj.product_area,\nj.pe_team,\nj.target_project,\nj.product_manager,\nj.status,\nj.created,\nj.updated, \nj.source_of_enhancement_request,\nj.customer_company,\nb.breached as pm_triage_breach,\nb.breachtime as pm_triage_breach_time\nfrom bi_db.atlassian.jsm_psm_issues j\nleft join breach_time b on b.key = j.key\nwhere j.issuetype = 'Enhancement'", "update_only": "false"}, "keyword": "action", "name": "run_custom_sql", "number": 3, "provider": "snowflake", "skip": false}, {"as": "38f87cc5", "block": [{"as": "747954b2", "block": [], "input": {"parameters": {"1b9473c2_54ae_47f3_9576_c3ec76f3bd6d": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"target_project\"]}')}", "347bdaaf_5194_4363_a3e0_2a1e04f8aca2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"product_area\"]}')}", "45e4add0_f5a6_4d3d_bcd0_2ed9e0cc15a8": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"ticket_url\"]}')}", "4fd3d64a_5fa4_4a8f_b5db_22a214b39b9f": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"key\"]}')}", "5a7eb53b_e407_41fd_a227_8f93e6a9c023": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"customer_company\"]}')}", "68cbd891_51dd_4e33_92fa_8651d7e09441": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"updated\"]}')", "75551508_f290_41de_88fd_d77306bebea5": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"summary\"]}')}", "a08c09e7_53d4_46dc_9bc7_a308696dc6c1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"status\"]}')}", "b2ae037d_640f_4c56_aeee_17d61b531080": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"pm_triage_breach_time\"]}')", "b57087c4_57c9_4d82_a27e_af9969896e53": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"source_of_enhancement_request\"]}')}", "d3779dbf_043c_4826_8c8e_d83c2e46b8fb": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"description\"]}').present? ? _dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"description\"]}').gsub('\"', \"'\")[0,9999] : null", "d71da57a_cf54_48ca_89a5_51e4ea1bd675": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"product_manager\"]}')}", "e267c871_7ff1_4b0b_a7bc_b1e39a5ed39b": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"created\"]}')", "e8bf2d92_807a_477b_9c2a_de56a876b993": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"pe_team\"]}')}", "f7651665_4dd2_413d_a704_f81972a4c1d4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"38f87cc5\",\"path\":[\"pm_triage_breach\"]}')}"}, "primary_field_id": "4fd3d64a-5fa4-4a8f-b5db-22a214b39b9f", "table_id": "33563"}, "keyword": "action", "name": "upsert_record", "number": 5, "provider": "workato_db_table", "skip": false}], "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"2a246498\",\"path\":[\"rows\"]}')}"}, "keyword": "foreach", "name": "", "number": 4, "provider": "", "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"2a246498\",\"path\":[\"rows\"]}')}"}, {"as": "9e9e7b09", "block": [{"as": "6b5e3996", "block": [], "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"9e9e7b09\",\"path\":[\"type\"]}')}: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"9e9e7b09\",\"path\":[\"message\"]}')} (Retry count: #{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"9e9e7b09\",\"path\":[\"retry_count\"]}')})", "stop_with_error": "true"}, "keyword": "stop", "name": "", "number": 7, "provider": "", "skip": false}], "input": {"max_retry_count": "3", "retry_interval": "5"}, "keyword": "catch", "name": "", "number": 6, "provider": "", "skip": false}], "input": {}, "keyword": "try", "name": "", "number": 2, "provider": "", "skip": false}], "input": {"time_unit": "days", "trigger_at": "00:00:00", "trigger_every": "1"}, "keyword": "trigger", "name": "scheduled_event", "number": 1, "provider": "clock", "skip": false}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

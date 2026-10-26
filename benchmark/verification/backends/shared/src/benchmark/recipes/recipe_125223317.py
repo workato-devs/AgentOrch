@@ -22,11 +22,6 @@ CA_SOBJECT = "Campaign_Activity__c"
 SEARCH_AS = "0e6d3a4e"
 UPDATE_AS = "978585f0"
 FILTER_CAMPAIGN_FRAGMENT = "7011N000000xp4nQAA"
-# Schema-in-seed contract: Campaign_Activity__c ALREADY EXISTS in the
-# benchmark org (114149061 / 88707765 precedent; object + Campaign__c/
-# Email__c/Notes__c verified live via tooling 2026-07-07). All three are
-# TEXT custom fields -- ensure_custom_field only re-grants FLS, it never
-# re-creates them. No mdapi deploy involved.
 REQUIRED_SCHEMA = [
     {"sobject": CA_SOBJECT, "field": "Campaign__c", "sf_type": "Text"},
     {"sobject": CA_SOBJECT, "field": "Email__c", "sf_type": "Text"},
@@ -37,57 +32,6 @@ _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SAME_DAY_RE = re.compile(r"^\$SAME_DAY_AS:([A-Za-z0-9_]+)$")
 _CREATED_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}\+0000$")
 
-# salesforce.updated_custom_object on Campaign_Activity__c (as d808c1bc,
-# since 2024-01-01). The trigger payload is SEED-AUTHORED (never polled --
-# 122911418 precedent); it dereferences exactly Campaign__c / Email__c
-# (search filters), Notes__c (update value) and CreatedDate (day-equality).
-#
-# TRIGGER FILTER (2 AND conditions):
-#   1. Campaign__c contains '7011N000000xp4nQAA'  (org-foreign campaign id
-#      living INSIDE a benchmark-authored Text value)
-#   2. Notes__c present
-# Body:
-#   2  salesforce.search_sobjects 0e6d3a4e (LIVE): Campaign_Activity__c,
-#      non-metadata input keys map to EQUALITY filters (Campaign__c =
-#      trigger.Campaign__c AND Email__c = trigger.Email__c), field_list
-#      Id/OwnerId/CreatedDate/Notes__c/Email__c/Campaign__c is metadata-only
-#      (ignored by the adapter), limit 150. Result carries records + the
-#      sobject-named list + list_size.
-#   IF 3 (list_size greater_than '1'):
-#     FOREACH 4 (as d8fe011c over 0e6d3a4e.Campaign_Activity__c, simple):
-#       IF 5 (foreach.Notes__c blank):
-#         IF 6 ('=foreach.CreatedDate.to_date' equals_to
-#               '=trigger.CreatedDate.to_date'  -- DAY equality, time-of-day
-#               truncated on both sides):
-#           7  salesforce.update_sobject 978585f0 (LIVE):
-#              id = foreach.Id, Notes__c = trigger.Notes__c
-#
-# DETERMINISM: live CreatedDate is an UNSEEDABLE audit field. The same-day
-# variant authors trigger.CreatedDate as the token '$SAME_DAY_AS:<REF>'; the
-# seeder reads the referenced record's LIVE CreatedDate back from the
-# provision snapshot and derives a same-UTC-day timestamp at a DIFFERENT
-# clock time (proving .to_date truncation, not string equality). Because
-# CreatedDate is immutable once seeded, the derived comparison is stable at
-# any later run time -- no midnight coupling. Different-day variants pin a
-# fixed past timestamp instead.
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 dup_backfilled_same_day: filter true; trigger-record + blank-
-#   notes dup share Campaign+Email (list_size 2 > 1); dup CreatedDate is
-#   same-day as the derived trigger.CreatedDate -> ONE update writes
-#   trigger.Notes__c onto the dup; the trigger-record row is skipped at IF 5
-#   (its Notes are present); an off-email decoy proves the Email__c filter.
-# - variant_01 dup_blank_but_older_day: IF 6 false (fixed past
-#   trigger.CreatedDate) -> no update.
-# - variant_02 dup_notes_present_skip: IF 5 false (dup already carries
-#   Notes) -> no update.
-# - variant_03 no_duplicates: IF 3 false (only the trigger record matches;
-#   off-campaign and off-email decoys prove BOTH equality filters).
-# - variant_04 trigger_filter_skip: blank trigger.Notes__c fails filter
-#   condition 2 -> zero actions, nothing seeded live.
-#
-# Backends: salesforce LIVE. Cleanup deletes all owned Campaign_Activity__c
-# records in a finally block (the recipe updates a benchmark-owned record).
 
 _STRUCTURE_PINS_JSON = r"""[{"as": "d808c1bc", "filter": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"d808c1bc\",\"path\":[\"Campaign__c\"]}')}", "operand": "contains", "rhs": "7011N000000xp4nQAA"}, {"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"d808c1bc\",\"path\":[\"Notes__c\"]}')}", "operand": "present", "rhs": ""}], "operand": "and", "type": "compound"}, "input": {"field_list": "Id\nOwnerId\nWorked_By__c\nCampaign__c\nName\nNotes__c\nSDR_Notes__c\nManager_Notes__c\nLead__c\nContact__c\nCreatedDate\nLastActivityDate\nEmail__c", "since": "<anon>2024-01-01T00:00:00-08:00</anon>", "sobject_name": "Campaign_Activity__c"}, "keyword": "trigger", "name": "updated_custom_object", "number": 1, "provider": "salesforce", "skip": false}, {"as": "0e6d3a4e", "input": {"Campaign__c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"d808c1bc\",\"path\":[\"Campaign__c\"]}')}", "Email__c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"d808c1bc\",\"path\":[\"Email__c\"]}')}", "field_list": "Id\nOwnerId\nCreatedDate\nNotes__c\nEmail__c\nCampaign__c", "limit": "150", "sobject_name": "Campaign_Activity__c"}, "keyword": "action", "name": "search_sobjects", "number": 2, "provider": "salesforce", "skip": false}, {"as": null, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"0e6d3a4e\",\"path\":[\"list_size\"]}')}", "operand": "greater_than", "rhs": "1"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": null, "number": 3, "provider": null, "skip": false}, {"as": "d8fe011c", "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"0e6d3a4e\",\"path\":[\"Campaign_Activity__c\"]}')}"}, "keyword": "foreach", "name": null, "number": 4, "provider": null, "repeat_mode": "simple", "skip": false, "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"0e6d3a4e\",\"path\":[\"Campaign_Activity__c\"]}')}"}, {"as": null, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d8fe011c\",\"path\":[\"Notes__c\"]}')}", "operand": "blank", "rhs": ""}], "operand": "and", "type": "compound"}, "keyword": "if", "name": null, "number": 5, "provider": null, "skip": false}, {"as": null, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d8fe011c\",\"path\":[\"CreatedDate\"]}').to_date", "operand": "equals_to", "rhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"d808c1bc\",\"path\":[\"CreatedDate\"]}').to_date"}], "operand": "and", "type": "compound"}, "keyword": "if", "name": null, "number": 6, "provider": null, "skip": false}, {"as": "978585f0", "input": {"Notes__c": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"salesforce\",\"line\":\"d808c1bc\",\"path\":[\"Notes__c\"]}')}", "id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"d8fe011c\",\"path\":[\"Id\"]}')}", "sobject_name": "Campaign_Activity__c"}, "keyword": "action", "name": "update_sobject", "number": 7, "provider": "salesforce", "skip": false}]"""
 

@@ -23,50 +23,6 @@ UPSERT_AS = "5d679a2e"
 SNOWFLAKE_TABLE = "GOOGLE.GOOGLE_ANALYTICS_WEEKLY_USER_TRAFFIC"
 KEY_COLUMN = "ROW_NUMBER"
 
-# clock.scheduled_event (payload-less; trigger_input must be exactly {}) ->
-#   2  workato_variable.declare_list e0f225fa (MOCK Workato-internal state):
-#      'Google Analytics Weekly Cost Metrics' 7-col list, empty init —
-#      observable only via the trace.
-#   3  google_sheets.get_spreadsheet_rows_v4 99ff93ec (LIVE, env-bound
-#      spreadsheet/tab): get_spreadsheet_rows_v4 has NO col_ aliasing (only
-#      search_rows aliases; re-probed 2026-07-08) so the tab headers MUST be
-#      the node schema's col_-LITERAL names INCLUDING SPACES: col_Date /
-#      'col_End Date' / 'col_Week Number' / 'col_NORAM Organic' /
-#      'col_NORAM Direct' / 'col_NORAM Referral' (registered twin 91495261
-#      seeds col_-literal headers the same way; its underscore spelling
-#      follows ITS schema — this recipe's schema carries spaces). The live
-#      snapshot supplies row_number automatically (header row 1 -> first data
-#      row is row_number 2).
-#   4  workato_variable.insert_to_list_batch 952fcb9a (MOCK): name
-#      '45cfe61a-…:e0f225fa' -> variable_target parts[1] = e0f225fa;
-#      list_items = ____source over the sheet rows (col_ current_item derefs)
-#      appended to the declare-step buffer.
-#   5  snowflake.upsert_rows_batch 5d679a2e (LIVE): the SAME ____source
-#      mapping over the sheet rows (NOT the list) upserted into
-#      GOOGLE.GOOGLE_ANALYTICS_WEEKLY_USER_TRAFFIC keyed on ROW_NUMBER —
-#      create-vs-update pivots on ROW_NUMBER existence in the live table.
-#
-# NEAR-TWIN of REGISTERED 91495261 (same trigger as-id bee88ce4, same upsert
-# as-id 5d679a2e; delta = +declare_list/+insert_to_list_batch, NORAM columns,
-# key ROW_NUMBER vs START_DATE, GA table vs LinkedIn). Module follows its
-# shape with the two list-step trace expectations added; seed columns are
-# string-typed per the 91495261 precedent (row_number is number — the live
-# snapshot yields ints).
-#
-# Branch mapping: linear recipe; the loop boundary is the sheet row count
-# (0/1/N drives both the batch list insert and the upsert row set) and the
-# upsert pivot is per-row create-vs-update:
-# - v0 one_row_created (1 row -> created 1/updated 0 into empty table)
-# - v1 multi_row_created (3 rows -> 3 creates)
-# - v2 empty_sheet (0 rows -> ____source [] -> empty list append + 0 upserts)
-# - v3 update_vs_create (2 rows, ROW_NUMBER 2 pre-seeded -> updated 1/created 1)
-# - v4 sparse_cells (blank NORAM cells persist as empty strings)
-#
-# Backends: google_sheets LIVE (seed fully overwrites the env-bound tab every
-# run -> no sheet cleanup needed; the run only READS it — snapshot equality
-# pinned) + snowflake LIVE (create-or-replace seed; dropped in the runner's
-# finally, fail-fast). The physical sheets tab and BENCH_DB table are shared
-# benchmark resources — never run sheets/snowflake lanes concurrently.
 SHEET_HEADERS = [
     "col_Date",
     "col_End Date",
@@ -112,9 +68,6 @@ EXPECT_KEYS = (
     "final_row_count",
 )
 MAX_ROWS = 20
-# USER_ENTERED cell traps (batch-07 live re-pins): bare YYYY-MM-DD dates and
-# bare HH:MM(:SS) times are re-rendered by Sheets — refuse them in seeds
-# (91495261 precedent suffixes date-like values instead).
 _BARE_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _BARE_TIME_RE = re.compile(r"\d{1,2}:\d{2}(:\d{2})?")
 

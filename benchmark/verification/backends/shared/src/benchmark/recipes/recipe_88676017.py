@@ -15,44 +15,6 @@ SEED_TYPE = "recipe_function_contact_open_opportunity_lookup_variant"
 TRACK = "live_salesforce_recipe_function_open_opportunity_lookup"
 TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
-# Callable recipe function (trigger as 39ac7094; parameters {email}; result
-# schema {opportunity_id, opportunity_name, opportunity_stage}):
-#   step 2  salesforce.search_sobjects Contact by Email (66389f6f, limit 150)
-#   IF 3 (list_size == 0):
-#     step 4 return_result {N/A, N/A, N/A}  (return_result is a TERMINAL tool,
-#            so the step-5 `stop` node is never traced)
-#   IF 6 (Contact current_item AccountId present  — first-contact semantics):
-#     step 7  salesforce.search_sobjects Account by Id (0f27084d)
-#     step 8  salesforce.search_sobjects Opportunity by AccountId (5da0fcde)
-#     FOREACH 9 (f28ae75e over Opportunity):
-#       step 10 workato_list.accumulate_list_items 'Opp stage and Date'
-#               (2a425683: {Stage, Date, opp_name, id})
-#     step 11 workato_smart_list.create_list 'Opp Stage and Date' (6a7afb3a,
-#             from the accumulated list; zero opportunities -> EMPTY list whose
-#             SQLite table is still registered via the node's declared columns)
-#     step 12 workato_smart_list.query_list (bfa6b004: open-stage IN (...) +
-#             ORDER BY Date DESC — latest close date first)
-#     IF 13 (rows size > 0): step 14 return_result (first row = latest open
-#             opportunity; TERMINAL)
-#   steps 15-28 are ALL `skip: true` in the raw recipe (author-disabled):
-#   the OpportunityContactRole path, both declare_lists, both foreach loops,
-#   the Opportunity_ID_18_Characters__c search, the 'Opportunities' smart list,
-#   the NOT LIKE "Closed Lost" query AND the genuinely truncated step-27 SQL
-#   (dangling `AND `) are DEAD CODE: raw_executor.execute_node records a
-#   {skipped: true} trace row and never executes a skipped node. They are
-#   pinned below (including both disabled SQL texts, verbatim) so validation
-#   fails loudly if the raw recipe ever re-enables them — a re-enable would
-#   require the OCR/custom-field build (Opportunity.Opportunity_ID_18_
-#   Characters__c ensure_custom_field provisioning), which this module
-#   deliberately does NOT provision while the region stays disabled.
-#
-# Reachable-branch consequence: on the IF-13-false / IF-6-false fall-through
-# paths the job ends with NO return_result (return_value null) because every
-# later return lives in the skipped region.
-#
-# Salesforce runs LIVE (searches scoped to benchmark-owned seeded records);
-# the recipe performs NO Salesforce writes. Cleanup: harness.salesforce.cleanup
-# in a finally block removes every record this run's seed provisioned.
 TRIGGER_PARAMETERS_SCHEMA_JSON = (
     '[{"name":"email","type":"string","optional":false,"control_type":"text","label":"Email"}]'
 )
@@ -176,16 +138,12 @@ _DISABLED_LIST_NAME_PILL = (
     "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_smart_list\","
     "\"line\":\"3724be65\",\"path\":[\"list_name\"]}')}"
 )
-# Step 25 (disabled): NOT LIKE query, trailing space verbatim.
 DISABLED_NOT_LIKE_SQL = (
     "SELECT " + _disabled_list_col("opp_ID") + "," + _disabled_list_col("opp_name") + ","
     + _disabled_list_col("opp_stage")
     + " FROM " + _DISABLED_LIST_NAME_PILL
     + " WHERE " + _disabled_list_col("opp_stage") + ' NOT LIKE "Closed Lost" '
 )
-# Step 27 (disabled): the raw recipe's SQL is genuinely TRUNCATED — it ends
-# with a dangling `AND ` and an unclosed parenthesis. Invalid in any SQL
-# engine, including real Workato smart lists; pinned verbatim as evidence.
 DISABLED_TRUNCATED_SQL = (
     "SELECT " + _disabled_list_col("opp_ID") + "," + _disabled_list_col("opp_name") + ","
     + _disabled_list_col("opp_stage")
@@ -193,10 +151,6 @@ DISABLED_TRUNCATED_SQL = (
     + " WHERE (" + _disabled_list_col("opp_stage") + ' NOT LIKE "Closed Lost" AND '
 )
 DISABLED_CUSTOM_FIELD = "Opportunity_ID_18_Characters__c"
-# Every node of the author-disabled region, pinned as (number, keyword,
-# provider, name, as, skip). Any change here (re-enable, reorder, edit) must
-# fail validation: the region's OCR path + custom-field search would need a
-# real build (and Opportunity_ID_18_Characters__c provisioning) if revived.
 EXPECTED_DISABLED_NODES: list[tuple[int, str, str | None, str | None, str | None]] = [
     (15, "action", "salesforce", "search_sobjects", "081b79c6"),
     (16, "if", None, None, None),

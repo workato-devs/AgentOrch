@@ -10,10 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_97310798
 
 
-# Weekly clock trigger runs a Snowflake custom SQL aggregate
-# (snowflake.run_custom_sql -> numPayingCustomers over workato_usage.accounts_dim),
-# then loops the single result row and appends Count/LastRunAt to the live Google
-# Sheet (google_sheets.add_spreadsheet_row_v4).
 RECIPE_ID = "97310798"
 SEED_TYPE = "clock_snowflake_sql_to_sheet_num_paying_customers_variant"
 TRACK = "live_snowflake_read_sheet_append"

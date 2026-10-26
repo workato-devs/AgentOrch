@@ -21,10 +21,6 @@ DECLARE_STEP_AS = "c440cb90"
 SQL_STEP_AS = "cd4e03b9"
 UPDATE_VAR_STEP_AS = "f80af25c"
 UPDATE_ROWS_STEP_AS = "bedec5f9"
-# Literal 2-part names exactly as the recipe references them: the SQL FROM/
-# JOIN and the update action's table string. Register EXACTLY these keys so
-# _rewrite_sql and the update resolve the same physical bench tables
-# (<SNOWFLAKE_DATABASE>.SIGMA.* / .PUBLIC.* — probed on the current tree).
 EXCLUSION_TABLE = "SIGMA.USER_ALERT_EXCLUSION_LIST"
 EMPLOYEE_TABLE = "PUBLIC.EMPLOYEE"
 TABLE_COLUMNS: dict[str, dict[str, str]] = {
@@ -41,53 +37,6 @@ RAW_SQL = (
     "WHERE\nUPPER(E.STATUS) = 'TERMINATED' AND\nEAUL.ACTIVE = TRUE "
 )
 
-# clock.scheduled_event (as b9ad7cba, daily 22:00 Etc/UTC, comment '6AM SGT')
-# — payload-less; NO trigger/time/job_context deref anywhere (trigger_input
-# must be exactly {}; the SQL has no CURRENT_* so no current_time seed).
-#   2  workato_variable.declare_variable c440cb90 (mock): declares string
-#      'employee_i_ds_to_update' with NO default -> the declare TRACE result
-#      is {} (variable nil); step_outputs[c440cb90] is mutated in place later.
-#   3  snowflake.run_custom_sql cd4e03b9 (LIVE): RAW_SQL verbatim — active
-#      exclusion rows INNER JOINed to PUBLIC.EMPLOYEE, kept only when
-#      UPPER(E.STATUS) = 'TERMINATED' (case-insensitivity arm) AND
-#      EAUL.ACTIVE = TRUE (already-inactive arm); a live row carries BOTH the
-#      original-case and lowercase alias keys ({'EMPLOYEE_ID':101,
-#      'employee_id':101}); rows_affected = len(rows).
-#   IF 4 (rows size greater_than '0'):
-#     5  workato_variable.update_variables f80af25c: employee_i_ds_to_update =
-#        =_dp(rows).format_map("'%{employee_id}'").join(",\n") — named
-#        %{}-placeholder format_map reading the LOWERCASE alias key, joined
-#        with a REAL newline (decode_workato_string handles the \n; probed);
-#        target 'uuid:c440cb90:field' writes the step-2 declare output.
-#     6  snowflake.update_rows bedec5f9 (LIVE): table EXCLUSION_TABLE, where
-#        "EMPLOYEE_ID IN (#{c440cb90.employee_i_ds_to_update})" — the rendered
-#        IN-list keeps the literal newline and live Snowflake coerces the
-#        quoted string ids against the NUMBER column (triage live-verified);
-#        columns {active 'false' (custom-value toggle STRING on a BOOLEAN
-#        column — live coercion verified, reads back boolean false),
-#        reason REASON_TEXT}; result carries rows_updated + updated.
-#   IF false -> the recipe ENDS after 2 actions; the variable stays nil and
-#   the live tables are untouched.
-#
-# Branch coverage: variant_00 IF-true with 2 qualifying rows (one per UPPER
-# casing) + one distractor per WHERE arm; variant_01 IF-false (both WHERE
-# arms individually kill a row); variant_02 IF-true with a join-orphan
-# exclusion row (INNER JOIN arm) that stays active.
-#
-# DETERMINISM NOTE: the SELECT has no ORDER BY. Qualifying rows are pinned as
-# EXACT strings in seed order (triage live-verified insertion order on the
-# freshly created 4-row table); the verifier fragment ALSO cross-checks the
-# variable string against the join over the rows the SELECT actually
-# returned, so a live re-order fails with a detail naming the re-order
-# rather than a silent wrong-value pass. Every id set is additionally
-# re-derived from the initial live snapshot (multiset), so an engine that
-# drops a WHERE arm fails against its own seeded data.
-#
-# Backends: snowflake LIVE (create-or-replace seeds under the literal 2-part
-# keys, registered drop in the runner's finally — updates land in benchmark-
-# owned tables); workato_variable is Workato-internal (mock runtime tool).
-# No catch anywhere: force_action_error is rejected (it would fail the whole
-# run, not exercise a branch).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "b9ad7cba", "skip": false, "input": {"time_unit": "days", "timezone": "Etc/UTC", "trigger_at": "22:00:00", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "c440cb90", "skip": false, "input": {"variables": {"schema": "[{\"control_type\":\"text\",\"label\":\"Employee IDs to Update\",\"name\":\"employee_i_ds_to_update\",\"type\":\"string\",\"optional\":true}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "cd4e03b9", "skip": false, "input": {"output_schema": "[{\"name\":\"employee_id\",\"type\":\"integer\",\"optional\":false,\"control_type\":\"integer\",\"label\":\"Employee ID\",\"parse_output\":\"integer_conversion\"}]", "sql": "SELECT\nEAUL.EMPLOYEE_ID AS EMPLOYEE_ID\n\nFROM SIGMA.USER_ALERT_EXCLUSION_LIST AS EAUL\n\nINNER JOIN PUBLIC.EMPLOYEE AS E ON E.ID = EAUL.EMPLOYEE_ID\n\nWHERE\nUPPER(E.STATUS) = 'TERMINATED' AND\nEAUL.ACTIVE = TRUE ", "update_only": "false"}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"cd4e03b9\",\"path\":[\"rows\", {\"path_element_type\": \"size\"}]}')}", "operand": "greater_than", "rhs": "0"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "f80af25c", "skip": false, "input": {"employee_i_ds_to_update": "=_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"cd4e03b9\",\"path\":[\"rows\"]}').format_map(\"'%{employee_id}'\").join(\",\\n\")", "name": "c2cf60d0-5620-4be0-b5a7-18a3bfc7780b:c440cb90:employee_i_ds_to_update"}, "block": []}, {"number": 6, "keyword": "action", "provider": "snowflake", "name": "update_rows", "as": "bedec5f9", "skip": false, "input": {"columns": {"active": "false", "reason": "User is no longer with the Company"}, "table": "SIGMA.USER_ALERT_EXCLUSION_LIST", "where": "EMPLOYEE_ID IN (#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"c440cb90\",\"path\":[\"employee_i_ds_to_update\"]}')})"}, "block": []}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

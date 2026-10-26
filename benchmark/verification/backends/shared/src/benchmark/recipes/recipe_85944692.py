@@ -21,57 +21,12 @@ UPDATE_AS = "74ec3e0a"
 CATCH_AS = "8471803f"
 LOGGER_AS = "70301f6f"
 REPLACEMENT_SECTION_TEXT = ":white_check_mark: Marked as completed"
-# The raw replacement block input, verbatim (drives blocks_to_update pinning).
 REPLACEMENT_INPUT_BLOCK = {
     "block_type": "section_with_text",
     "button_type": "continue_flow",
     "section_text": REPLACEMENT_SECTION_TEXT,
 }
 
-# slack_bot.bot_command_v2 (as 2849d972, domain 'certinia', name 'confirm',
-# scope 'reminder'; declared parameter blockId — the PILL derefs the lowercase
-# 'blockid', so the trigger payload MUST carry the lowercase key; a camelCase
-# 'blockId' seed silently misses the pill and routes to the catch, probe-
-# verified). Dereferenced trigger pills: parameters.blockid and
-# context.original_message_json. Body:
-#   TRY (step 2)
-#     3  slack_bot.update_blocks_by_block_id 74ec3e0a (LIVE chat.update):
-#        message_json = trigger context.original_message_json (string JSON;
-#        channel+ts REQUIRED, fail-fast), blocks_to_update = [{block_id =
-#        parameters.blockid, blocks: [section_with_text ':white_check_mark:
-#        Marked as completed'], remove_block 'false'}]. The engine replaces
-#        the target block IN PLACE (order preserved, replacement inherits the
-#        target block_id) and re-posts the FULL block list via chat.update.
-#        remove_block is the literal string 'false' (toggleCfg) so the
-#        remove path is DEAD BY CONSTRUCTION. raw 'surface': 'message' is
-#        not consumed by the engine (chat.update IS the message surface).
-#   CATCH (step 4, as 8471803f, max_retry 0)
-#     5  logger.log_message 70301f6f: '#{catch.type} : #{catch.message}' —
-#        catch.type renders the exception CLASS NAME (batch-04 convention);
-#        internal runtime marker (in trace/executed_action_count, never in
-#        tool_calls).
-#
-# Branch coverage (3 variants):
-# - variant_00 confirm_replaces_block: 2-block seeded live message, blockid
-#   targets the trailing actions block -> replaced by the checkmark section.
-# - variant_01 target_mid_message_multi_block: 3-block message, target in the
-#   MIDDLE -> only the middle block replaced, neighbours byte-identical
-#   (in-place order proof).
-# - variant_02 catch_logs_type_and_message: force_action_error on 74ec3e0a
-#   fires BEFORE arg resolution -> no chat.update, no tool_calls; the catch
-#   logs 'RawRecipeExecutionError : <forced text>'.
-# Non-branches (probe-verified data hazards, NOT variants): a blockid that
-# matches NO seeded block APPENDS the replacement at the end (seeder requires
-# exactly one match); a missing/miscased blockid resolves MISSING -> the tool
-# raises 'Slack block update missing block_id' into the catch.
-#
-# Backends: slack LIVE. The seed live-posts a bot-owned message in the
-# override channel (86735388/125515885 seed_slack_message pattern) and
-# injects its REAL {channel, ts, text, blocks} JSON into trigger
-# context.original_message_json — a synthetic JSON without channel/ts is
-# fail-fast rejected by the engine. Cleanup DELETES the seeded message in
-# finally (required: the run chat.updates that exact ts; rerun determinism).
-# logger is Workato-internal (mock).
 
 _STRUCTURE_PINS_JSON = r'''
 [

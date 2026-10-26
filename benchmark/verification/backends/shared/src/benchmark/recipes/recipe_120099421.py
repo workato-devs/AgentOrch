@@ -26,10 +26,6 @@ INNER_SEARCH_AS = "3d6a002e"
 ADD_STEP_AS = "78b012f3"
 STOP_STEP_AS = "aa772329"
 LOOKUP_TABLE_ID = "3300543"
-# The literal 3-part names the SQL references; they MUST be the registered
-# snowflake_live table keys so _rewrite_sql maps them onto the benchmark
-# database (<SNOWFLAKE_DATABASE>.WORKATO_USAGE.APPLICATIONS_SNAPSHOT /
-# <SNOWFLAKE_DATABASE>.PLG.RECIPE_SOPHISTICATION_APP_TIER).
 SNAPSHOT_TABLE = "product.workato_usage.applications_snapshot"
 TIER_TABLE = "product.plg.recipe_sophistication_app_tier"
 SNAPSHOT_COLUMNS = {"TITLE": "string", "CATEGORY": "string", "ENTRY_DATE": "date"}
@@ -47,41 +43,6 @@ RAW_SQL = (
     "group by all"
 )
 
-# clock.scheduled_event (as f42a94d0, every 7 days at 00:00) — payload-less;
-# NOTHING is dereferenced from the trigger output (trigger_input must be {}).
-#   2  snowflake.run_custom_sql 39b44e18 (LIVE): RAW_SQL. The LEFT JOIN's
-#      second ON predicate (entry_date = current_date - 1) gates the TIER
-#      side, so a snapshot row with the wrong entry_date joins to NULL and
-#      the `app_tier in ('1','2','3','4')` WHERE predicate drops it; category
-#      and `not ilike '%secondary%'` prune the snapshot side; `group by all`
-#      dedupes identical (title, category, app_tier) triples. current_date is
-#      pinned via seed.snowflake_live.current_time (_rewrite_time fail-fast).
-#   3  lookup_table.search_entries 9f4b85c7 table 3300543 (mock) col2='app'
-#   IF 4: step-2 rows SIZE not_equals_to step-3 entries SIZE — a size-only
-#      comparison (faithful author blind spot: equal counts with DIFFERENT
-#      titles do nothing — pinned by a dedicated variant):
-#     FOREACH 5 (as e111e4a7) over step-2 rows, repeat_mode simple:
-#       6  lookup_table.search_entries 3d6a002e col1 = foreach title
-#       IF 7 (3d6a002e entries size equals_to '0'):
-#         8  lookup_table.add_entry 78b012f3 col1/col2/col3 =
-#            foreach title/category/app_tier
-#   9  STOP aa772329 (stop_with_error false) — top level, ALWAYS executes:
-#      every trace ends in the stop marker.
-#
-# DETERMINISM RULE: the SQL has NO ORDER BY, so a multi-row result feeds the
-# foreach in nondeterministic live order and per-iteration trace pins become
-# flaky groundtruth. The seeder therefore requires expect.sql_rows to hold AT
-# MOST ONE row; size mismatches are driven from the lookup side (0 or 2+
-# seeded entries) and SQL-filter coverage comes from decoy rows the WHERE
-# clause excludes. Every branch stays reachable: IF-4 true/false, inner IF-7
-# true/false, foreach 1-iteration and 0-iteration paths.
-#
-# Backends: Snowflake runs LIVE (create-or-replace seed; BOTH tables dropped
-# in the runner's finally). The recipe only READS Snowflake — live snapshot
-# equality is verifier-pinned. lookup_table 3300543 is the Workato-internal
-# mock, per-variant isolated; add_entry writes are the terminal observables
-# (pinned via expect.final_lookup_rows). No try/catch exists, so
-# force_action_error is forbidden (it would fail the whole run).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "f42a94d0", "skip": false, "input": {"time_unit": "days", "trigger_at": "00:00:00", "trigger_every": "7"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "39b44e18", "skip": false, "input": {"output_schema": "[{\"name\":\"title\",\"type\":\"string\",\"optional\":false,\"label\":\"TITLE\",\"control_type\":\"text\"},{\"name\":\"category\",\"type\":\"string\",\"optional\":false,\"label\":\"CATEGORY\",\"control_type\":\"text\"},{\"name\":\"app_tier\",\"type\":\"string\",\"optional\":false,\"label\":\"APP_TIER\",\"control_type\":\"text\"}]", "parameters": {"schema": "[]"}, "sql": "select final_table.title, final_table.category, app_tier\nfrom product.workato_usage.applications_snapshot final_table\nleft join product.plg.recipe_sophistication_app_tier\non final_table.title = recipe_sophistication_app_tier.title   \nand final_table.entry_date = (current_date - 1)\nwhere \n    final_table.category = 'app'\n    and app_tier in ('1','2','3','4')\n    and final_table.title not ilike '%secondary%'\ngroup by all", "update_only": "false"}, "block": []}, {"number": 3, "keyword": "action", "provider": "lookup_table", "name": "search_entries", "as": "9f4b85c7", "skip": false, "input": {"lookup_table_id": "3300543", "parameters": {"col2": "app"}}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"39b44e18\",\"path\":[\"rows\", {\"path_element_type\": \"size\"}]}')}", "operand": "not_equals_to", "rhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"9f4b85c7\",\"path\":[\"entries\", {\"path_element_type\": \"size\"}]}')}"}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "foreach", "provider": "", "name": "", "as": "e111e4a7", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"39b44e18\",\"path\":[\"rows\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"39b44e18\",\"path\":[\"rows\"]}')}", "block": [{"number": 6, "keyword": "action", "provider": "lookup_table", "name": "search_entries", "as": "3d6a002e", "skip": false, "input": {"lookup_table_id": "3300543", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e111e4a7\",\"path\":[\"title\"]}')}"}}, "block": []}, {"number": 7, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"3d6a002e\",\"path\":[\"entries\", {\"path_element_type\": \"size\"}]}')}", "operand": "equals_to", "rhs": "0"}], "operand": "and", "type": "compound"}, "block": [{"number": 8, "keyword": "action", "provider": "lookup_table", "name": "add_entry", "as": "78b012f3", "skip": false, "input": {"lookup_table_id": "3300543", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e111e4a7\",\"path\":[\"title\"]}')}", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e111e4a7\",\"path\":[\"category\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"e111e4a7\",\"path\":[\"app_tier\"]}')}"}}, "block": []}]}]}]}, {"number": 9, "keyword": "stop", "provider": "", "name": "", "as": "aa772329", "skip": false, "input": {"stop_with_error": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

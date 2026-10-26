@@ -22,35 +22,6 @@ CATCH_AS = "2da14745"
 ERROR_RESPONSE_AS = "57671952"
 STOP_AS = "8ce124ba"
 
-# Structural sibling of family head 118162472 (same try/catch/return
-# skeleton). Its byte-twin 117564458 is OUTSIDE batch 06 (unbuilt). Shape:
-#   workato_api_platform.receive_request 751ec271 (request schema pins ONE
-#   required string param businessUnitCode; trigger seed is exactly
-#   {"request": {"businessUnitCode": ...}})
-#   TRY(2)> snowflake.search_rows_sql 60b10d1f (LIVE): 14-column SELECT from
-#     BUSINESS_PROCESS_DASHBOARD WHERE BU_CODE = :businessUnitCode (bind
-#     param rendered from the trigger request pill; pyformat rewrite in the
-#     live client) ORDER BY PROCESS_HIERARCHICAL_LEVEL, PROCESS_NAME.
-#     The bind WHERE is the data branch lever: match vs zero rows.
-#   return_response 83954e0e: 200 {businessProcesses: ____source over rows}.
-#     Six interpolated pills (id/businessUnitCode/name/hierarchicalLevel/
-#     hierarchicalLevelName/status; single-pill fullmatch keeps native types)
-#     plus EIGHT `=_dp(...).presence || nil` formula pills (parentId/
-#     currentAutomationLevel/targetAutomationLevel/workatoIntegrationLevel/
-#     currentAIInvolvementLevel/aiImpactLevel/projectPageUrl/
-#     completionPercentage) — Rails presence parity: NULL and '' -> null,
-#     0 STAYS 0 (probe-verified).
-#   CATCH 2da14745 (max_retry_count 0)> return_response 57671952: 400
-#     {error: catch message pill}; stop 8ce124ba is DEAD (return_response is
-#     terminal — catch variants expect executed_action_count 1, no stop row).
-# LOAD-BEARING seed typing (triage-proven): COMPLETION_PERCENTAGE is seeded
-# as a FLOAT column so a fractional pin (45.5) survives — NUMBER(38,0)
-# rounds on insert (45.5 -> 46). Level columns are NUMBER so hierarchical/
-# automation levels read back as native ints.
-# Backends: Snowflake LIVE (seeder create-or-replace, runner drops in
-# finally, READ-ONLY — snapshot equality pinned); api_platform is the
-# Workato-internal mock. Physical table name is shared across the
-# AUTOMATION_COMPASS family — never run family variants concurrently.
 DASHBOARD_TABLE = "AUTOMATION_COMPASS.BUSINESS_PROCESS_DASHBOARD"
 DASHBOARD_COLUMNS = {
     "PROCESS_ID": "string",
@@ -68,8 +39,6 @@ DASHBOARD_COLUMNS = {
     "PROJECT_PAGE_URL": "string",
     "COMPLETION_PERCENTAGE": "float",
 }
-# Response non-optional fields: every seeded row must fill these; the rest
-# may be omitted (NULL) to exercise the presence||nil -> null path.
 REQUIRED_ROW_KEYS = (
     "PROCESS_ID",
     "BU_CODE",

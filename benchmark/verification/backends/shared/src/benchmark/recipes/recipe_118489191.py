@@ -23,8 +23,6 @@ GRACEFUL_STOP_STEP = 5
 ERROR_STOP_STEP = 17
 FORCEABLE_STEPS = {"4cd73a31"}
 SERVICE_REPLY_STEPS = {"33035003", "f865207a", "50073cae"}
-# The 13 raw column headers, exactly as the search/update/add steps declare
-# them in column_headers (the benchmark tab is seeded with these).
 SHEET_HEADERS = [
     "Company",
     "First Name",
@@ -45,65 +43,6 @@ PAYLOAD_KEYS = (
     "phone", "comments", "time_zone", "leadid", "sfdcid",
 )
 
-# workato_webhooks.new_event (as a933e72a): payload {firstname, lastname,
-# email, company, campaign_id, phone, comments, time_zone, leadid, sfdcid
-# [, joinURL]}. Body (one big TRY):
-#   3  lookup_table.search_entries 4f1286a3 table 4195320 col3 =
-#      payload.campaign_id (Workato-internal mock; col2 event name, col4/col5
-#      spreadsheet/sheet [redirected to the benchmark tab], col6 slack
-#      channel, col7 bot command)
-#   4  IF entries size == 0 -> 5 STOP (stop_with_error=false, graceful)
-#   6  google_sheets.search_spreadsheet_rows_v4_new 4cd73a31 (LIVE):
-#      col_'Email Address' = payload.email, count 400
-#   7  workato_service.call_service 33035003 flow 45178540 {lead_id} ->
-#      reply.{Lead, Company, MKTO, SFDC} (deterministic seeded reply)
-#   8  workato_service.call_service f865207a flow 45178537
-#      {account_id, contact_id, lead_id from #7 SFDC} -> reply.record_type
-#   9  declare_variable 46e3f07e account_type = reply.record_type .presence
-#      or "New Lead"
-#   10 IF #6 rows size != 0 -> 11 update_row_v4_new fb8e9257 (row_number from
-#      the first matched row; 11 label-mapped columns incl. static Status
-#      'Waitlisted' + Cal Invite Sent? 'Sent (If Accepted)')
-#   12 ELSE -> 13 add_spreadsheet_row_v4 98f30966 (12 columns incl. col_ID =
-#      payload.leadid; sheet_name pill reads 4cd73a31['sheet'])
-#   14 slack_bot.post_bot_message 35a6b894 (LIVE; channel = LT col6 ->
-#      SLACK_CHANNEL_OVERRIDE; rendered text = title 'New Registrant for
-#      #{col2}' + 5 attachment_fields; buttons/title_link are metadata)
-#   CATCH 36d3b7d0 (max_retry 3/10s; the engine runs the try body once and
-#   the catch once -- retry config pinned at validate time only):
-#   16 call_service 50073cae flow 45178280 {error_message '(first last -
-#      email)#{catch.message}', job_id/job_url/recipe_id job_context pills,
-#      stop_recipe 'false'} -> 17 STOP stop_with_error=true
-#
-# Branch-mapping notes (recorded per benmark_rules):
-# - variant_00 campaign_not_found_stop: LT search misses -> graceful STOP 5
-#   after exactly one action.
-# - variant_01 existing_row_update: the seeded registrant row matches the
-#   email -> IF-10 update path + slack post.
-# - variant_02 new_row_add_new_lead: no matching row -> ELSE add path;
-#   f865207a.record_type '' -> account_type 'New Lead' (presence-or arm).
-# - variant_03 catch_error_notify_stop: forced error on the 4cd73a31 sheets
-#   search -> catch call_service (error_message interpolation + pinned
-#   job_context) -> STOP 17 with error.
-#
-# FLAGGED ENGINE GAPS (probe-proven, /tmp/probe_118489191.py) -- live-green
-# for variants 01/02 is blocked on two shared-file fixes:
-# - F1 (triage-flagged): the live sheets search result carries 'tab' but NOT
-#   the 'sheet' output field the raw extended_output_schema declares, so the
-#   ELSE add-row sheet_name pill resolves to the MISSING sentinel inside
-#   args['sheet'] (non-JSON-serializable trace). Fix: emit 'sheet' alias in
-#   GoogleSheetsLiveClient.search_rows.
-# - F2 (new): google_sheets_search_rows passes filter keys through RAW
-#   ('col_Email Address') while live rows are keyed by the actual headers
-#   ('Email Address'), so the search NEVER matches and the IF-10 update path
-#   is unreachable live. Fix: label-map the filter keys like the update/add
-#   adapters (or col_-strip matching in the live client).
-#
-# Backends: google_sheets LIVE (env-redirected benchmark tab; the seed fully
-# overwrites the tab per run -> deterministic reruns, no cleanup needed);
-# slack LIVE (ordinary observable post, never re-read -> no cleanup per the
-# cleanup principle); lookup_table + workato_service are Workato-internal
-# deterministic mocks (replies keyed by step as-id, fail-fast when absent).
 
 _STRUCTURE_PINS_JSON = r'''
 [

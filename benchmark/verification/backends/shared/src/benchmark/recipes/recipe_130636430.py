@@ -40,9 +40,6 @@ ALLOWED_TOOLS = [
     "salesforce.search_records",
     "workato_genie.workflow_return_result",
 ]
-# Match the authored trigger contract: only the target identifier is required.
-# The recipe itself explicitly branches on an absent/blank stage and accepts
-# the remaining update values as optional inputs.
 REQUIRED_PARAMETERS = ("opportunity_id",)
 
 

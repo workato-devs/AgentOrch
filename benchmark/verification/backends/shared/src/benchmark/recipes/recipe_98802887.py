@@ -22,77 +22,10 @@ TRIGGER_AS = "cf447f1d"
 TASK_SOBJECT = "Workato_Task__c"
 SEARCH_AS = "fcec7f45"
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName"}
-# The verbatim SOQL LIKE literal: the seed guard uses it to keep the DESC
-# partition deterministic (at most one MATCHING task per account per phase).
 LIKE_LITERAL = "First Value - Direct"
-# Workato_Task__c.CreatedDate is org-assigned with whole-second precision;
-# audit-field create is disabled in the benchmark org, so a real pause
-# between phases is the only faithful spacing (88704851/123859779 precedent
-# -- a tie would make ROW_NUMBER ... ORDER BY CreatedDate DESC
-# nondeterministic).
 CREATED_DATE_SPACING_SECONDS = 1.2
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_recipe_function.execute (as cf447f1d; parameters.AccountList[]
-# {AccountID, AccountName}; [] is the in-contract empty input). Linear body,
-# no if/foreach/try:
-#   2  workato_variable.declare_variable c6a252e3: account_ids_string =
-#      AccountList&.pluck("AccountID").join("','")
-#      (probe-verified: 2 accounts -> "id1','id2"; [] -> "")
-#   3  salesforce.search_sobjects_soql_v2 fcec7f45 (LIVE, limit 2000):
-#      SELECT Account__c, Status__c, CreatedDate FROM Workato_Task__c
-#      WHERE Activity_Type__c LIKE '%First Value - Direct%'
-#      AND Account__c IN ('<ids>') -- Workato_Task__c EXISTS in the
-#      benchmark org (17 fields incl all queried; FLS pre-granted --
-#      91361562 uses Activity_Type__c with no schema section); infix LIKE +
-#      IN are strict-only conditions
-#   4  workato_smart_list.create_list af71d26b 'FVStatus' from the records
-#      (primary Account__c, secondary CreatedDate; Workato-internal SQLite)
-#   5  workato_smart_list.query_list 65d5b389 (output_schema_by index):
-#      WITH all_fv_tasks AS (SELECT Account__c, Status__c, ROW_NUMBER()
-#      OVER (PARTITION BY Account__c ORDER BY CreatedDate DESC) AS rn FROM
-#      FVStatus) SELECT ... WHERE rn = 1 -- latest task per account; all
-#      identifiers resolve through list_name/columns pills; the projected
-#      rows carry BOTH source columns and the positional index aliases
-#      ({Account__c, Status__c, AccountID, Status} -- probe-verified)
-#   6  workato_recipe_function.return_result 656337a0:
-#      result.FVStatus ____source-mapped over the rows -- TERMINAL
-#
-# Branch mapping (linear recipe: coverage = SOQL predicate arms + rn dedup +
-# empty shapes; probe-verified end-to-end offline 2026-07-08):
-# - variant_00 dedup_latest_per_account: acct A has 2 matching tasks in
-#   separate phases (Open older, Completed newer) -> rn=1 keeps Completed;
-#   acct B has 1 -> {A,Completed},{B,Open}; a non-matching decoy on A proves
-#   the LIKE filter inside the partition.
-# - variant_01 like_filter_boundary: infix match 'CS First Value - Direct
-#   followup' flows through; 'Renewal Check' and 'First Value - Emb' (the
-#   Emb arm named in the recipe comment) are excluded.
-# - variant_02 account_not_in_list: a matching task on an account OUTSIDE
-#   AccountList is excluded by the IN pill.
-# - variant_03 zero_matches_empty_result: only a non-matching task exists ->
-#   records [] -> create_list registers the EMPTY table from the node schema
-#   -> query [] -> FVStatus [].
-# - variant_04 empty_account_list: AccountList [] -> ids string '' ->
-#   IN ('') matches nothing (a seeded matching decoy proves the emptiness is
-#   the filter, not missing data).
-#
-# ROW-ORDER NOTE (LIVE-FALSIFIED assumption, re-pinned 2026-07-08): the
-# final SELECT has NO ORDER BY -- the emitted order is SQLite's window sort
-# by Account__c BYTE order, and live-assigned SF id suffixes are NOT
-# lexicographically monotonic with creation order (live run: second-created
-# ...Ve6hb... sorted before first-created ...VeAWg..., flipping the rows).
-# expect.query_rows / expect.final_result.FVStatus are therefore compared as
-# exact MULTISETS by the verifier (120183307/121086244 no-ORDER-BY
-# precedent) with the order-preserving ____source row->result mapping still
-# pinned positionally against the ACTUAL query rows; the variant_00
-# return_result tool_expectation pins result_contains {FVStatus: "__ANY__"}
-# (presence only) because _contains_subset list compare is positional.
-#
-# Backends: salesforce LIVE (benchmark-owned Account + Workato_Task__c
-# records; cleanup deletes owned seeds in a finally block -- read-only
-# recipe, but owned records must not leak); workato_smart_list /
-# workato_variable / workato_recipe_function are Workato-internal
-# in-process. TWIN of 103939956 (same 5-step skeleton, payload deltas only).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

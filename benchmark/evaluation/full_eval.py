@@ -133,9 +133,7 @@ def _configure(run_name: str, backend: str, state_namespace: str) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     _load_env_file()
-    # Live-stall diagnostics: periodically dump every thread's stack to a
-    # file (srun --overlap is disabled on this cluster, so in-process dumps
-    # are the only way to see where a silent harness is stuck).
+    # Optional periodic thread dumps for diagnosing a stalled evaluation.
     dump_every = int(os.environ.get("HF_STACK_DUMP_SECONDS", "0") or "0")
     if dump_every > 0:
         import faulthandler

@@ -15,8 +15,6 @@ SEED_TYPE = "api_platform_try_catch_variant"
 TRACK = "api_platform_try_catch"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# try body: return_response 200 {ok:true} (as f3de4e0b, terminal on success).
-# catch body: return_response 400 {error: <catch.message>} (as 4e363e97).
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_api_platform", "return_response"),
     ("workato_api_platform", "return_response"),

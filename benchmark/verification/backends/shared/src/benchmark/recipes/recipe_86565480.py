@@ -24,10 +24,6 @@ EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("slack_bot", "post_bot_message"),
     ("slack_bot", "post_bot_message"),
 ]
-# Trace tools that the raw recipe may emit (membership check). Workato-internal
-# steps (declare_list / insert_to_list / log_message) surface in the raw trace
-# under the workato_runtime.* names but never reach result.tool_calls; only the
-# live Slack posts are real tool calls.
 EXPECTED_RAW_TOOLS: list[str] = [
     "workato_runtime.declare_list",
     "workato_runtime.insert_to_list",

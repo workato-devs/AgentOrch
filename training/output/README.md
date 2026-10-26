@@ -14,4 +14,4 @@ output/rl_checkpoints/trl/<run>/   TRL GRPO checkpoints (checkpoint-N)
 Run outputs are kept locally. Downloadable checkpoints are linked in the
 [project README](../../README.md#models) and the `hf_repo` column of
 `results/training.csv`. The experiment summary and archived aggregates are in
-`results/EXPERIMENTS.md` and `results/leaderboards/`.
+`results/training.csv` and `results/leaderboards/`.

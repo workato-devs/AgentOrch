@@ -15,12 +15,6 @@ SEED_TYPE = "navigate_url_api_variant"
 TRACK = "workato_api_platform_navigate_url"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API Platform endpoint "get_url_to_navigate". Declares an empty `response`
-# variable, and only when request.name == "get_url_to_navigate" does it
-# parse_json(request.arguments) into a {type, asset_id} document and pick a
-# Workato deep-link URL via an if/elsif ladder on document.type
-# (Team/Workspace, Project, Recipe, Custom Connector). It always returns 200
-# with response.data = the (possibly empty) `response` variable.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_variable", "declare_variable"),
     ("json_parser", "parse_json"),

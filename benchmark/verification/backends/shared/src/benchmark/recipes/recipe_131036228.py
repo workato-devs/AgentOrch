@@ -26,37 +26,6 @@ FOREACH_AS = "459ab803"
 DELETE_STEP_AS = "708d7eed"
 UPDATE_STEP_AS = "19f0eb6a"
 
-# clock.scheduled_event (as 25347c51, daily 06:19 America/Los_Angeles) —
-# payload-less; ALL time comes from the pinned seed 'now' (=6.months.ago
-# fails fast without it):
-#   2  workato_variable.declare_variable a57546c4 num_deleted = '0', schema
-#      integer (parse_output integer_conversion) — the declare stores int 0
-#      and registers num_deleted as an integer-typed variable field.
-#   3  lookup_table.get_entries c03a70f4 table 4506281 '[GTM] Google Drive
-#      Logs' (col1 Account Id, col2 Phase, col3 Date)
-#   FOREACH 4 (as 459ab803, repeat_mode simple) over the entries:
-#     IF 5: '=entry.col3.to_date' less_than '=6.months.ago':
-#       6  lookup_table.delete_entry 708d7eed (id = foreach id,
-#          ignore_not_found 'false')
-#       7  workato_variable.update_variables 19f0eb6a num_deleted =
-#          '=_dp(a57546c4.num_deleted) + 1' (input_mode raw) — the declared
-#          integer schema coerces each write, so the counter accumulates
-#          ARITHMETICALLY across iterations (1 -> 2 -> 3; engine fix
-#          f9d83a51, re-probed on HEAD): trace args stay engine-canonical
-#          STRINGS '1','2','3' while the stored variable is an int.
-#
-# Boundary semantics (probe-verified): '=6.months.ago' renders an ISO
-# DATETIME (now minus 6 months, e.g. '2026-01-07T10:00:00+00:00') while
-# '.to_date' renders a DATE ('2026-01-07'); the less_than compares the
-# strings, so a col3 equal to the cutoff DATE is deleted whenever the run
-# time-of-day is after midnight — exactly Workato's Rails semantics (Date
-# coerces to midnight, midnight < run time). The seeder REQUIRES a
-# non-midnight 'now' so the one edge where the engine's lexicographic
-# compare would diverge from Ruby (exact midnight equality: engine deletes,
-# Ruby's strict < keeps) can never be pinned as groundtruth.
-#
-# All backends are Workato-internal (lookup table + variable + scheduler):
-# mock per backend policy, per-variant isolated, no cleanup.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "25347c51", "skip": false, "input": {"time_unit": "days", "timezone": "America/Los_Angeles", "trigger_at": "06:19:00.000", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "a57546c4", "skip": false, "input": {"variables": {"data": {"num_deleted": "0"}, "schema": "[{\"name\":\"num_deleted\",\"type\":\"integer\",\"optional\":true,\"label\":\"num_deleted\",\"details\":{\"real_name\":\"num_deleted\"},\"control_type\":\"integer\",\"parent\":[\"variables\",\"data\"]}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "lookup_table", "name": "get_entries", "as": "c03a70f4", "skip": false, "input": {"lookup_table_id": "4506281"}, "block": []}, {"number": 4, "keyword": "foreach", "provider": "", "name": "", "as": "459ab803", "skip": false, "input": {"source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"c03a70f4\",\"path\":[\"entries\"]}')}"}, "repeat_mode": "simple", "source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"lookup_table\",\"line\":\"c03a70f4\",\"path\":[\"entries\"]}')}", "block": [{"number": 5, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "=_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"459ab803\",\"path\":[\"entry\",\"col3\"]}').to_date", "operand": "less_than", "rhs": "=6.months.ago"}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "lookup_table", "name": "delete_entry", "as": "708d7eed", "skip": false, "input": {"id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"foreach\",\"line\":\"459ab803\",\"path\":[\"id\"]}')}", "ignore_not_found": "false", "lookup_table_id": "4506281"}, "block": []}, {"number": 7, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "19f0eb6a", "skip": false, "input": {"input_mode": "raw", "name": "8c5a396a-44dc-440d-8723-6b88aa8870d7:a57546c4:num_deleted", "num_deleted": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"a57546c4\",\"path\":[\"num_deleted\"]}') + 1"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

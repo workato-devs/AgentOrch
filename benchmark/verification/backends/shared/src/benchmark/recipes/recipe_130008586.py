@@ -23,14 +23,7 @@ TRUNCATE_STEP_AS = "a6359a29"
 BATCH_STEP_AS = "55db3318"
 CATALOG_TABLE = "ITAM.HR_LAPTOP_CATALOG"
 LOOKUP_TABLE_ID = "4473690"
-# The connector's Order-by field carries a boolean EXPRESSION as its 4th term
-# (batch-08 engine fix: snowflake_live._order_by passes parenthesized
-# expression terms through verbatim; identifiers are still quoted). Live
-# Snowflake orders false < true ASC, so 'All'-location rows sort BEFORE
-# specific locations among numeric ties.
 ORDERBY = "display_inch asc, ram_gb asc, storage_gb asc, (office_location_id != 'All') asc"
-# Full live column set (verbatim from the node's extended_output_schema; the
-# read is SELECT * so every column must exist).
 CATALOG_COLUMNS = {
     "display_inch": "float",
     "id": "string",
@@ -45,7 +38,6 @@ CATALOG_COLUMNS = {
     "storage_gb": "integer",
     "type": "string",
 }
-# add_batch entry mapping (verbatim ____source parameters, current_item):
 COL_TO_SOURCE = {
     "col1": "id",
     "col2": "name",
@@ -53,28 +45,6 @@ COL_TO_SOURCE = {
     "col4": "slack_emoji",
 }
 
-# clock.scheduled_event (as a2fa32db, daily 06:00) -- payload-less; NO trigger
-# field is ever dereferenced (trigger_input must be exactly {}).
-#   2  snowflake.search_rows 476a4fe9 (LIVE): table ITAM.HR_LAPTOP_CATALOG
-#      (2-part -> BENCH_DB.ITAM.HR_LAPTOP_CATALOG), limit 100 offset 0 (offset
-#      0 is dropped by the connector), orderby carries the boolean-expression
-#      4th term -- the composed SQL is exactly
-#      select * from "BENCH_DB"."ITAM"."HR_LAPTOP_CATALOG" order by
-#      "DISPLAY_INCH" ASC, "RAM_GB" ASC, "STORAGE_GB" ASC,
-#      (office_location_id != 'All') ASC limit 100   (re-probed on HEAD).
-#      ORDER BY on the top-level query IS a live row-order guarantee, so this
-#      recipe pins batch entries and the final lookup table as ORDERED lists
-#      (unlike the no-ORDER-BY multiset siblings 119144543/105192491); the
-#      seeder requires the 4-term sort key to be UNIQUE per row.
-#   3  lookup_table.truncate a6359a29 table 4473690 (mock, Workato-internal):
-#      always runs -- proven by pre-seeded stale rows (deleted_rows pin).
-#   4  lookup_table.add_batch_of_entries 55db3318: ____source over
-#      476a4fe9.rows -> col1=id, col2=name, col3=office_location_id,
-#      col4=slack_emoji. Empty rows -> faithful no-op add (added_count 0).
-# IN-BATCH sibling of 119144543 (same truncate+add_batch tail; delta is the
-# read step: search_rows+orderby here vs run_custom_sql JOIN there).
-# Snowflake is READ-ONLY here: live snapshot equality before/after; cleanup
-# drops exactly the one seeded table. The lookup table is a per-variant mock.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "clock", "name": "scheduled_event", "as": "a2fa32db", "skip": false, "input": {"time_unit": "days", "trigger_at": "06:00:00.000", "trigger_every": "1"}, "block": [{"number": 2, "keyword": "action", "provider": "snowflake", "name": "search_rows", "as": "476a4fe9", "skip": false, "input": {"limit": "100", "offset": "0", "orderby": "display_inch asc, ram_gb asc, storage_gb asc, (office_location_id != 'All') asc", "table": "ITAM.HR_LAPTOP_CATALOG"}, "block": []}, {"number": 3, "keyword": "action", "provider": "lookup_table", "name": "truncate", "as": "a6359a29", "skip": false, "input": {"lookup_table_id": "4473690"}, "block": []}, {"number": 4, "keyword": "action", "provider": "lookup_table", "name": "add_batch_of_entries", "as": "55db3318", "skip": false, "input": {"entries": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"476a4fe9\",\"path\":[\"rows\"]}')}", "parameters": {"col1": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"476a4fe9\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"id\"]}')}", "col2": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"476a4fe9\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"name\"]}')}", "col3": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"476a4fe9\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"office_location_id\"]}')}", "col4": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"476a4fe9\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"slack_emoji\"]}')}"}}, "lookup_table_id": "4473690"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

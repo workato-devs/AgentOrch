@@ -19,81 +19,14 @@ TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 TRIGGER_AS = "35a0e063"
 SEARCH_AS = "2fc09276"
-# Source-org Event record type id hardcoded in the raw SOQL as a WHERE
-# equality. Record type ids are ORG-GENERATED: they cannot be chosen,
-# re-created, or imported into the benchmark org, and benchmark-org Event
-# rows read back with the org's OWN RecordTypeId (or none) -- so the strict
-# equality NEVER matches a live record (90485335/110005007 dead-query
-# precedent; rewriting the literal to a visible org RT is BANNED as a
-# matcher hack).
 FOREIGN_RT_ID = "012o0000000tRwxAAE"
 GEARS_TYPE = "GEARS"
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName", "SuccessOwner_UserID"}
 EVENT_SEED_FIELD_KEYS = {"Subject", "Type", "StartDateTime", "EndDateTime", "WhatId"}
-# The decoy Event's live read-back must expose every WHERE-arm field: the
-# derived AccountId (from WhatId), the org-assigned OwnerId (the API user),
-# the real RecordTypeId (org value or none -- never the foreign literal),
-# IsDeleted, and the derived EndDate (from EndDateTime).
 EVENT_READ_FIELDS = ["IsDeleted", "RecordTypeId", "AccountId", "OwnerId", "EndDate"]
 EMPTY_REASONS = {"foreign_record_type", "empty_in_list"}
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 
-# workato_recipe_function.execute (as 35a0e063; parameters.AccountList[]
-# {AccountID, AccountName, SuccessOwner_UserID}). Linear body, no
-# if/foreach/try -- 35a0e063-family sibling (all as ids shared with
-# registered 118290293 and 103988481; own CSV identity). Closest twin:
-# 103988481 (same Event + MAX(EndDate) + foreign-RT shape; deltas = Type IN
-# ('GEARS') vs the 13-type list, aggregate alias last_gears_meeting, result
-# key LastGEARSMeetings).
-#   2  workato_variable.declare_variable 64a4fa81: account_ids_string =
-#      AccountList&.pluck("AccountID").join("','"); owner_ids_string =
-#      AccountList&.pluck('SuccessOwner_UserID').uniq.join("','") -- BOTH
-#      feed the SOQL (probe: uniq collapses a shared owner to one id).
-#   3  salesforce.search_sobjects_soql_v2 2fc09276 (LIVE, limit 2000):
-#      SELECT AccountId, MAX(EndDate) last_gears_meeting FROM Event WHERE
-#      IsDeleted = FALSE AND RecordTypeId = '012o0000000tRwxAAE' AND Type IN
-#      ('GEARS') AND OwnerId IN ('<owners>') AND AccountId IN ('<ids>')
-#      GROUP BY AccountId.
-#   4  workato_recipe_function.return_result 0d2e8b10 (TERMINAL):
-#      result.LastGEARSMeetings ____source-mapped over the records.
-#
-# DEAD QUERY (org-capability, faithful build -- 90485335/110005007
-# precedent): the RecordTypeId equality against the source-org literal can
-# never match in this org, so the search returns [] and LastGEARSMeetings is
-# [] on EVERY input, forever. Probe-verified on HEAD 07af31c2 (2026-07-08):
-# - P12: a decoy Event whose read-back matches EVERY other arm (IsDeleted
-#   false, Type 'GEARS', OwnerId in the owner list, AccountId in the account
-#   list) still returns 0 records.
-# - P11b/P11c (shared family probes): the counterfactual foreign-RT read-back
-#   matches with the MAX alias evaluated, and arm isolation shows only the RT
-#   equality is False -- live-data impossibility, not an engine gap.
-# Zero-match honesty: every variant live-seeds a DECOY Event satisfying every
-# seedable arm (Type='GEARS', WhatId=a listed Account, OwnerId=the API user
-# threaded via $USER_ID) so the 0-result is attributable to the RT filter
-# (or, on the empty-list variant, to the IN ('') arms), never to an empty org.
-#
-# Branch mapping (single linear path; observable dimensions = the declare
-# derivations flowing into the resolved SOQL text + the always-empty result;
-# probe-verified end-to-end offline 2026-07-08):
-# - variant_00 dead_rt_multi_account: 2 accounts, distinct-owner join arms
-#   exercised with the decoy on account A (owner $USER_ID) -> 0 records ->
-#   LastGEARSMeetings [].
-# - variant_01 single_account: 1-element AccountList -> join produces the
-#   bare id (no quote-comma pair, probe P5) -> [].
-# - variant_02 duplicate_owner_uniq: two accounts SHARING $USER_ID ->
-#   owner_ids_string uniq collapses to ONE id in the resolved SOQL -> [].
-# - variant_03 empty_account_list: AccountList [] -> both strings '' ->
-#   OwnerId IN ('') / AccountId IN ('') match nothing (empty_reason
-#   empty_in_list; a decoy Event still proves rows existed).
-# The >0-records branch is ORG-UNREACHABLE and therefore not represented
-# (documented, not forced); registered byte-twin-head 118290293 covers this
-# skeleton's live aggregate/group shapes.
-#
-# Backends: salesforce LIVE (benchmark-owned Account + Event records +
-# read-only current-user row for $USER_ID threading; no custom fields --
-# Event/EndDate/Type are standard; cleanup deletes owned seeds in a finally
-# block); workato_variable / workato_recipe_function are Workato-internal
-# in-process.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

@@ -33,8 +33,6 @@ F_VIEW = "e0388988_bb54_4e13_942a_71a7a50db3b7"
 F_CREATED = "a5612739_5401_4ae7_bd07_782c1a6fb2d1"
 F_UPDATED = "61aae604_a95e_4519_9091_bb0bf754a67f"
 EXCEPTION_ROW_KEYS = (F_RECID, F_EMAIL, F_TEAM, F_VIEW, F_CREATED, F_UPDATED)
-# The exact SQL text the trace must carry after pill interpolation
-# (workspace_ids inline + privatequery suffix); :parameter stays a bind.
 SQL_TEMPLATE = (
     "SELECT distinct(r.relationid), u.username, a.name \n"
     "FROM DEMOINFRA_RELATION r \n"
@@ -47,9 +45,6 @@ SQL_TEMPLATE = (
     "AND w.workspaceid in ({ws})\n"
     "{suffix}"
 )
-# Bare 1-part names in the SQL (5 tables; the twin head also joins
-# DEMOINFRA_WORKSPACES): snowflake_live maps each registered key onto
-# <SNOWFLAKE_DATABASE>.BENCH.<NAME> (identifier redirect probe-verified).
 TABLE_SPECS: dict[str, dict[str, str]] = {
     "DEMOINFRA_RELATION": {"RELATIONID": "integer", "USERID": "integer", "INSTANCEID": "integer"},
     "DEMOINFRA_USERS_WORKSPACES": {"RELATIONID": "integer", "WORKSPACEID": "integer"},
@@ -58,37 +53,6 @@ TABLE_SPECS: dict[str, dict[str, str]] = {
     "DEMOINFRA_APPLICATIONS": {"ID": "integer", "NAME": "string"},
 }
 
-# NEAR-TWIN of 103711977 (family head; built there, derived mechanically
-# here, then independently probe-verified). Byte-diff deltas from the head,
-# proven by normalized-tree diff on 2026-07-08:
-# - workato_db_table table_id 12788 -> 13516 (same '[CB] | DT-001 | User
-#   Exception' schema and hashed field ids);
-# - the SQL drops 'w.name as workspace_name' and the INNER JOIN
-#   DEMOINFRA_WORKSPACES, and aliases DEMOINFRA_USERS_WORKSPACES as w (the
-#   head uses wu) - so 5 seeded tables instead of 6;
-# - output_schema carries 'name' instead of application_name/workspace_name;
-# - the menu label drops the third ' || workspace_name' segment (2-segment
-#   'user || app');
-# - the trigger parameters JSON is a whitespace-only reformat.
-#
-# Flow (identical shape to the head):
-#   2 declare_variable 97ffa775 privatequery (schema-only -> nil)
-#   3 workato_db_table.get_records 3c62d745 (mock table 13516) filter email
-#     eq =parameters.uemail.downcase
-#   IF 4 records[current_item].RecordID blank:
-#     5 update_variables 7f8ed08b privatequery = 'AND u.isprivate = FALSE'
-#   6 snowflake.run_custom_sql 18dd84d9 (LIVE, 5 bare DEMOINFRA_* tables,
-#     :parameter bind, workspace_ids + privatequery pills inline)
-#   7 generate_menu_options 9c70908d label = username.gsub(".onmicrosoft.com",
-#     "") + ' || ' + name; value = int relationid pill
-#
-# Branch mapping and live semantics as on the head: suffix appended (5
-# actions, private hidden) vs nil-pill '' (4 actions, private visible);
-# multiset menu compare when multi-row (no ORDER BY); downcased uemail eq
-# filter; boolean isprivate. The twin's v1 additionally seeds DUPLICATE
-# users_workspaces memberships inside the IN filter so DISTINCT provably
-# collapses the duplicate output row (the head cannot exercise this: its
-# workspace join makes duplicates distinct rows).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "dynamic_menu", "as": "28312336", "skip": false, "input": {"dynamic_menu_name": "[CB] Search by User", "parameters": "[\n  {\n    \"name\": \"uemail\",\n    \"type\": \"string\",\n    \"optional\": true,\n    \"control_type\": \"text\",\n    \"label\": \"Uemail\"\n  },\n  {\n    \"name\": \"workspace_ids\",\n    \"type\": \"string\",\n    \"optional\": false,\n    \"control_type\": \"text\",\n    \"label\": \"Workspace ids\"\n  }\n]"}, "block": [{"number": 2, "keyword": "action", "provider": "workato_variable", "name": "declare_variable", "as": "97ffa775", "skip": false, "input": {"variables": {"schema": "[{\"name\":\"privatequery\",\"type\":\"string\",\"optional\":true,\"label\":\"privatequery\",\"control_type\":\"text\"}]"}}, "block": []}, {"number": 3, "keyword": "action", "provider": "workato_db_table", "name": "get_records", "as": "3c62d745", "skip": false, "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "15ca98b2-7c7b-4c04-b713-f5d783b6b318": "string", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "79c522be-02a9-4d35-b94b-8dfa4960a2c2": "string", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "e0388988-bb54-4e13-942a-71a7a50db3b7": "string", "filters": [{"field_id": "79c522be-02a9-4d35-b94b-8dfa4960a2c2", "op_default": "eq", "value_default": "=_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"28312336\",\"path\":[\"parameters\",\"uemail\"]}').downcase"}], "limit": "100", "order_direction": "asc", "table_id": "13516"}, "block": []}, {"number": 4, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"3c62d745\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"11fbe9a6_a16d_4d7e_86ea_afe42ec03005\"]}')}", "operand": "blank", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 5, "keyword": "action", "provider": "workato_variable", "name": "update_variables", "as": "7f8ed08b", "skip": false, "input": {"name": "690f29ef-508d-4f97-854a-2cc692253a3c:97ffa775:privatequery", "privatequery": "AND u.isprivate = FALSE"}, "block": []}]}, {"number": 6, "keyword": "action", "provider": "snowflake", "name": "run_custom_sql", "as": "18dd84d9", "skip": false, "input": {"output_schema": "[{\"control_type\":\"number\",\"label\":\"Relationid\",\"parse_output\":\"float_conversion\",\"type\":\"number\",\"name\":\"relationid\"},{\"control_type\":\"text\",\"label\":\"Username\",\"type\":\"string\",\"name\":\"username\"},{\"control_type\":\"text\",\"label\":\"Name\",\"type\":\"string\",\"name\":\"name\"}]", "parameters": {"data": {"parameter": "='%' + _dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"28312336\",\"path\":[\"typeahead\",\"value\"]}').downcase + '%'"}, "schema": "[{\"name\":\"parameter\",\"type\":\"string\",\"optional\":true,\"label\":\"parameter\",\"details\":{\"real_name\":\"parameter\"},\"control_type\":\"text\"}]"}, "sql": "SELECT distinct(r.relationid), u.username, a.name \nFROM DEMOINFRA_RELATION r \nINNER JOIN DEMOINFRA_USERS_WORKSPACES w ON w.relationid = r.relationid \nLEFT JOIN DEMOINFRA_USERS u ON u.id = r.userid \nLEFT JOIN DEMOINFRA_INSTANCES i ON r.instanceid = i.id \nLEFT JOIN DEMOINFRA_APPLICATIONS a ON i.applicationid = a.id\nWHERE (lower(u.username) like :parameter \nOR lower(a.name) like :parameter) \nAND w.workspaceid in (#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"28312336\",\"path\":[\"parameters\", \"workspace_ids\"]}')})\n#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_variable\",\"line\":\"97ffa775\",\"path\":[\"privatequery\"]}')}", "update_only": "false"}, "block": []}, {"number": 7, "keyword": "action", "provider": "slack_bot", "name": "generate_menu_options", "as": "9c70908d", "skip": false, "input": {"options": {"____source": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\"]}')}", "label": "=_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"username\"]}').gsub(\".onmicrosoft.com\", \"\")+ ' || ' + _dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\",{\"path_element_type\":\"current_item\"},\"name\"]}')", "value": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"snowflake\",\"line\":\"18dd84d9\",\"path\":[\"rows\", {\"path_element_type\": \"current_item\"}, \"relationid\"]}')}"}, "use_option_groups": "false"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

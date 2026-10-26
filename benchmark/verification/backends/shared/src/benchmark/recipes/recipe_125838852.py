@@ -20,84 +20,12 @@ TRIGGER_NAME = "dynamic_menu"
 TRIGGER_AS = "15e2ee5f"
 SEARCH_AS = "73c040ae"
 MENU_AS = "2a1213f2"
-# Source-org Account record type id hardcoded in the raw SOQL as a WHERE
-# equality. Record type ids are ORG-GENERATED: they cannot be chosen,
-# re-created, or imported into the benchmark org, and benchmark-org Accounts
-# read back with RecordTypeId null (the org's lone 'Partner Account' record
-# type stays profile-invisible) -- so the strict equality NEVER matches a
-# live record (90485335/110005007 dead-query precedent; rewriting the literal
-# to a visible org RT is BANNED as a matcher hack).
 FOREIGN_RT_ID = "012o0000000tYvxAAE"
 EMPTY_REASONS = {"foreign_record_type", "no_name_match"}
 ACCOUNT_READ_FIELDS = ["RecordTypeId"]
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
-# The typeahead is interpolated verbatim between LIKE '%...%' quotes and the
-# decoy attestation recomputes the LIKE arm as a case-insensitive substring
-# test; forbid SOQL quote/escape and LIKE metacharacters so both readings are
-# exactly equivalent.
 _TYPEAHEAD_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9 .\-]*")
 
-# slack_bot.dynamic_menu (as 15e2ee5f, menu 'Partner Deal Registration',
-# parameters '[]' -> zero parameters; only trigger.typeahead.value is ever
-# dereferenced). Linear body, no if/foreach/try:
-#   2  salesforce.search_sobjects_soql 73c040ae (LIVE, sobject Account,
-#      limit 150): bare-condition query "NAME LIKE '%<typeahead>%' AND
-#      RecordTypeId = '012o0000000tYvxAAE'"; field_list
-#      'Name\nAccount_ID_18_Characters__c' is inert executor metadata
-#      (the executor's salesforce_search metadata_keys), so the custom field
-#      never hits live SF and no ensure_custom_field provisioning is needed.
-#   3  slack_bot.generate_menu_options 2a1213f2 (MOCK, Workato-internal):
-#      ____source = 73c040ae.Account (sf_search_records aliases records under
-#      the sobject key), label Name / value Account_ID_18_Characters__c
-#      current_item pills -- they never render because the source is always [].
-#
-# BYTE-TWIN: 122340768 -- byte-identical recipe body (same as-ids
-# 15e2ee5f/73c040ae/2a1213f2, same step uuids, same query/menu name/
-# field_list); the only delta is the trigger parameters whitespace literal
-# ('[]' here vs '[\n\n]' there, both parse to zero parameters) plus CSV
-# flow_id/version metadata. In-batch same-shape sibling: 87279058 (same dead
-# RT literal; delta = menu name, field_list, value pill Id vs
-# Account_ID_18_Characters__c). Closest REGISTERED: 110005007 (same trigger
-# family and the SAME foreign RecordTypeId literal; its dead-query variant
-# notes reuse verbatim) on the recipe_107245434.py skeleton.
-#
-# DEAD QUERY (org-capability, faithful minimal build -- 90485335/110005007
-# precedent): the RecordTypeId equality against the source-org literal can
-# never match in this org, so the search returns [] and the menu is [] on
-# EVERY input, forever. Probe-verified OFFLINE on HEAD 00aec76e (2026-07-09)
-# against the strict local WHERE evaluator (salesforce_live_harness
-# _matches_query, the exact code path live runs take):
-# - P1: a decoy Account whose Name contains the typeahead with RecordTypeId
-#   read back null -> no match (RT arm alone excludes it).
-# - P1b: same decoy with a NON-foreign own-org RT id -> still no match.
-# - P2 counterfactual: the SAME row with the foreign RT id as read-back
-#   matches -- the dead code is a LIVE-DATA impossibility, not an engine gap.
-# - P3 arm isolation: the LIKE arm alone is True on the decoy; only the RT
-#   equality is False.
-# Zero-match honesty: every variant live-seeds at least one DECOY Account
-# with RecordTypeId in read_fields so the strict WHERE and the snapshot see
-# the REAL live read-back; foreign_record_type variants seed decoys whose
-# Name satisfies the LIKE arm, attributing the empty result to the RT filter
-# (or, on the no_name_match variant, to the LIKE arm -- with the decoy still
-# proving the org is not empty), never to a trivially empty org.
-#
-# Branch mapping (single linear path; the only data boundary -- 0 vs N menu
-# options -- is org-pinned at 0 by the dead foreign-RT literal):
-# - variant_00 rt_dead_named_match: 1 seeded Account whose Name contains the
-#   typeahead -> search 0 rows -> options [] (exclusion is solely the RT
-#   clause; empty_reason foreign_record_type).
-# - variant_01 rt_dead_multi: 3 name-matching Accounts -> still 0 rows / []
-#   (dead branch stays dead at N; empty_reason foreign_record_type).
-# - variant_02 no_match_either: typeahead matches no seeded Account -> 0
-#   rows / [] (emptiness deterministic regardless of seed shape; the decoy
-#   still proves a non-empty org; empty_reason no_name_match).
-# The >0-options menu branch is ORG-UNREACHABLE and therefore not
-# represented by any variant (documented, not forced).
-#
-# Backends: salesforce LIVE (benchmark-owned Name-only Account decoys, owned-
-# record-scoped search; cleanup deletes owned seeds in a finally block);
-# slack_bot dynamic_menu trigger is a seeded payload and
-# generate_menu_options is Workato-internal (MOCK, trace-pinned).
 
 _STRUCTURE_PINS_JSON = r"""[
  {

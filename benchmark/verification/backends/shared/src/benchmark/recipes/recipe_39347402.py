@@ -15,10 +15,6 @@ SEED_TYPE = "workato_service_auth_reply_variant"
 TRACK = "workato_service_auth_reply"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# "Authentication Test" callable service. try body sends a success reply
-# (reply_type=success, reply={ok: true}); if the body raises, the catch sends
-# an error reply (reply_type=error, message=<caught error>). send_reply is
-# non-terminal, so exactly one reply is emitted per request.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_service", "send_reply"),
     ("workato_service", "send_reply"),

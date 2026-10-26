@@ -23,14 +23,6 @@ SEARCH_AS = "e88d464c"
 SR_SOBJECT = "Survey_Response__c"
 NPS_STATUS = "Survey Completed"
 TRIGGER_ROW_KEYS = {"AccountID", "AccountName"}
-# Schema-in-seed contract: Survey_Response__c was mdapi-deployed 2026-07-06/07
-# (94001408 precedent) with Account__c / Score__c Text(255) and
-# Survey_Response_Date__c Date; mdapi fields are describe-INVISIBLE until FLS
-# is granted, so the seed re-ensures FLS every run. Status__c is NOT part of
-# the deploy: ensure_custom_field Tooling-creates it as Text on first seed
-# (the established custom-FIELD path -- only custom OBJECTS are banned from
-# self-serve creation). Score__c is TEXT in the org, so seeds carry numeric
-# STRINGS; the harness AVG parses them as Decimals.
 REQUIRED_SCHEMA = [
     {"sobject": SR_SOBJECT, "field": "Account__c", "sf_type": "Text"},
     {"sobject": SR_SOBJECT, "field": "Score__c", "sf_type": "Text"},
@@ -39,91 +31,14 @@ REQUIRED_SCHEMA = [
 ]
 SR_FIELD_KEYS_WITH_DATE = {"Name", "Account__c", "Status__c", "Score__c", "Survey_Response_Date__c"}
 SR_FIELD_KEYS_NO_DATE = {"Name", "Account__c", "Status__c", "Score__c"}
-# Survey_Response_Date__c seeds are RELATIVE-date tokens resolved at seed time
-# against UTC wall-clock — the ONLY sanctioned wall-clock exception to the
-# fixed-timestamp rule (benmark_rules 'Simulated input variant rule'), applied
-# deliberately here:
-# - The SOQL arm 'Survey_Response_Date__c = LAST_N_DAYS:365' is a RELATIVE
-#   date literal that live Salesforce — and the in-tree strict evaluator
-#   (salesforce_live_harness LAST_N_DAYS branch, datetime.now(timezone.utc))
-#   — evaluates against REAL now AT RUN TIME. That coupling cannot be pinned.
-# - A pinned anchor would make the variants deterministic but NOT
-#   live-rerunnable indefinitely: an inside row seeded at anchor-N days
-#   (N <= 300) rots out of the live 365-day window once real time passes
-#   anchor + (365 - N) days; the tightest allowed offset dies at anchor+65d.
-# - Deriving seed dates from run-time now keeps every OBSERVABLE
-#   deterministic instead: no expect pin may encode an absolute date
-#   (enforced in _require_expect_shape), inside rows sit well inside the
-#   window (<= 300 days), excluded rows well outside (>= 370), and the run
-#   fail-fasts when the seed->run gap leaves the [0, 65]-day range where
-#   that in/out classification is guaranteed (guard in run_103988401).
 _DATE_TOKEN_RE = re.compile(r"^\$TODAY_MINUS_(\d+)D$")
 _ABS_DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
 INSIDE_MAX_DAYS = 300
 OUTSIDE_MIN_DAYS = 370
-# Widest seed->run gap for which every inside token (<= 300d) is still inside
-# LAST_N_DAYS:365 at run time; outside tokens (>= 370d) can never re-enter.
 MAX_SEED_RUN_GAP_DAYS = 365 - INSIDE_MAX_DAYS
 _TOKEN_RE = re.compile(r"\$[A-Z][A-Z0-9_]*")
 _SCORE_RE = re.compile(r"-?\d+(?:\.\d+)?")
 
-# workato_recipe_function.execute (as aa5f65a9; parameters.AccountList[]
-# {AccountID, AccountName}; [] is the in-contract empty input). Linear body,
-# no if/foreach/try -- FAMILY sibling (not byte twin: own as ids/uuids) of
-# registered 118290293/103988481 and 103939956/98802887 (same AccountList ->
-# ids-string -> SOQL aggregate -> return template skeleton). Was NEEDS-ENGINE
-# at triage; AVG aggregate LANDED at HEAD 07af31c2 (type-aware, NULL on
-# all-null groups) and re-probed verbatim 2026-07-08 (15/15).
-#   2  workato_variable.declare_variable 2f1abaa7: account_ids_string =
-#      AccountList&.pluck("AccountID").join("','").
-#   3  salesforce.search_sobjects_soql_v2 e88d464c (LIVE, limit 2000):
-#      SELECT Account__c, AVG(Score__c) avg_nps FROM Survey_Response__c
-#      WHERE IsDeleted = FALSE AND Name LIKE '%NPS%' AND Status__c =
-#      'Survey Completed' AND Survey_Response_Date__c != null AND
-#      Survey_Response_Date__c = LAST_N_DAYS:365 AND Account__c IN ('<ids>')
-#      GROUP BY Account__c -- all six arms strict-evaluated over live
-#      read-back owned rows; AVG is typed per group: plain int when the
-#      Decimal average is exactly integral (8,6,7 -> 7), float otherwise
-#      (8,7 -> 7.5), SF NULL when every contributing Score__c is null
-#      (probe P15 -- no variant pins that shape: a None avg would hit the
-#      OPEN falsy-render family at the return template, documented below).
-#      Every seed declares read_fields ['IsDeleted'] so the strict boolean
-#      leaf evaluates the LIVE read-back false (103939956/118905064
-#      precedent -- WITHOUT it the row is silently rejected, probe P16).
-#   4  workato_recipe_function.return_result ab1b884e (TERMINAL):
-#      result.YTDAverageNPSList ____source-mapped over the aggregate records
-#      {AccountID<-Account__c, YTDAverageNPS<-avg_nps}.
-#
-# FALSY-RENDER NOTE (documented OPEN family): an all-null-score group would
-# put avg_nps None through the single-pill '#{...}' return template; the
-# render of nil there is the standing OPEN falsy-render gap, so the build
-# deliberately keeps every qualifying group's scores non-null and the seeder
-# requires Score__c on every seeded row.
-#
-# Branch mapping (linear recipe: coverage = 6 WHERE arms x group shapes x
-# AVG result typing; probe-verified end-to-end offline 2026-07-08):
-# - variant_00 multi_response_integral_avg: one account, 3 completed NPS
-#   responses (8, 6, 7) inside the window -> one group, avg_nps int 7.
-# - variant_01 arm_exclusions_fractional_avg: qualifying 8 + 7 -> 7.5
-#   (float) while four decoys are excluded one arm at a time: Name without
-#   'NPS', Status__c 'Survey Sent', Survey_Response_Date__c ~400d old
-#   (LAST_N_DAYS arm), and a response on an account outside AccountList.
-# - variant_02 two_accounts_grouped: two accounts with different averages
-#   (9,8 -> 8.5 float; 6,6 -> 6 int) -> two grouped rows, mixed types.
-# - variant_03 zero_match: only non-qualifying rows (status decoy + a
-#   NULL-date decoy proving the 'Survey_Response_Date__c != null' arm) ->
-#   records [] -> YTDAverageNPSList [].
-# - variant_04 empty_account_list: AccountList [] -> ids string '' (probe
-#   P4) -> Account__c IN ('') matches nothing; a fully-qualifying seeded
-#   response proves the exclusion is the IN filter.
-#
-# GROUP BY output order = owned-record iteration order in the harness
-# (insertion-ordered dict, 103939956 precedent): seed qualifying responses
-# grouped by account in the order the expected rows are pinned. Backends:
-# salesforce LIVE (benchmark-owned Account + Survey_Response__c records;
-# schema-in-seed FLS re-ensure; cleanup deletes owned seeds in a finally
-# block -- read-only recipe, but owned records must not leak);
-# workato_variable / workato_recipe_function are Workato-internal in-process.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

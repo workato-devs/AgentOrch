@@ -24,17 +24,6 @@ POST_AS = "cfdec45a"
 RAW_CHANNEL = "#finance-close"
 BUTTON_TITLE = "Select Subsidiaries"
 TEXT_TEMPLATE = "*Run Allocation Schedule for {month}*"
-# Relative seed token resolved against the variant's PINNED time anchor
-# (fixed-timestamp rule, benmark_rules 'Simulated input variant rule': a
-# recipe that uses scheduled-event time must get a fixed timestamp from the
-# variant input — never wall-clock). Each variant input pins a top-level
-# "now" (ISO-8601 with explicit UTC offset, the 104508126 anchor precedent);
-# $SCHEDULED_TICK_MINUS_<N>M = the recipe's own configured monthly fire
-# instant (day-of-month 1, 10:00:00 Asia/Singapore, both pinned trigger
-# config) N whole months before the ANCHOR's month in the trigger's own
-# zone. Resolution happens IN THE SEEDER from the anchor ONLY (fail-fast
-# when the anchor is missing — no datetime.now fallback), so the resolved
-# tick and the concrete month pins in expect are stable forever.
 TICK_TOKEN_RE = re.compile(r"^\$SCHEDULED_TICK_MINUS_(\d+)M$")
 TICK_MAX_MONTHS_BACK = 24
 TICK_DAY = 1
@@ -45,46 +34,6 @@ MONTHS_ABBREV = (
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 )
 
-# clock.scheduled_event (as 272cbb15; monthly, days_of_month '1', trigger_at
-# 10:00:00 Asia/Singapore — ALL trigger config; the seed supplies the
-# scheduled_time pill the body dereferences). Linear body, no branches:
-#   2  workato_variable.declare_variable 6658dcd5 (MOCK Workato-internal):
-#      run_month_slack_formatted = (scheduled_time - 1.months)
-#      .strftime("%b %Y") — month subtraction runs through the arith duration
-#      engine (shift_months; dry-replayed 2026-07-09 on this tree:
-#      '2026-07-01T10:00:00+08:00' -> 'Jun 2026', '2026-01-01T10:00:00+08:00'
-#      -> 'Dec 2025' year rollover, '2026-03-01T10:00:00+08:00' ->
-#      'Feb 2026'). Day-1 anchoring keeps the subtraction clamp-free
-#      (shift_months clamps e.g. Mar-31 -1 month to Feb-28 — probed; the
-#      trigger's own days_of_month '1' config is what makes day 1 faithful).
-#   3  slack_bot.post_bot_message cfdec45a (LIVE): single
-#      section_with_button_with_long_action block. Rendered text =
-#      section_text ONLY '*Run Allocation Schedule for #{run_month pill}*' —
-#      the interactive button ('Select Subsidiaries', bot_command 47097324,
-#      style primary) is DROPPED by slack_text (slack_block_lines renders
-#      section_text/elements only; registered 87484821/120099657 drop
-#      precedent, re-probed via dry replay). Channel '#finance-close' does
-#      not start with 'U' -> auto-reroute to env.slack_channel_override.
-#
-# IN-BATCH TWIN of 123600416 (same clock -> declare-strftime ->
-# post_bot_message '#finance-close' skeleton; delta = formula
-# ((scheduled_time - 1.months) '%b %Y' here vs job_created_at '%B %Y'),
-# bot_command 47097324 vs 63660740, button/section wording, channel leading
-# '#'). Closest registered shapes: 113487781 (clock scheduled_time-only
-# trigger seeding + declare strftime), 120099657 (declare-strftime pin +
-# block-content drop), 108028920 (override-channel reroute).
-#
-# Branch mapping: linear, single path; the only variable input is
-# scheduled_time. Variants differ ONLY in the tick token offset (0/1/2
-# months back from the pinned anchor month -> three consecutive distinct
-# month renders, proving the text is formula-driven). The January->December
-# year rollover is the SAME shift_months code path (probed offline,
-# deterministic).
-#
-# Backends: slack LIVE (one chat.postMessage to the override channel — an
-# ordinary terminal observable that nothing re-reads: no cleanup per the
-# cleanup principle). The declare step is the sanctioned Workato-internal
-# variable mock. No other state anywhere -> seed sections must be empty.
 _STRUCTURE_PINS_JSON = r"""[
  {
   "keyword": "trigger",

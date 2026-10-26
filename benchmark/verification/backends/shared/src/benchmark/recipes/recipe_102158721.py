@@ -22,8 +22,6 @@ ADD_STEP_AS = "824eb544"
 R401_STEP_AS = "792322e2"
 R200_STEP_AS = "cd1d44cf"
 TABLE_ID = "11026"
-# 'OpenAI Proxy Workspaces' table 11026 field ids (underscore-normalized,
-# as the mock rows and the engine's filters both key them).
 RECORD_ID_COL = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
 WORKSPACE_COL = "faf6d561_0a7e_42d1_8f8c_ec11f9f86c31"
 CLIENT_COL = "50dd1528_57bf_4ed5_a678_03e9c709b140"
@@ -43,53 +41,7 @@ ROW_COLUMNS = (
     UPDATED_COL,
 )
 
-# TWIN NOTE: 102158704 is a byte-twin of this recipe (diff verified
-# against both raw_recipe.md files): only CSV metadata and the table_id
-# (10529 there vs 11026 here, on BOTH get_records and add_record) differ.
-# Each module pins ITS OWN table id and verbatim raw tree so twin drift
-# between the deployed recipes is caught, never papered over.
 
-# workato_api_platform.receive_request (as f7d177ec, JSON request schema
-# {workspace_user_id: string, REQUIRED}; responses 200/401). Dereferenced:
-# context.client.id, context.access_profile.{id,name}, request.workspace_user_id.
-#   2  workato_db_table.get_records 98b231b1 (mock table 11026): filters
-#      api_client_id eq context.client.id.to_i, access_profile_id eq
-#      context.access_profile.id.to_i, workspace_id eq
-#      request.workspace_user_id.to_i, enabled ISTRUE (engine converts
-#      op_boolean istrue -> eq true; the editor's limit '100' / order 'asc'
-#      are metadata the engine never forwards into args).
-#   IF 3 (workspace_user_id present AND records size equals_to 0):
-#     4  workato_db_table.add_record 824eb544 table 11026: the three ids
-#        .to_i + name = context.access_profile.name + enabled = LITERAL string
-#        'true' (recipe constant — the mock stores it verbatim, faithful).
-#   ELSIF 5 (records[current_item].enabled is_not_true — current_item OUTSIDE
-#        any foreach = FIRST record; MISSING when records is empty -> ''
-#        -> is_not_true TRUE):
-#     6  workato_api_platform.return_response 401 — ENGINE-TERMINAL: the
-#        unconditional tail 200 (step 7) never runs after it.
-#   7  workato_api_platform.return_response 200 (unconditional tail, terminal).
-#
-# Branch mapping (the get_records filter pins enabled istrue, so a NONEMPTY
-# result ALWAYS has an enabled first record and the elsif can only fire when
-# records is EMPTY and the IF was false, i.e. workspace_user_id is blank —
-# '' is schema-present but fails `present`, and ''.to_i = 0 makes the
-# workspace filter match nothing):
-# - grant_new_workspace: workspace_user_id present, no matching enabled row
-#   (decoys prove all four filters) -> get + add + 200. 3 actions.
-# - already_enabled_noop: matching row seeded with enabled JSON true -> IF
-#   false (size 1), elsif false (first record enabled) -> get + tail 200 only.
-#   2 actions.
-# - blank_user_401: workspace_user_id '' -> get (0 rows) + 401, tail 200
-#   NEVER executed (terminality pinned via the absent cd1d44cf row). 2 actions.
-#
-# SEED-AUTHORING HAZARD (probe-pinned): row enabled MUST be JSON true/false.
-# The engine converts istrue to eq True and live_tools compares str()-forms
-# ('True'), so a STRING 'true' cell is INVISIBLE to the filter and silently
-# flips the noop branch into a duplicate grant. The seeder rejects non-bool
-# enabled cells.
-#
-# All backends are Workato-internal (api_platform trigger/response, db table):
-# mock per backend policy, per-variant isolated, no cleanup.
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "workato_api_platform", "name": "receive_request", "as": "f7d177ec", "skip": false, "input": {"request": {"content_type": "json", "schema": "[{\"name\":\"workspace_user_id\",\"type\":\"string\",\"optional\":false,\"control_type\":\"text\",\"label\":\"Workspace user ID\"}]"}, "response": {"content_type": "json", "responses": [{"http_status_code": "200"}, {"http_status_code": "401", "name": "Unauthorized"}]}}, "block": [{"number": 2, "keyword": "action", "provider": "workato_db_table", "name": "get_records", "as": "98b231b1", "skip": false, "input": {"11fbe9a6-a16d-4d7e-86ea-afe42ec03005": "id", "50dd1528-57bf-4ed5-a678-03e9c709b140": "integer", "61aae604-a95e-4519-9091-bb0bf754a67f": "date_time", "8016f9ed-ec17-40fd-a45b-4511efa3daf9": "string", "856d93af-9a6e-4091-af46-051211c25a75": "integer", "a5612739-5401-4ae7-bd07-782c1a6fb2d1": "date_time", "c3f5a247-f6d7-498f-a5fa-6b469edb74d9": "boolean", "faf6d561-0a7e-42d1-8f8c-ec11f9f86c31": "integer", "filters": [{"field_id": "50dd1528-57bf-4ed5-a678-03e9c709b140", "op_integer": "eq", "value_integer": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"context\",\"client\",\"id\"]}').to_i"}, {"field_id": "856d93af-9a6e-4091-af46-051211c25a75", "op_integer": "eq", "value_integer": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"context\",\"access_profile\",\"id\"]}').to_i"}, {"field_id": "faf6d561-0a7e-42d1-8f8c-ec11f9f86c31", "op_integer": "eq", "value_integer": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"request\",\"workspace_user_id\"]}').to_i"}, {"field_id": "c3f5a247-f6d7-498f-a5fa-6b469edb74d9", "op_boolean": "istrue"}], "limit": "100", "order_direction": "asc", "table_id": "11026"}, "block": []}, {"number": 3, "keyword": "if", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"request\", \"workspace_user_id\"]}')}", "operand": "present", "rhs": ""}, {"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"98b231b1\",\"path\":[\"records\", {\"path_element_type\": \"size\"}]}')}", "operand": "equals_to", "rhs": "0"}], "operand": "and", "type": "compound"}, "block": [{"number": 4, "keyword": "action", "provider": "workato_db_table", "name": "add_record", "as": "824eb544", "skip": false, "input": {"parameters": {"50dd1528_57bf_4ed5_a678_03e9c709b140": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"context\",\"client\",\"id\"]}').to_i", "8016f9ed_ec17_40fd_a45b_4511efa3daf9": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"context\", \"access_profile\", \"name\"]}')}", "856d93af_9a6e_4091_af46_051211c25a75": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"context\",\"access_profile\",\"id\"]}').to_i", "c3f5a247_f6d7_498f_a5fa_6b469edb74d9": "true", "faf6d561_0a7e_42d1_8f8c_ec11f9f86c31": "=_dp('{\"pill_type\":\"output\",\"provider\":\"workato_api_platform\",\"line\":\"f7d177ec\",\"path\":[\"request\",\"workspace_user_id\"]}').to_i"}, "table_id": "11026"}, "block": []}, {"number": 5, "keyword": "elsif", "provider": "", "name": "", "as": "", "skip": false, "input": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_db_table\",\"line\":\"98b231b1\",\"path\":[\"records\", {\"path_element_type\": \"current_item\"}, \"c3f5a247_f6d7_498f_a5fa_6b469edb74d9\"]}')}", "operand": "is_not_true", "rhs": ""}], "operand": "and", "type": "compound"}, "block": [{"number": 6, "keyword": "action", "provider": "workato_api_platform", "name": "return_response", "as": "792322e2", "skip": false, "input": {"http_status_code": "401"}, "block": []}]}]}, {"number": 7, "keyword": "action", "provider": "workato_api_platform", "name": "return_response", "as": "cd1d44cf", "skip": false, "input": {"http_status_code": "200"}, "block": []}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

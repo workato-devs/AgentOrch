@@ -10,23 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_78751384
 
 
-# Workato API-platform endpoint over live Salesforce: receive_request (the JSON
-# request payload is never dereferenced) -> TRY { salesforce.search_sobjects_soql
-# on pse__Time_Period__c with free-text SOQL where-clause "CreatedDate != null",
-# field_list Name+Id, limit 2000 } -> IF list_size > 0 return_response 200
-# {time_periods:[{id,name}]} -> ELSE return_response 204 (empty) -> CATCH (retry
-# disabled) return_response 500 {message: <catch message>}.
-#
-# Live-org mapping (PSA stand-in object provisioned live 2026-07-06):
-# pse__Time_Period__c -> physical custom object Time_Period__c via
-# SALESFORCE_SOBJECT_MAP. CreatedDate is system-set on create, so in real
-# Salesforce the where clause matches every existing row. The harness search
-# only scans benchmark-owned records seeded for this run (deterministic against
-# org leftovers); its SOQL matcher does not parse "!= null" conditions and
-# falls back to term matching of the query term "createddate" against record
-# field values, so the seeded Time Period names deliberately carry the
-# "CreatedDate" token — live-faithful, because any existing record satisfies
-# the real predicate.
 RECIPE_ID = "78751384"
 SEED_TYPE = "api_time_periods_search_response_variant"
 TRACK = "live_salesforce_api_time_periods_response"

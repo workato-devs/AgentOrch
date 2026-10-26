@@ -15,10 +15,6 @@ SEED_TYPE = "api_platform_try_catch_response_variant"
 TRACK = "api_platform_try_catch_response"
 TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
-# API Platform endpoint wrapped in a try/catch. The try body returns an HTTP
-# 200 {"success": true} response (terminal). If that body raises, the catch
-# returns an HTTP 400 {"error": <caught message>} response (terminal) and would
-# stop with error. Exactly one return_response executes per request.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("workato_api_platform", "return_response"),
     ("workato_api_platform", "return_response"),

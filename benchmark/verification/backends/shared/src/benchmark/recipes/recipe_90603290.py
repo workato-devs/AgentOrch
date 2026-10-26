@@ -18,64 +18,6 @@ TRIGGER_PROVIDER = "workato_api_platform"
 TRIGGER_NAME = "receive_request"
 TRIGGER_AS = "f6585b3d"
 
-# API-platform 'Sales Meetings' window report (trigger as f6585b3d, request
-# {Input: [{email?, start_date, end_date}]}; ONLY Input.current_item — the
-# FIRST array element — is ever dereferenced, so variants seed exactly one
-# Input element):
-#   2  workato_db_table.get_records (349d413d, table 4508 'Sales Meetings',
-#      filters: Email col cbbd08a9 eq Input.first.email, Start col c1b372e8
-#      op_date_time gt '=Input.first.start_date.to_date()' (STRICT >), End col
-#      47dafb22 op_date_time lte '=Input.first.end_date.to_date()'; limit 200
-#      asc — the mock neither orders nor limits: seed rows pre-ordered/small)
-#   3  workato_variable.declare_list (543c4d86 'Filter': ____source over the
-#      step-2 records mapping 14 list fields)
-#   4  workato_variable.declare_variable (0ad61b9f next_page_token =
-#      =349d413d.continuation_token.presence)
-#   5  IF next_page_token present:
-#   6    REPEAT (8976b691, do-while):
-#   7      workato_db_table.get_records (c5f39c40, same table/filters +
-#          continuation_token = next_page_token)
-#   8      workato_variable.insert_to_list_batch (d5bc84e8: append the page-2
-#          records, same 14-field mapping)
-#   9      workato_variable.update_variables (c580508f next_page_token =
-#          '=c5f39c40.continuation_token.presence or clear')
-#   10     while next_page_token present
-#   11 IF Filter list size not_equals_to '0':
-#   12   workato_smart_list.create_list (e841d3ba 'MEETING_RECORDS',
-#        primary_index meeting_id, force=false — rows kept AS-IS, no dedupe)
-#   13   workato_smart_list.query_list ('SELECT * FROM MEETING_RECORDS',
-#        output_schema_by=index over the 14-column result schema)
-#   14 workato_api_platform.return_response (200 {meetings: ____source over
-#      the step-13 rows}) [terminal]
-#
-# Deterministic pagination ground truth (probe-verified): the db-table mock
-# re-serves the ENTIRE filtered row set on every page, and a plain seeded
-# continuation token (seed.workato_db_table.continuation_tokens['4508']) is
-# returned on the FIRST call only. The paginated variant therefore appends the
-# same filtered rows a second time and the response carries each meeting
-# TWICE — pinned exactly in expect.api_response (create_list does not dedupe
-# on primary_index). '=….presence or clear' resolves clear to '' (not nil),
-# observably identical here because next_page_token only feeds 'present'
-# operands. When the filter matches nothing, IF11 is false, step 13 never
-# runs, and the response ____source over the never-run rows renders
-# meetings: [].
-#
-# KNOWN ENGINE GAP (dry-replay currently FAILS the response pin on the
-# non-empty-meetings variants; reported to the coordinating session): for the
-# bare 'SELECT * FROM <list>' regex branch, smart_list_query returns source
-# columns in ROW-KEY order (the declare_list ____source mapping's serialized
-# order) instead of the create_list node's DECLARED schema-column order that
-# the SQLite path already uses. With output_schema_by=index the positional
-# alias map then scrambles the projected values (e.g. response 'email' carries
-# the attendees cell). Real Workato returns SELECT * in the list's declared
-# column order, making the index mapping the identity. The expects below pin
-# the WORKATO-FAITHFUL (unscrambled) response; they go green once
-# smart_list_query's '*' branches prefer table_columns[key] order (mirroring
-# _smart_list_sqlite_query's CREATE TABLE column ordering).
-#
-# All backends are Workato-internal (API-platform trigger/response, db-table
-# mock, variables, smart list): mock per backend policy, no cleanup; the run
-# asserts table 4508 is byte-identical before and after (read-only recipe).
 
 _STRUCTURE_PINS_JSON = r'''
 [
@@ -417,7 +359,6 @@ EMAIL_COL = "cbbd08a9_9991_4ee3_9362_031b4e723af2"
 START_COL = "c1b372e8_2721_407a_a4f4_346b04521a1c"
 END_COL = "47dafb22_0211_4e6d_b82e_fe3a97e98de8"
 RECORD_ID_COL = "11fbe9a6_a16d_4d7e_86ea_afe42ec03005"
-# Columns the declare_list ____source mapping dereferences on every record.
 SOURCE_COLS = (
     "7cd7c272_18a5_476b_a6b7_c3e238e1b7a8",  # Time Zone
     "3415b075_e307_42e5_95b3_2e793b28b43f",  # Name

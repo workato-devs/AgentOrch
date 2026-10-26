@@ -27,41 +27,6 @@ EMAIL_FLOW_ID = "45178535"
 MODAL_FLOW_ID = "45178957"
 APJ_FLOW_ID = "45178280"
 
-# slack_bot.new_event block_actions:button (as a18cc028) with a TRIGGER FILTER:
-# actions[current_item].value contains 'check_design_tickets' (substring;
-# current_item on the actions array reads the FIRST element, so variants seed
-# a single-element actions list to keep the semantics unambiguous).
-#   TRY (2):
-#     3 workato_service.call_service e288d19a flow 45178535 'Get Email by
-#       Slack ID', request.user = button user.id -> seeded reply carries
-#       reply.profile.email (fail-fast when the reply is not seeded).
-#     4 workato_service.call_service 8a1debc1 flow 45178957 '[Firefighter x
-#       Smartsheet] View Design Ticket', request {modal_type 'open',
-#       trigger_id, user_email <- step-3 reply.profile.email, user_id,
-#       user_name}.
-#   CATCH 5 (as 039d01ad, max_retry_count 0):
-#     6 workato_service.call_service 2b973332 flow 45178280 'APJ Recipe
-#       Errors', request {error_message = catch.039d01ad.message, job_id/
-#       job_url/recipe_id = job_context pills, stop_recipe 'false'}.
-#     7 STOP stop_with_error true, stop_reason = catch message (the executor
-#       records a stopped trace row; stop args are not traced).
-#
-# FULL MOCK (Workato-internal only): the slack_bot event trigger is seeded
-# verbatim, call_service replies come from seed.workato_service_replies
-# (fail-fast when a needed key is missing), job_context pills read
-# seed.job_context. No live lane, no cleanup.
-#
-# Probe findings pinned by seeder/variants (current tree, 2026-07-08):
-# - A missing reply for the IN-TRY call (8a1debc1) does NOT stop the run: the
-#   recipe's own catch swallows it and the run diverts into the error branch.
-#   The seeder therefore validates the reply keys per branch (exactly the
-#   calls that branch executes) so a mis-seeded happy variant cannot silently
-#   pin catch-branch groundtruth.
-# - A missing seed.job_context renders the job_id/job_url/recipe_id pills as
-#   null SILENTLY - every catch variant must seed job_context explicitly (the
-#   seeder enforces it).
-# - The trigger filter is a plain substring contains: 'check_design_tickets_
-#   2024' matches, 'something_else' does not (both arms probe-verified).
 
 _RAW_PIN_JSON = r"""{"number": 1, "keyword": "trigger", "provider": "slack_bot", "name": "new_event", "as": "a18cc028", "skip": false, "input": {"event_name": "block_actions:button"}, "filter": {"conditions": [{"lhs": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"a18cc028\",\"path\":[\"block_actions:button\", \"actions\", {\"path_element_type\": \"current_item\"}, \"value\"]}')}", "operand": "contains", "rhs": "check_design_tickets"}], "operand": "and", "type": "compound"}, "block": [{"number": 2, "keyword": "try", "provider": "", "name": "", "as": "", "skip": false, "input": {}, "block": [{"number": 3, "keyword": "action", "provider": "workato_service", "name": "call_service", "as": "e288d19a", "skip": false, "input": {"flow_id": "45178535", "request": {"user": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"a18cc028\",\"path\":[\"block_actions:button\", \"user\", \"id\"]}')}"}}, "block": []}, {"number": 4, "keyword": "action", "provider": "workato_service", "name": "call_service", "as": "8a1debc1", "skip": false, "input": {"flow_id": "45178957", "request": {"modal_type": "open", "trigger_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"a18cc028\",\"path\":[\"block_actions:button\", \"trigger_id\"]}')}", "user_email": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"workato_service\",\"line\":\"e288d19a\",\"path\":[\"reply\", \"profile\", \"email\"]}')}", "user_id": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"a18cc028\",\"path\":[\"block_actions:button\", \"user\", \"id\"]}')}", "user_name": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"slack_bot\",\"line\":\"a18cc028\",\"path\":[\"block_actions:button\", \"user\", \"username\"]}')}"}}, "block": []}, {"number": 5, "keyword": "catch", "provider": "", "name": "", "as": "039d01ad", "skip": false, "input": {"max_retry_count": "0", "retry_interval": "2"}, "block": [{"number": 6, "keyword": "action", "provider": "workato_service", "name": "call_service", "as": "2b973332", "skip": false, "input": {"flow_id": "45178280", "request": {"error_message": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"039d01ad\",\"path\":[\"message\"]}')}", "job_id": "#{_dp('{\"pill_type\":\"job_context\",\"path\":[\"job_id\"]}')}", "job_url": "#{_dp('{\"pill_type\":\"job_context\",\"path\":[\"job_url\"]}')}", "recipe_id": "#{_dp('{\"pill_type\":\"job_context\",\"path\":[\"recipe_id\"]}')}", "stop_recipe": "false"}}, "block": []}, {"number": 7, "keyword": "stop", "provider": "", "name": "", "as": "", "skip": false, "input": {"stop_reason": "#{_dp('{\"pill_type\":\"output\",\"provider\":\"catch\",\"line\":\"039d01ad\",\"path\":[\"message\"]}')}", "stop_with_error": "true"}, "block": []}]}]}]}"""
 _EXPECTED_TREE = json.loads(_RAW_PIN_JSON)

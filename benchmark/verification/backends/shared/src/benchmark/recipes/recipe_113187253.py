@@ -22,8 +22,6 @@ SQL_STEP_AS = "0c921f5f"
 SUCCESS_RETURN_AS = "452d8e25"
 CATCH_AS = "ca54e56b"
 CATCH_RETURN_AS = "30d5d137"
-# 2-part schema.table names: _parts() maps them onto the benchmark database
-# (<SNOWFLAKE_DATABASE>.JAMF.LOCK / <SNOWFLAKE_DATABASE>.SYCOMP.JAMF_LOCK).
 JAMF_TABLE = "jamf.lock"
 SYCOMP_TABLE = "sycomp.jamf_lock"
 RAW_SQL = (
@@ -35,55 +33,9 @@ RAW_SQL = (
     "from sycomp.jamf_lock\n"
     "where serialnumber = :serial_number"
 )
-# The connector's SEPARATE Order-by input ('created_at DESC') is appended by
-# the engine because the raw SQL carries no ORDER BY (raw_executor
-# snowflake_search_rows_sql; re-probed on the current tree). Snowflake
-# applies a trailing ORDER BY to the WHOLE union result.
 RESOLVED_SQL = RAW_SQL + " ORDER BY created_at DESC"
 ANON_SUPPORT_LITERAL = "<anon>support@company.com</anon>"
 
-# workato_api_platform.receive_request (as b9957e99, request schema
-# [serial_number string REQUIRED]) -- request.serial_number is dereferenced
-# TWICE: as the bind parameter of step 3 and as the 200-response echo.
-# Responses declared 200/400. Body = one TRY:
-#   3  snowflake.search_rows_sql 0c921f5f (LIVE): RAW_SQL -- a UNION whose
-#      TWO arms both bind the SAME :serial_number name (parameters.data has
-#      one key; pyformat repeats %(serial_number)s -- re-probed via
-#      _bind_sql). The sycomp arm casts its INTEGER pin with ::text (the
-#      `(?<!:)` lookbehind in _bind_sql leaves `::text` untouched) and
-#      aliases date_created as created_at. UNION (not UNION ALL) DEDUPES
-#      identical (pin, created_at) tuples across the arms. The connector
-#      orderby input appends ORDER BY created_at DESC over the union.
-#      No limit/offset inputs exist on the node.
-#   4  return_response 452d8e25 http 200 {serial_number: request pill,
-#      passcodes: ____source over rows -> {passcode <- pin_1c4f7b84,
-#      date_generated <- created_at_9bdc63f8}}. The HASH-SUFFIXED pill names
-#      resolve via lookup_path's `_<8-hex>` strip + case-insensitive retry
-#      over the live row keys. TERMINAL. Zero rows -> passcodes [].
-#   5  CATCH ca54e56b (max_retry_count 0) -> 6 return_response 30d5d137
-#      http 400 {error_message: 'Please contact
-#      <anon>support@company.com</anon> with the Job ID: #{job_context
-#      .job_id}'} -- the anon-tagged support email renders VERBATIM (989
-#      registered outputs already pin <anon> strings); job_id comes from the
-#      seeded job_context. TERMINAL.
-#
-# Branch mapping:
-# - union_merge_ordered 200: rows in BOTH tables incl. one identical
-#   (pin, created_at) pair across tables -> UNION dedupes it; passcodes pin
-#   the exact created_at-DESCENDING list.
-# - single_source 200: the serial exists only in sycomp -> every passcode
-#   comes from the ::text-cast arm (int pins render as strings).
-# - zero-row 200: unknown serial -> {serial_number, passcodes: []}.
-# - catch 400: seed.force_action_error on 0c921f5f raises BEFORE the live
-#   adapter -> catch -> 400 {error_message}. 1 action; owns NO live state.
-#
-# DETERMINISM: created_at values must be DISTINCT across the DEDUPED result
-# set (an ORDER BY tie would make the passcode order non-groundtruth); the
-# seeder enforces it. Timestamps seed as 'YYYY-MM-DD HH:MM:SS' and read back
-# as naive isoformat 'YYYY-MM-DDTHH:MM:SS' (_json_value).
-# Backends: Snowflake runs LIVE (create-or-replace both tables, dropped in
-# the runner's finally; READ-ONLY -- snapshot equality pinned). The API
-# platform trigger/responses are deterministic Workato-internal mocks.
 
 _STRUCTURE_PINS_JSON = r"""[
  {
@@ -210,9 +162,6 @@ EXPECT_KEYS = (
 )
 OPTIONAL_EXPECT_KEYS = {"catch_message"}
 RETURN_STEP_AS = (SUCCESS_RETURN_AS, CATCH_RETURN_AS)
-# jamf.lock: pin is a STRING column; sycomp.jamf_lock: pin is an INTEGER
-# (NUMBER) column -- the SQL's ::text cast is what makes the union arms
-# type-compatible. Both timestamp columns read back naive isoformat.
 JAMF_COLUMNS = {
     "SERIAL_NUMBER": "string",
     "PIN": "string",

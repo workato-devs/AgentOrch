@@ -15,11 +15,6 @@ SEED_TYPE = "country_lookup_variant"
 TRACK = "workato_service_country_lookup"
 TRIGGER_PROVIDER = "workato_service"
 TRIGGER_NAME = "receive_request"
-# Callable "Country" service. Step 2 logs request.Country.downcase. If the
-# request is present (if step 3): reply with the Country column of the
-# [DC] City__c row matched on the Long column (send_reply step 5) and stop,
-# else with the row matched on the Short column (send_reply step 8, no stop).
-# No match / blank input leaves only the logger executed.
 EXPECTED_ACTIONS: list[tuple[str, str]] = [
     ("logger", "log_message"),
     ("workato_service", "send_reply"),

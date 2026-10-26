@@ -17,38 +17,6 @@ TRIGGER_PROVIDER = "workato_recipe_function"
 TRIGGER_NAME = "execute"
 EMPLOYMENT_TYPE_TABLE = "BENCH.EMPLOYMENT_TYPE"
 APP_TABLE = "BENCH.APP"
-# Callable recipe function (trigger as a753c75f; parameters.employment_type_id
-# string, used as a bind parameter). Same "Default App IDs / Final Apps List /
-# APP status guard" family as 116263482/124948630, but the employment-type
-# check is a LIVE Snowflake bind-param query instead of a trigger-parameter IF.
-# Body wrapped in TRY (step 2):
-#   declare_list "Default App IDs" (step 3, as c556d2b4)
-#   declare_list "Final Apps List" (step 4, as a140d0a9)
-#   snowflake.search_rows_sql EMPLOYMENT_TYPE WHERE ET.ID = :employment_type_id
-#     limit 1 (step 5, as 6a22d653, "Verify data") -- LIVE Snowflake
-#   IF rows.size != '1' (step 6) -> STOP with error
-#     "Failed to retrieve EMPLOYMENT_TYPE" (step 7)
-#   IF ["ET2","ET8"] contains rows[current_item].employment_type_id (step 8;
-#     rows[current_item] OUTSIDE a foreach resolves to rows.first — correct
-#     here because step 6 guarantees exactly one row):
-#       insert_to_list {app_id:"A8"} -> Default App IDs (step 9,
-#         "QuickBooks Time")
-#   IF Default App IDs size > 0 (step 10):
-#     declare_variable where_clause = list.pluck('app_id').uniq
-#       .smart_join("', '") (step 11, as c32cdbf8)
-#     snowflake.search_rows_sql APP WHERE A.ID IN ('<where_clause>')
-#       limit 50000 (step 12, as 8c579c0a) -- LIVE Snowflake, BENCH.APP
-#     FOREACH rows (step 13, as 47a5b050):
-#       IF status != 'Active' (step 14) -> STOP with error
-#         "Inactive app evaluted: <app_name>" (step 15; sic in the raw recipe)
-#       insert_to_list {app_id, app_name} -> Final Apps List (step 16)
-#   return_result {apps: ____source-mapped Final Apps List} (step 17)
-# CATCH (step 18, as 3b0db497, max_retry_count=0) -> STOP with error =
-#   catch message (step 19).
-# Snowflake runs LIVE (seed.snowflake_live tables BENCH.EMPLOYMENT_TYPE +
-# BENCH.APP via harness.snowflake_live.seed_tables + harness cleanup); the
-# variable lists and the recipe-function return are deterministic
-# Workato-internal mocks.
 EXPECTED_ACTIONS: list[tuple[str, str, str]] = [
     ("workato_variable", "declare_list", "c556d2b4"),
     ("workato_variable", "declare_list", "a140d0a9"),

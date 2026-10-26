@@ -28,50 +28,6 @@ RAW_SQL = (
     "WHERE company_id = :id ORDER BY created_at DESC LIMIT 1"
 )
 
-# workato_api_platform.receive_request (as 7caed8cf; path_params.company_id
-# is the ONLY dereferenced trigger field; responses declared 200/500).
-# Registered precedent: 122809739 (batch 04) -- same walnutiq schema family,
-# same TRY/return/catch skeleton -- but THIS recipe has NO rows-size IF: the
-# 200 body always renders. Body = one TRY:
-#   3  snowflake.run_custom_sql 32de9a12 (LIVE Snowflake): RAW_SQL with the
-#      FORMULA-MODE bind parameters.data.id =
-#      `=_dp(path_params.company_id).to_i` -> INT (re-probed: '512' -> 512);
-#      :id binds via pyformat, ORDER BY created_at DESC LIMIT 1 is carried by
-#      the SQL itself (the connector appends nothing).
-#   4  return_response 9fd5b1dd http 200 {content / created_at / id <-
-#      rows current_item <col>, file_link <- rows current_item
-#      output_file_id} -- current_item OUTSIDE any foreach = FIRST row;
-#      TERMINAL (stops the run).
-#   5  CATCH 1a33231f (max_retry_count 0) -> 6 return_response f87b9db6
-#      http 500 {message: #{catch.1a33231f.message}}
-#
-# Branch mapping (per benmark_rules):
-# - latest-row 200: rows exist for the bound company -> the newest one (ORDER
-#   BY created_at DESC LIMIT 1) fills all four fields. 2 actions.
-# - zero-row 200: no row for the company -> rows [] -> current_item MISSING.
-#   ENGINE FACT (re-probed, CORRECTING the triage note): the response dict
-#   resolves through resolve_value, which renders MISSING pills as JSON
-#   null -- NOT '' (resolve_text's rendering never runs here). The 200 body
-#   is {content: null, created_at: null, file_link: null, id: null}; expects
-#   pin the nulls explicitly. (Real Workato also renders nulls, so this is
-#   the faithful shape.) 2 actions.
-# - catch 500: seed.force_action_error on 32de9a12 raises BEFORE the live
-#   adapter -> catch -> 500 {message}. 1 action; the variant owns NO live
-#   state (empty seed, no snapshots, no cleanup call).
-#
-# ENGINE FIDELITY NOTES:
-# - created_at renders as snowflake_live._json_value isoformat of the live
-#   TIMESTAMP_NTZ read-back (naive, e.g. '2026-07-02T09:30:00'); seeds use
-#   'YYYY-MM-DD HH:MM:SS' literals so the rendered form is stable and the
-#   expects pin it exactly.
-# - the ID/CONTENT/OUTPUT_FILE_ID columns are seeded as strings (the recipe
-#   output_schema types them text); COMPANY_ID is NUMBER so the int bind
-#   compares natively.
-# - the ORDER BY needs a UNIQUE newest row: the seeder requires distinct
-#   created_at values among the bound company's rows.
-# Backends: Snowflake runs LIVE (create-or-replace, dropped in the runner's
-# finally); the API platform trigger/responses are deterministic
-# Workato-internal mocks (terminal). READ-ONLY on Snowflake.
 
 _STRUCTURE_PINS_JSON = r"""[
  {

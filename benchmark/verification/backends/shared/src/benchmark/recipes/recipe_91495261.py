@@ -10,10 +10,6 @@ from ..variant_input import attach_variant, trigger_input, variant_data
 from ..verifier import verify_91495261
 
 
-# Scheduled clock trigger reads the "LinkedIn Weekly Cost Metrics" sheet
-# (google_sheets.get_spreadsheet_rows_v4) then upserts every row into the
-# Snowflake LINKEDIN.WEEKLY_COST_METRIC table keyed on START_DATE
-# (snowflake.upsert_rows_batch, batch-mapped via ____source/current_item).
 RECIPE_ID = "91495261"
 SEED_TYPE = "clock_sheets_to_snowflake_linkedin_metrics_variant"
 TRACK = "live_snowflake_upsert"

@@ -31,58 +31,6 @@ OPTIONAL_TRIGGER_PARAMS = ("product_name", "category", "product_family", "true_q
 SEED_MSG_CHANNEL_TOKEN = "$SEED_MSG_CHANNEL"
 SEED_MSG_TS_TOKEN = "$SEED_MSG_TS"
 
-# slack_bot.bot_command_v2 (as 4a3ee5e6, domain firefighter, command
-# 'updated', scope lut_salesforce_products): parameters {product_id*,
-# product_name, category, product_family, true_quantity(int), active,
-# orig_conv_id*, orig_message_id*}. Body (one big TRY, catch 9e0d5d07):
-#   3  lookup_table.search_entries 06e12221 table 2257714 col4 = product_id
-#      (Workato-internal mock table '[WORK] Salesforce Products')
-#   4  IF entries size < 1  -> 5 STOP stop_with_error=true 'Product not found?'
-#   6  IF entries size > 1  -> 7 STOP stop_with_error=true 'Duplicated products found'
-#   8  IF entries size == 1 -> 9 lookup_table.update_entry ea1b2bce
-#      id = entries.current_item.id, ignore_not_found=false, col1/2/3/5/6 =
-#      '<param>.presence or skip' (blank/absent params are OMITTED from the
-#      update -- presence-or-skip probed green on the current engine)
-#   10 slack_bot.post_bot_message 88f90b2b (LIVE slack): channel =
-#      parameters.orig_conv_id, advanced.ts = parameters.orig_message_id ->
-#      the executor maps this to slack.post_message with a non-empty ts,
-#      i.e. a live chat.update EDIT of the seeded command message. Rendered
-#      text = section block ('All good! ...Lookup Table>!') + context element
-#      (multiline if category.present? 'New category: ...' else 'Have a great
-#      day!' end) + 5 attachment fields (Name/Category/Family/True Quantity
-#      backtick-wrapped from the ea1b2bce update output; Active is the
-#      == "true" ternary rendering :firefighter_check:/:firefighter_cross:).
-#      message.footer (Product2 lightning link) and attachment_buttons [{}]
-#      are metadata: slack_text never renders them (footer pinned in the
-#      structure pins only).
-#   CATCH 11 (as 9e0d5d07, max_retry_count=0) -> 12 STOP stop_with_error=true
-#      stop_reason = catch message pill (stop rows carry no reason in the
-#      trace; the catch payload is asserted via raw_execution.data.catch).
-#
-# Branch mapping (per benmark_rules):
-# - variant_00 single_match_full_update_active_true: 1 matching row, all
-#   optional params present, active='true' -> update writes col1/2/3/5/6,
-#   context 'New category: ...', Active ':firefighter_check: true'.
-# - variant_01 single_match_partial_skip_inactive: 1 matching row,
-#   product_name/category blank + product_family/true_quantity absent,
-#   active='false' -> update carries ONLY col6 (presence-or-skip), context
-#   'Have a great day!', Active ':firefighter_cross: false'.
-# - variant_02 not_found_stop: no col4 match (decoy row seeded) -> STOP 5
-#   after exactly one action.
-# - variant_03 duplicated_stop: two col4 matches -> STOP 7 after one action.
-# - variant_04 catch_error_stop: forced error on the 06e12221 search -> catch
-#   -> STOP 12; zero actions traced (the forced error raises before the tool
-#   call), catch payload message = forced error.
-#
-# Backends: lookup_table is a Workato-internal deterministic mock (per-variant
-# state file; the seed fully overwrites the table every run -> deterministic
-# reruns per the cleanup principle, no cleanup step). Slack runs LIVE: post
-# variants seed a real command message (harness.slack.seed_message) and thread
-# its channel/ts into the trigger parameters via $SEED_MSG_* tokens; the
-# recipe's chat.update edit of that benchmark-owned message is the observable
-# artifact and is never re-read afterwards (no cleanup required). Stop/catch
-# variants never reach the post step and carry explicit placeholder
-# channel/ts literals instead of a live seed.
 
 _STRUCTURE_PINS_JSON = r"""[
  {
