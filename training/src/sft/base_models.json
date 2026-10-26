@@ -1,0 +1,8 @@
+{
+  "_comment": "Pinned Hugging Face revisions of every base model fine-tuned in this project. train_sft_local.py uses the entry for --model when --model-revision / $HF_MODEL_REVISION are unset. The FP8 variants are the benchmark's untrained baselines; SFT starts from the bf16 checkpoints.",
+  "Qwen/Qwen3.8-27B": {"revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0", "used_by": ["sft-27b-*", "rl-27b-*"], "benchmark_baseline": "Qwen/Qwen3.8-27B-FP8 @ 017b9c7af6b5689d5dd426a76e0bc077eb5ca20a"},
+  "Qwen/Qwen3-4B-Instruct-2507": {"revision": "cdbee75f17c01a7cc42f958dc650907174af0554", "used_by": ["sft-4b-*", "rl-4b-*"]},
+  "google/gemma-4-26B-A4B-it": {"revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52", "used_by": ["sft-gemma26b-*", "rl-gemma26b-*"]},
+  "google/gemma-4-31B-it": {"revision": "842da3794eaa0b77d5f08bae87a17459d91ff475", "used_by": ["sft-gemma31b-*", "rl-gemma31b-*"]},
+  "google/gemma-4-12B-it": {"revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7", "used_by": ["sft-gemma12b-*", "rl-gemma12b-*"]}
+}

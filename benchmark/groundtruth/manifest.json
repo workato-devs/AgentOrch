@@ -1,0 +1,7128 @@
+{
+  "instance_count": 3220,
+  "recipes": [
+    {
+      "groundtruth_bundle_hash": "b70b417e8e02fc94f312fbf1d745d058d40459089f727cd4cf4e302b24b34070",
+      "recipe_id": "100039154",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a2c8a8e97921d4c279048e214937f29ed4d24e17b3aa2b5f61541a40d52f9a6a",
+      "recipe_id": "100191269",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "87fbadd91e72ed98754fbc8fa9399c922330e4bf32d1ee5495c474588dd1c39f",
+      "recipe_id": "100191291",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c3c11346382e2a0966e34b641b8526fea46a01759851ac0bd30dcf0b1367a1be",
+      "recipe_id": "100761935",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "df5ba71a75cf76b229c7319254f67c30a663c214bf6e0d465de71472978983a7",
+      "recipe_id": "100761994",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6fcab0a76c12d940cec01e1f2472883827206baa66fc8603725a7cea52f84c1e",
+      "recipe_id": "100956844",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1c4fdcf5bfe32bd1894883b4af036f4da1718e639784c09d0894099ef2735c24",
+      "recipe_id": "101045835",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4eb37857e6e2d5adb1ae8c63e1aedfdc4fe01257da726aa3364f050af9f1d669",
+      "recipe_id": "101558593",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b8477141f36cc9cdf46fff9b4a6b0b39c8227a99e458408e0b59fef3f77633b8",
+      "recipe_id": "101641436",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7e5f1b6532201aad695bed4efdf051dec704ae595003f85189e63c9704db7f8d",
+      "recipe_id": "101954510",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "496d90530d8c9269e665d054291d9606e9382bda0b6119dc90592bd852ad2a2f",
+      "recipe_id": "102078929",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "01162c3539aa7a6d3f8892201ca29d2d596668f1c6cc9561b1b743a8b4bcca90",
+      "recipe_id": "102158704",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4f9c6c0c17db1099ea39e16e22715e37b3893a823e3842ca36483450e90a5d04",
+      "recipe_id": "102158721",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c3cad47302a0d19d8f268cf30a46ed15bd10bcf991a48a21d1d531a8506a3cad",
+      "recipe_id": "102467097",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "01d24aaec9e5d3e442129a746c7a00311bb25ede40687d1ce90e693e6860ce19",
+      "recipe_id": "102760065",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "203861c3b0258557230e916fa05b451477d7472fef0e6d8143317ce7500d5af0",
+      "recipe_id": "103520604",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f8fb4516f9dbf8eb2706d59ca2e7f37b52807eae0ea82179f04fef48622d3e99",
+      "recipe_id": "103603886",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "afde87b11496522408911fcab2b520c4ac204f5cbf128966972a37a4dac52e81",
+      "recipe_id": "103613905",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a20d1e4d8b4e3f53ec47e7f1e6cd1970d1b1f09cc51d2de524a9b54ac0dcece6",
+      "recipe_id": "103711977",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2b4c14d61fcd3a736d0bd5637c1758b9111f7f91aca12d25cb0f76af28151978",
+      "recipe_id": "103939956",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7e24622fe90461bfaad5ff97b98298f6e371ccf87a771161282669f8ef042f29",
+      "recipe_id": "103986939",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8d89f8572681e53bbfab3d3d37a0a2957f505efc2d4cbb3cec5cbf359ae98995",
+      "recipe_id": "103988401",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3eec7aa8a5e9ae9945f23096c87fbb0d89d3a92db96926f32daf8a457fa206e0",
+      "recipe_id": "103988481",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "07e08a8514db5bd23c4a9a664c8ca46239ae85cbd6b9ad5a87952801c52eb4cb",
+      "recipe_id": "104417970",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3620f37fa2dd3fc5b6d647c2dfadec674cf25e6b242334e24b20f0f44e364d89",
+      "recipe_id": "104739509",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5c76ab05f3863aed970d1759c895190709362beba7a825ef05a9b63c500058e7",
+      "recipe_id": "104943316",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e785f27e50b81a1abe47fc7409ff0da8cd836b827769c2ff6d64ae8c8e51f0b9",
+      "recipe_id": "104948196",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "350e54b71d8c2e90c3fa8c3e4e8f78dbae274db7596bc8047082fd1575d67149",
+      "recipe_id": "104954462",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9258abdbe68c3271cf6fcaaa44638c3f428586dbcb92c69373a63d33ec28b138",
+      "recipe_id": "105022043",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bed491d2c45d379da189349408da289cef9e11461d5189034fefb886798460e8",
+      "recipe_id": "105071555",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f8ee32ec127114988909ceb8a1d3e4ff6175d056c4ba0d784060032cc0e9f9da",
+      "recipe_id": "105192491",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f8549fec6a00c448726775835753c85f39cb99ffb03ddb91bd7238e3f48c3b88",
+      "recipe_id": "105197180",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bb701b3dd8751c350473f12ff55d82489f7e0bb17cfd282168d7af509754529e",
+      "recipe_id": "105838791",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "35f8854cb6e5b1bf8786366deb10eb42e11af21dd18dc9b88132c6945b36a3ca",
+      "recipe_id": "105985263",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ade5ad8674a98f36c555d4a5c434b1205ecc328d163d8fb676051713dc56fda8",
+      "recipe_id": "106000023",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "18ae91a4801f697de8bcf6348bdaeca3559332a31e943eb88fbcf30b23c91b96",
+      "recipe_id": "106260171",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8d802f98dbd958a608b61b9afb7dc4128c96d784336ac6d9549b88f6285fff06",
+      "recipe_id": "106478365",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "82a03a0f7d2d7f481d6c127445c85ef2f10f5d011ff851fd9c09f62c394c23fc",
+      "recipe_id": "106603524",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f1743fd7610a799ced39c69bcbbbf63a4d6124ad122131b3bac92a419653ca80",
+      "recipe_id": "106651501",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "912469babf25cda5d8ca9eb9d41b98edd4bfd7ae2f6adf7cbaa762c8480d5030",
+      "recipe_id": "106651510",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bf19938e6cae06797084b8992496519fcdfed60ecfd6cf970845a9a544ddc15d",
+      "recipe_id": "106845066",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "535e250942f11bb9a1f59e82ad9a68c738c84f0c4ba3eed6b3478d970fb4aeab",
+      "recipe_id": "106845783",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e6f01ab7b6c79de0ec4446d0f4fd94afaf103c3977c3933989010048932e27ae",
+      "recipe_id": "106848918",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b9ffcd83c0e89b41b7bb99d0783fb98886e31a6058fc563e1ab94adc6405675a",
+      "recipe_id": "106940241",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6c72e7811b71cbcdd09fbf2c28834b6908d7c1990f290503d317f59cd7d9a0b8",
+      "recipe_id": "107012652",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7c3f7fbf68c9cdc7f30e331ef1d7db04e1af92bbc934a4a154b26e6f624db5e1",
+      "recipe_id": "107245433",
+      "variant_ids": [
+        "00",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "31f4fd4fb94c5155914b4ad91869b50450d2cd0b8f56b71ce2448720c20601b4",
+      "recipe_id": "107245434",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fae29add95f03f54943347abdcefa83f69ca0c30015a3dfefa5c76e7a55d4ade",
+      "recipe_id": "107246322",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b3021203cd29527012ae8835b96759d970dc0bc04d096281e41c73d247bd3ba4",
+      "recipe_id": "107246332",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "eacf7fbdc4f7c6c3c312b7ce1bf6f941c6f7670083c73be8390ee3ce4a83ff5a",
+      "recipe_id": "107246334",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f0bd632c4fd1f3c9483f534bf5f7cf18b838515b858d24596a9698269e617acb",
+      "recipe_id": "107292896",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "416e37721a4ac302822dc48152d32920cd0c6893aa753e7c417a84814a7b4dea",
+      "recipe_id": "107685616",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "78145f3504aa73bc83bd6d887bce58cc4f8819278eb34517ca25347cf40ed55d",
+      "recipe_id": "107805464",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "25343f01d1fa3bd81d5136364883fb3ec3a62d2954a14801a5eac4f6b8bdda72",
+      "recipe_id": "108028920",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fd32f9d1aeb45b46b221608785dae2c40ed626f0dc890d7f135e0778c0f77e52",
+      "recipe_id": "108135092",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6f1b3e5997201dff3c52edcb8a3fb3400b01ffb42b30b6e8534b4a7af6c69114",
+      "recipe_id": "108316641",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8272497a5bc1eb7fe3b7e9067edbd2daf3557839675d3ad664566640decc0ac1",
+      "recipe_id": "108332331",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2021bb225b0ae030d3eefbb6b02a3553b957455b2ecec81d9e878de9372970aa",
+      "recipe_id": "108333874",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0172d5f5c942221d2e8e10090728da4037ed336df87cfd0bf85ab700d70a537a",
+      "recipe_id": "108350601",
+      "variant_ids": [
+        "00",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "615ba9a582d3703ee4e5561c5f65ff77ce6a8350dc4a03c453b9134f02d7f4b2",
+      "recipe_id": "108426411",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b94748f60b0dac847d0daab472ab3a4232c37e6d1d7f42832b93db63cf4b0f18",
+      "recipe_id": "108445187",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "21a79e0c531fdb2f2b02d5927a753659299459ecaec932a8e2f2b82f5428bac5",
+      "recipe_id": "108510475",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "78bf998430a116bf83760f8d6b2115e9d3d0a782e2f90ca734005ab3f42cc3f9",
+      "recipe_id": "108516287",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9cbff35cd1aeef33e48d82e6eca4702d6d8b330eb45db7c0315d4fb51044228d",
+      "recipe_id": "108564927",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "15ee11b08872071189a0ea2d70c8f55f901ea5fc75d9915ef46b3bd4caa00d26",
+      "recipe_id": "108625382",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b40f9151187c312c4f2d385d978d613a0f8b7a8201cf87368b998e425c8f3938",
+      "recipe_id": "108702267",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "41ba4c74a708cc5e14d16747aac71f600bf000de62a9ebf259b40651369586a4",
+      "recipe_id": "108871514",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "610f193326714bce16fe8523fe02bbbefc2ecc5c3db08258069fc64dbfc09d9d",
+      "recipe_id": "109041941",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cf8fd40152d31ce169a76a96606011d0585413efeef147a9f77e61b811cedc82",
+      "recipe_id": "109200085",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "20d5a27d881b7a3311106ab3ca8c78608ff19756e08875a66408d5740a87737e",
+      "recipe_id": "109220826",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8e4be4690bfe27cbb5c6d086a529db1819865beeefd66c19771008bd2318861b",
+      "recipe_id": "109220853",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2439f8ae2b550c289f639d32e1e4dd4777b2957745f5c1b764f491b1c9dc682c",
+      "recipe_id": "109445492",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ed5c346eb9431bd441a08990ae780656fb9e97b727e8b06c5a89ef29162dd6da",
+      "recipe_id": "109664670",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "973da9b2da2f556234a26860660afe152ee3a77ccb70320f9564ced47a453f7b",
+      "recipe_id": "109890595",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6799896ee080d6eb5fe9f89be9fba752cd413501046e4ef9b92c2020b3c72520",
+      "recipe_id": "109890642",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "33053f922c64e2d8fabc6e0305a3e7189a115ed5bef479960aaf4a235db5ccca",
+      "recipe_id": "109890664",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e587fc8d30fc35c90625d66f2f67c0882a33e90d7ad02a66c50ab308b46931fa",
+      "recipe_id": "109890786",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "24a192e8b4c1d2933c0c026d7e636c8d771149dcdd559da82406b49fc1769473",
+      "recipe_id": "109891689",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e76fa34f311e6dce02a1438744e05368ad46a56656d90e033010d72fb32c39d4",
+      "recipe_id": "109892636",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3ce57b3a414c780892331b853c71a6ee47da571b64a832dd626f9c1253c4c3eb",
+      "recipe_id": "109892683",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ab08206771600b5183cc9829dedd8a6cab5a6225b397fdc2de1f88ae4f0c9a41",
+      "recipe_id": "109892684",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c96c9ac7a196733488bdfff06f3cd4f0a91f9ab1bbdabdba366b31d84f58ef64",
+      "recipe_id": "109894857",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "62cb3cb438a331cc5d2f0407c386c99565a583c50d7f599ce1fe40fbeb418f7d",
+      "recipe_id": "110005007",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c26c3c1ef23342ba0200f91feb286e44e4ce5864145e5e69fa45c6fa34c0bf7a",
+      "recipe_id": "110075264",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "acfde2811d7724e554ed461c3871b8033d8c883d561c11f3aeaa3f44967128f8",
+      "recipe_id": "110077661",
+      "variant_ids": [
+        "00",
+        "02",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6b2f2d3ce4cc1b0c9e4d9f24d2589e6dbfa2192c0df4ccca48b8f4a6278208d4",
+      "recipe_id": "110077668",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "de67b219d6606825f7bfd654c52aa0a096b3e2a76c5ab3003c27fcd51f8d9941",
+      "recipe_id": "110529244",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "dc969e080ed025e361488f40ddae46d235047ad5cc704ad5d2b7ef87fcd13829",
+      "recipe_id": "111073966",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6781af08b4a40dbf8515808f8a088b7815341dbd3d5d608307df6e2ee0cd7e79",
+      "recipe_id": "111146863",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0eda5ffe43ee0df46dd0dd587270add5e6161db0621eda39018b6bb051d00795",
+      "recipe_id": "111160612",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e32d27b242166dd001f3d7f730e7f4832ea4ae2085f54600a2ec805e5e9048ab",
+      "recipe_id": "111350115",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4bcd796448b96fa8b627b48f002d4a04456ba9ef61e58f2ef0ede16594236ad9",
+      "recipe_id": "111679822",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3638ba3e1f45ae580e197bf0d07bb9e3b07a5f2fd859f1ef526cdd682812c79e",
+      "recipe_id": "111765517",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "60aaa92beebc399f64540d36c77fb73fb04cf8626593fa46233740b2bbee740e",
+      "recipe_id": "111821867",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5e1923a209b41e4222ce20bdd28f5f2126716a5c6daf520c81362ac38c541a3f",
+      "recipe_id": "111834972",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "133c90f8decdde926f4b752e3c1b9239467be55d00b22f1bb2717fcde54a47e5",
+      "recipe_id": "111935512",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7b3a46f1e671f647e0786b92f02833e300025f48473157925b9b447dba15128b",
+      "recipe_id": "112144549",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "983fae8c3ffdf7622fdd0bcec47189390fd8bcb39b6c862a752cdbfc0710b44e",
+      "recipe_id": "112147962",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6c004fe65f35fbf80534207b305d2b5d7480d177eea46b41cf4661feb6c59a38",
+      "recipe_id": "112419923",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d1ff7c55e62998fef72413b3e4db774c986bf276dc13bca33f20404a2797fc4c",
+      "recipe_id": "112421068",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "47be35ec9d74cb3d21d32c935f18126dca9c01681f6e06e4ed5d8eaa87396816",
+      "recipe_id": "112451583",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "49f7e0c98c19add4d6c56b2f624e07f3aca2265a3969d2cff426312bfb94cfa9",
+      "recipe_id": "112639185",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "20fe3013a469c0a3c0f8f7813562706fc2cced6dcd277e4305df2cc90b06caa3",
+      "recipe_id": "112937955",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e8990b902477009106e5632c147e3be65a6772e00810f37fcf3c43d0d4fdb84d",
+      "recipe_id": "112938016",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "aa6a324a458b26719db9769045ba664c1f2a7741735c612deb08daedc4a90496",
+      "recipe_id": "113037860",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e33300328d15eb0430184b975a3513c2e15c7400b5bfd9ed852ffd6f11631e8b",
+      "recipe_id": "113187253",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4c28be42badce276713cd18283e821fe9eed9ffee7cd82b5314bc005e3da3b7d",
+      "recipe_id": "113194954",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ea0d1b136510f076864b2fdc66ab53c427e320120ab77dfd01806a7eef0ccc38",
+      "recipe_id": "113378891",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "08492b135d0d8ad5089c08922212da574602378c25ffcf774a1fef5e3081d976",
+      "recipe_id": "113397192",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "806649ea7c5e5e3dd981508864e9c0f03907b541d79ed23a535a677e2cdf0b6f",
+      "recipe_id": "113487781",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3f4f90545a3f9fd180fc0c24d1b4e2a2b1d0fae847be890d933a418def69c94f",
+      "recipe_id": "113510046",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1bc0f636fe594712850f291d42eefd651035472189a163c807dac5d816a018c2",
+      "recipe_id": "113624225",
+      "variant_ids": [
+        "00",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f117ee01ed5691c18c7da249ba97d8cd0aa21c9203628a1c609cf36b43334352",
+      "recipe_id": "113624227",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "64942925823f6aa605518d9451d04a8822fbbcc8ed1a65db50f443bb7eb29805",
+      "recipe_id": "113804593",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b57aa86b84dd80f0c83326954af6895b1d7e1922ecff6e65c13a252b720d49b9",
+      "recipe_id": "113889792",
+      "variant_ids": [
+        "00",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "194bb62648b658570477216d0ecf1998046446f9bbc29026ec7bd9ca4ac6a7e0",
+      "recipe_id": "113889794",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d125148193fcab396be6dc1d0d9f194d6713da48e008db28927e41507966a125",
+      "recipe_id": "113983732",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "da5671ce95dfc7e2312f80c932556714de29123dc668a9872366b7eae3220e0e",
+      "recipe_id": "113983742",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7c3ce98e8bca475263ea8d947b14f01427c119f6deacb1c8045dd1f17e8542a2",
+      "recipe_id": "113983745",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "985d671d56b4d2c6f805bb4a17f1b62b76b9e7eb35c3284b60397da9329c9a4e",
+      "recipe_id": "113983746",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "69437e5f57dc913ea7d2a64130ae094563029fbe54fac1f12eb2b4fb7ad427c7",
+      "recipe_id": "113983747",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c85319e50adc0dd9f3c85f0ab66eb121a8b15068167fbd488bf926889596dcc8",
+      "recipe_id": "113983748",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2653dd667062c79711f5d532d2636bda2c154c4011fcd94a2dd5182360c76911",
+      "recipe_id": "114064827",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fa5bbf3c468f5e71a6eee8876c721cae9f3832bcaee1cc669cde4e92e5ceeab0",
+      "recipe_id": "114074068",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "84313323b8b7b2dcf95d66bf59aea8e57dd528341c4a805fa25d3183fbc788e9",
+      "recipe_id": "114094107",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "58e27af4f6775a8807626607b855d6706969a42bd17964be16b1281a60671db0",
+      "recipe_id": "114149061",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f75f0df325fc8c13d6c7903d4dcad3c8d02ecbf0598a957c8733c8e437bf9b1b",
+      "recipe_id": "114203016",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0a3608be3ddd12bbf098481a7606f127dd6d7d8698aec874c0ffbf2f5adc4133",
+      "recipe_id": "114283859",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5bb3027a1d4d7f571b278d0c006510bcb369d0fe831e323c7c5b971dfa0fb525",
+      "recipe_id": "114471062",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fc3ede53805e98f04409e47eec485b9fa9c7779ac423cb90c37e59cba1bdad75",
+      "recipe_id": "114616246",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b10c2f77541c96e3ced83ffb71ac091cc21afa35e6ebbca807dfd8f93da1f7cf",
+      "recipe_id": "115036714",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "43d462843aae9e0b7d35ea78f9e438d2af42d2acf547c06b557ec4d95b084b85",
+      "recipe_id": "115274906",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6f41c370ed0bb191637613272b13ca7f30029b426a744d7c0eb00a5a40a920a7",
+      "recipe_id": "115370057",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "efbdbf81550b7338c3c304f419750cc3430d90657b15f5ae3915f558fe1faf95",
+      "recipe_id": "115850922",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "73e8b2d871bea16be944aaf55af1b2831293574c80a1017d52e0ad579bde6003",
+      "recipe_id": "116260701",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "88ea0d3e9144014924e2b9d4b634dbeb5ce8fdc521762102464c43474d0779f8",
+      "recipe_id": "116261363",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "af00fb737e840e30321a33a528a50800e8a194f59d17e9c886d5bd6dc7188347",
+      "recipe_id": "116263482",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "40d661bce01da32dbe516dbeb87d5154e48d1524e6dac9b462e9555e08e75ba7",
+      "recipe_id": "116340422",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cce4c558a0f074580025ae6da75c6f43f926b67de268d7152c929fde70528f48",
+      "recipe_id": "116477352",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d1734826ce1aa2840eef6748c0bd5e7d2689828e9dc6d7b405a85ffbf559f582",
+      "recipe_id": "116554908",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7c5cb67d81e95117ff01a83d8c7c9e1b8fc45b8bf11b2370c471c7aae55e7539",
+      "recipe_id": "116556035",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "824a9cb29d6584abe726391db0950e5f0cd5efc46388a7c9ed99679b51aab62f",
+      "recipe_id": "116556100",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1c3ccc3bf2bb36d3272039246600c1fbd777225b5d77a9fdec1b4eb9fe3733d5",
+      "recipe_id": "116556165",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6af507d488ee9537f2a78f17210228bf5041706f992f4e9971531d89245a9d0f",
+      "recipe_id": "116556252",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "620d3701ed433aa8bc1fa11a575957ddf27c1a7ff22920328cb09bf1f4cd678d",
+      "recipe_id": "116574431",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b3a255625e6af1157fedb6bf024237ff9dc68c857e130e9eb129990e899d96e1",
+      "recipe_id": "116627177",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bb0ada8e99601e59588d820a2780aae743f5a03d4895225816a8602e06d161cf",
+      "recipe_id": "116754193",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "553e491aae8c8c7c56c75936df23b77cf80af943d186b5e15b605d6cc95a0c12",
+      "recipe_id": "116756101",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3f6da734ac4b25064f2a3ccfa70dc6a7da0c969544ad5719d065b432a0d8de3a",
+      "recipe_id": "117164575",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c98256ab17a0bb201b103b6bf3d763e12079618963bdae117ef6db63f9ab6b66",
+      "recipe_id": "117385101",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "90f4269de988bd44daa6dfc6039a62bb437eb0d44e8a4487b3abeba1f23ed206",
+      "recipe_id": "117535537",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "405646533f40cf3df389ad0cbe245d064556cb444e87752161596ab229b74a3c",
+      "recipe_id": "117549747",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "869db5950b2b9667e77976f87527274a3a10b0cf45bc4cf1dd33340adb60348c",
+      "recipe_id": "117564458",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e2df1a92e4c87a80a41d57f1648cd1f874e5959c8311e29b36bca540da29ee64",
+      "recipe_id": "117564615",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2cab799087d921074bbf6ea694647defeeaffe74cd3fe815c3c70e0d7287fba1",
+      "recipe_id": "117565524",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a9d4a107d102e1f6e0aa00387998e941dd73c6ff24a660e5b924fd579060eeb7",
+      "recipe_id": "117566071",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "73b37933738a7fdab172a429514f1d96463f9457b05e61e67da729b62ffc02a7",
+      "recipe_id": "117566168",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0f328452dd26f1e400436c898580695cc9790e6ec551506d18ce64299d87840c",
+      "recipe_id": "117566176",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8a9ddd7b46aa4ea3be5fb29595ca4b48bc556816fb1e120b7eb2761f2d81499e",
+      "recipe_id": "117566182",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "76317391ee7224282b1ed215f3242abaaa76cbaa07987df0b96ef89d471ab197",
+      "recipe_id": "117566211",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a110c7a0c88a8e66e93d00ad833fa66412739637becaf33726e8f7b93e163bb6",
+      "recipe_id": "117566662",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fa6c65a1b8e101be23cf3934180358276930c728391c63653dc7eca4c9bb6fd0",
+      "recipe_id": "117790869",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "00f58e3c8f6980c271ffa0e6779f6c45d4d105e090163a8a52a60435de177685",
+      "recipe_id": "117817831",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5c3cede17d3be71582a468ff2dafdcb54275dd39e1eefc1ca50f79bb6a73095d",
+      "recipe_id": "117817833",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c0bb2117b7541beb4d2ebe35d50aee3997956f31175ec3e8cf30150b3b965036",
+      "recipe_id": "117818919",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1913f5d74e7b5711fb62c906e3a816afbf7426160a5c425a52d8e91462c7b11d",
+      "recipe_id": "117884798",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "52c75e3b0ff03016e3232d26980f56c193e2c3277933375624d01c0bc3f08558",
+      "recipe_id": "117976116",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f3e70025701782bf280fe1c082b6d286e0fe6787ca4fd6980c2e0dd3b650cb78",
+      "recipe_id": "117979298",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fa4e47d267a499933936a86da39c457245ad0ced937e6ea8fbbf478dca1767d4",
+      "recipe_id": "117979300",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "feea100388f482d255d04988946d4a925a96648c6f2a8a52a52bc5f6c368da42",
+      "recipe_id": "118083554",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "678904b209cd936fa8d43d2c6388375fdf10505e8c26a507bf6cb2c873608a34",
+      "recipe_id": "118153797",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "09368ffa77e10a2dda0fbdd8b7480945d9e61467755f06b7c5bed9e071c50c67",
+      "recipe_id": "118159799",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c03af06515d0f6df1f96fdc79ac01519abc647decf5d82be55c34d6fd30e9acf",
+      "recipe_id": "118162472",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bac6d2f393d1cdab10607a0d819009f46641085ad450924487386921d77c7310",
+      "recipe_id": "118162473",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "95aebdc4884d100b727421eb755fe5597d2b49fd1a5be58aaddd36afc721f456",
+      "recipe_id": "118162474",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "252109fe3264078362d568d1f36406350e3d213ac68fcaa5c1447ac44514f8ec",
+      "recipe_id": "118162476",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "56bbe481a616c36617e8e1b3819de0f38f1dffe38e58f71b34b54f2ae02be1c3",
+      "recipe_id": "118162477",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17abcd6d2436cc56e726b945efe74154540a9b30a273ea8fc29c478eff2985ef",
+      "recipe_id": "118162478",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9fe9e7246099bd9e585e591e9a242b51d70ab993679f3979e8b198f02cdfe55f",
+      "recipe_id": "118162479",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cb5b8b90a22e902bf250a312089db85d2b92745dc6c3478d2de6ccb3ca628d8d",
+      "recipe_id": "118162480",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7fc6bbe21b12a3efc42baddf3bcd3cb7a5a6b206bb12f76ffb5e97d67875af27",
+      "recipe_id": "118162481",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9c74f590d8efb54de7b8bccf61c47986f62d2ac11e347aa311e43c931b8bd6e6",
+      "recipe_id": "118162487",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "58f380cc91706468d107fe25cc815f6302bad479b9479b0e5b514ab59c4f455c",
+      "recipe_id": "118162488",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "30f446d09effc2655b47de010b0bdbe8d189dd3612a97ebb9ec714f5327b9c2d",
+      "recipe_id": "118162489",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cee69750348d9e9b458c3670873cb518dceaeb5829e120bf7251571f11b5ad74",
+      "recipe_id": "118162490",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "214e7066d72732e18798fdc26083fec81a3d974a274edc6d404e8819c091f066",
+      "recipe_id": "118162491",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d3efb9f444d92cd9ab4ebcb78d30ec7131673a3dafb0f647d6f40d87c8164f54",
+      "recipe_id": "118168683",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6b856b9bc64be08f2b54ee272ec46ffd550f0223cc45f6502663fa3124c29b13",
+      "recipe_id": "118290293",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17660184eb9a47dedefe27c2b3ad3d677242c0967e26d3f7b5d021a47d98a6c7",
+      "recipe_id": "118340691",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f7b47a4cbbae47574298673a9fc5f2dcf20535992885fb3fb32c9af1f5ae167d",
+      "recipe_id": "118356837",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "aa828ff6545a4bcb54bb3d4a56de6c827851fe1cf5c6eeec31ad35ff318bfa72",
+      "recipe_id": "118427850",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "af12e267106bc22c303e6b12a062654e99e0ac12b58004d63533c4cf99291456",
+      "recipe_id": "118441978",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "432f94009a2ba162f89aea5ca9d6c6cc1159593524616d1f39ab04b8ad9be5bb",
+      "recipe_id": "118489191",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a64234d7966ead7d0dd65923157356bc4b733658e71a0f7d88d883e2126befc6",
+      "recipe_id": "118554940",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "aaf99c3d354cba204a2f416de910391769ddc5395454f424112e074e9c62f31d",
+      "recipe_id": "118578229",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5ce3cb6467f500f8cfbe6bba91cb6295da75a45f9944b2d281e39eadae91d62c",
+      "recipe_id": "118582925",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b6820b18dae744b70456b33299a6e7b1aa17e3b2afc6b510aa5e662f9b5054e7",
+      "recipe_id": "118716983",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2c3debb32911ade2682cb0843b6cdf59ba99d034314573aa0564ded42243dce9",
+      "recipe_id": "118841651",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "25afd80872b4405dee2b2671f2285417689418cd36fee0aff9045c232bb233f2",
+      "recipe_id": "118858162",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fc6d0abbec20396a3b95664a2f5aaee4a357f24d7a7ff8c97e04efe068e8ddec",
+      "recipe_id": "118858472",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0856699ecf04c5c3b73e0001e9ff4be5a0d7cd1a87c1af1773eaf93ff2588b41",
+      "recipe_id": "118864889",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e9074681afab5c9881948adc07434d7c83b06ab5d6ad77eff34663ce34d06de1",
+      "recipe_id": "118905064",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "57329421e943a474bffcb7e7a4bcddd6c1346bc81d0476209c94f5c2f15ca040",
+      "recipe_id": "119144543",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "28ce82854b18f426db89fc51612f5c99f0fb0c6eb9e30251486f06f2f74a1d95",
+      "recipe_id": "119184209",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2d0f778598c74c29bd120f8414d8e972c3b90a9564576967c86c0c58cf2f20c3",
+      "recipe_id": "119259283",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4399745b78d765822b9aedf0ff02abb012e1075c5e3b6ba53cd39a202c03ee0b",
+      "recipe_id": "119575741",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a87f13e2a3a251c6788dafaf0750b365b0ff34d83dee818d098cc0caf3f14511",
+      "recipe_id": "119586008",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "70073df8eca9e95f9d14de5bc8283f7ad67653ba26862a8f0b4af64dfd1ae7f1",
+      "recipe_id": "119833390",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b4a022c421e248e2eff2eb04616eab656337e6d1198045d2ca1f85b4c6a20627",
+      "recipe_id": "119839249",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f84c45bc6e7b99b350cd3a93f67aaea1fadf5ca74656b7addb181be99eea06ac",
+      "recipe_id": "120099421",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f3419967898b79cb8bb276630534b6baba8084a5ccc0a68af3b87cf9932d7197",
+      "recipe_id": "120099657",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "785733db7fb2b53d47233fc61fd289eb911f571df2b9c1586fd2cf3b1356afb3",
+      "recipe_id": "120183307",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "115d1f90ca17724ae814fa7d25c8bd5f60745020b4a06aaab55eb2489920afd8",
+      "recipe_id": "120630932",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b6bb7b9c2fadbd9895cbe6caaf74df7fc62934ecf8adea5052c1254ebd965758",
+      "recipe_id": "120645392",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3cdff5bfb8527c2e6a59e0b1eef54a7c0cab980181e82b5bba385cad041b5b42",
+      "recipe_id": "120700492",
+      "variant_ids": [
+        "00",
+        "01",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "074e653a09960247e6d692084080c4ba23926fc4913f0ca6d6a649af453e4e29",
+      "recipe_id": "120706296",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fe1334ad47d21808c2a9d3925e7f8c8ebdb311bffd56a084f62e2009eca514c2",
+      "recipe_id": "120714702",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c74d4e36432245e76e137297b4bf75829f6a0e9920be69718b182bd92bfd2474",
+      "recipe_id": "120732566",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1cb6e3e3c912c9567f2c913bc152a03f29d711d30aae8c6ef30c243b76b350d3",
+      "recipe_id": "120747814",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "06addc324d4082bf01fb801040fe07a8d48a642ed64c99744ee60e3227aa03b1",
+      "recipe_id": "120761092",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b105d257ab1e86d086361587cffc72a827c3a75cbfc8f301a8a297ea527a6a7a",
+      "recipe_id": "120762631",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "25898bc699b0766e98253726a833ce9eef52e99b4ca1f3d16b3f9faca0b39347",
+      "recipe_id": "121086244",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "dacf76b0c7b2308b0c97d798b42e697f244e67461bf8f08069af24705b383051",
+      "recipe_id": "121126518",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3c729b871d593c1719f7d6c0a9b90f41c3f49be7ef6747958e7d3c5f26ae0998",
+      "recipe_id": "121287116",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cecf3ddcb6aed2b8b07de54b8f1f7868b211fe92f32347212378d465130f26ef",
+      "recipe_id": "121365920",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "843d1d8f1b6e1d9b1f7ae36d8156de40497312e04723727550ced8a43e82f462",
+      "recipe_id": "121898837",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "360c8acf5ed551d01d8621c9d19ca28d1e9db1061c8a2e777b17d2601b1a40a0",
+      "recipe_id": "121951507",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4dea5217c21daf5a98e93df569894f96a153594db19aa69cdff8099b2297b370",
+      "recipe_id": "121967119",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bfd0a17aa96b27dd49c124de4b0c8113a32d7adc6e0b48f2046475ca82b9fd0b",
+      "recipe_id": "121973430",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1951a95841e3725f22d7113e0b452687295a569d8aa34cd086b368269e6dce14",
+      "recipe_id": "122029375",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9009e3e470dfeb607b61b842db240ba79b1ef6915a02d1cf541a85aae88e83d6",
+      "recipe_id": "122043574",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2236299a611f782226bdcfb80cd9c92b6e0d8b616e62a80c68ce530496a22abf",
+      "recipe_id": "122118451",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "25b6db49ac9b8ef785030126360a962ceebcc6ed03d2427568ee7d61c508aea5",
+      "recipe_id": "122139155",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3ecc8dd1b32440fa0a7cc73d86045b2a46580117c40c4504f1c423ca0ec700b4",
+      "recipe_id": "122142701",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9ca427115874b2f07d7f342c680dd89a57dd638c67bdb554c305f44e462ea6fd",
+      "recipe_id": "122142838",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1ebb18142c50dd2e624a3cdd88b6d1dee7168119b923915eefb0931cb89655bb",
+      "recipe_id": "122340768",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "064e155c2f55b36c84c30b868f6151c9cd234054449ba6c40f0ae322bac58e8f",
+      "recipe_id": "122406899",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c8dee75b80c64f9a2fc2ff3a93a75f0265c6f745c2c410c3782ee26dbfae02d2",
+      "recipe_id": "122663844",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5c16baebba979d85fdbbe76b325a772ae99810d2cf31fe0d86da20e21258a6a8",
+      "recipe_id": "122664591",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5fe24f74d04a427063ac13bb86fab5ef061e87307589180082d9c54acbdcd74f",
+      "recipe_id": "122667286",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "be0dcaa715ab552e1495f2cf84ebfd0b2b928340e846045654d227538564449a",
+      "recipe_id": "122809739",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7d273d8ea85c5f0008aa53238945f8f39ee55ed387423eace0891d916ec38e53",
+      "recipe_id": "122911418",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e068f0e471511d05ee79bb9d88bda5840d3dd089cf822812db1d2019a0767af2",
+      "recipe_id": "123071571",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5b764bfadab78c48f922d721c940f3d8c924af77fda80d15658bcbb738706db4",
+      "recipe_id": "123087244",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d7d14beca5b8fd4a676655c33d404c484ce3e6c29b2156353b2658c55886e520",
+      "recipe_id": "123154292",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6de13f18b0f6c76d90387a0cb77073b85747f5fd161b3f29089baa5185ab3128",
+      "recipe_id": "123216893",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6ff58faee12155d2e2922637e5ac6a1a650f8c6a5a930469f8421aa323a8346f",
+      "recipe_id": "123424618",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d5ba1ad3bca54595a0b433bc5d9d3e34a72ed45a94ecd18cd645d83506908830",
+      "recipe_id": "123464706",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bd4cd2720de0e02dd1aefb47969c581de37a9eb129e5c45d2d48a348470d340b",
+      "recipe_id": "123464879",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "71b71cf73db11c21cb5d3d74ee353fc2fcca38fe487b491f51cbdc07bb43f412",
+      "recipe_id": "123464993",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7934a825a92ed36a2a49db51495c7b35440e27350756b3158ea087ed6d2591ab",
+      "recipe_id": "123520873",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4a2f5602cb7e3ac7841474bfb1dc09ba5853ae235b70af22e894b994f9696676",
+      "recipe_id": "123520874",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e65cdecd12bb981a032b97118534d7d0cc8c0524c85dd1ca343f9d1f14a792f9",
+      "recipe_id": "123520875",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "dde83f9842f70f289a86992fecfae27b9275facdc33568a38bccb12ead9d05f6",
+      "recipe_id": "123600416",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2bae07d67b43e1d7c1cdd53095589b2e47d4a552f5904473d578b174d4457b74",
+      "recipe_id": "123613394",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4e0b9708f9e13464ced41949dea48472bd2a39ded8a56124e83c87c91b163c56",
+      "recipe_id": "123613470",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8b5e5ff68675c8317d9a592ea794294af3bf49057586850146559c115f3dde5c",
+      "recipe_id": "123622272",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ca536bcc519e12e4aff8c4b989492ef2d52682963af175881f6c99fab0a3c094",
+      "recipe_id": "123622274",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2f8b96cccf6ba00ef67a87a404b5657eb029cbe4b92504745702e8fa146d8c6a",
+      "recipe_id": "123804080",
+      "variant_ids": [
+        "00",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "10e8d2027937a99b4c13a30ca5c361bd98c217bd8fea9cff1c63fe6a6e1e9972",
+      "recipe_id": "123837462",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5237ea99ad7e192934adc21f6a33d8d1f9f29eaa64d2d79c42677ac402b2b7cd",
+      "recipe_id": "123859779",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "de5986f3c18623e0236abc9cced52d792f0dde771b6b83fa1dd2c21ccfd13b7f",
+      "recipe_id": "123864475",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "75295f62b26375f88313ccefa6d6169ae907fdaafe472cafd704aebadcb8108e",
+      "recipe_id": "123992155",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9f685a19acec1e5ea72a5504ff4d047eb0775f0f899c159ab7a60c693abd13f5",
+      "recipe_id": "124154692",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ac1b1ecd1d6b687abc100e71f9d96bca43422ce8f975df3b07ac62eb5b597393",
+      "recipe_id": "124154895",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6537fbe50420d082e24a07158940d41d8e2288aa171a84dee8ee3088118f82bc",
+      "recipe_id": "124203347",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e9ba09fcbfec65c476ec1241bb8c4eb0a965041e645bbe5c536713ce5c495b0e",
+      "recipe_id": "124227866",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a63e6d94beba7fb1f12e6ce97f240191c74e45a8266828a2abf93d4cf9e258f5",
+      "recipe_id": "124228625",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "078320a93ca25ddd50c84d8c2d37aa13e88ba1a20f0fe543913afed33d482866",
+      "recipe_id": "124258051",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3ae73758ffb1943a7f46f7725fefee699d7bd39c2938b4f3c0a625ce024b6216",
+      "recipe_id": "124261270",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "370d645f05b19e6ffa49a97c2583671c45c91ff5cf151a3f9654c864d327e697",
+      "recipe_id": "124269371",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1c5b811c348443d064d00e5fd3af82b5033eb4533489f01d19c3f1bc8269f7db",
+      "recipe_id": "124273557",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4fdab4420c0475c4b2447ff671b58e13b1057ec690e170a4fdfff13fcd0bce32",
+      "recipe_id": "124326216",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "be16c5445b801062852c5c4cf937c7fdcc41e9318520f6daed1b726428e965e6",
+      "recipe_id": "124396085",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e1fef77b7fdd94b1b7afaf2e254e781352a602305eaa0c0d4d1bf98f2b4fe795",
+      "recipe_id": "124397540",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "137b72ac3d3061dc25f16c4e9beafa65a6de010bee92efe9d6fd438afa57761c",
+      "recipe_id": "124414716",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cc44e9973746f4938ef7a6b8ecf0bf290254fa8377d1f63471601b6b9b7337e4",
+      "recipe_id": "124591712",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "16e039cff9c1d756ac27079d5b62c3fb197c1563294ce9d9cd967d59ec4d240f",
+      "recipe_id": "124656411",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b30f84bdba0895a513ebda5d1e3f34d2c4fd9802229eb239b4e35941f13894df",
+      "recipe_id": "124796779",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d92670bd8ebb8cc3e2f8a7cbb534c6da83937f0af0bd9cd32d71291351847b10",
+      "recipe_id": "124859961",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "df11f31856b93664671e80cc094b90ac1c288bf9b0eab45e4358b79dde67155f",
+      "recipe_id": "124862303",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f00d36faeb6743053c7d8d662e40df1c728dd8685ab3d156d53f2fed4a6fd1f3",
+      "recipe_id": "124948630",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1e8739974e3d51cd1d0aed5959ba7892cc65cc8172e51f29cecfdc2d1a3711cd",
+      "recipe_id": "125214871",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d131852bef7e6627a9ccffb347c74e93cbab80cb67df6ce7ebd7dc5c184231b5",
+      "recipe_id": "125223317",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c52012067bf4fcd1a7cff07a43d47c9e9ff70931474bf5c954d6be229679d86c",
+      "recipe_id": "125245159",
+      "variant_ids": [
+        "00",
+        "01",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "30d8b241470efd5803a809f6fae5e2153eae1b420821dcd4fbd158c4aa182c5b",
+      "recipe_id": "125245161",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ce38ee7b1791c04d80c9e370f91977d2a4623a7f359c27c38604421b0c3b63bb",
+      "recipe_id": "125342694",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "612bcad1b87ab6c404de14248b1c37d97ada10a4a59e7925354f1e70ee11cd65",
+      "recipe_id": "125405385",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0d77afd78abe4653816138ea8fbd152fae75d07c5637f86252e3d4c2c14e0cec",
+      "recipe_id": "125461407",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17bec0e00cf5603ff405e33ee5831fd2c6ead50ad9a2b8134fdfd6830381d502",
+      "recipe_id": "125515885",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "712104eddf09f00a800f9d2029e8c23926e40dd6f1cb5796eaebd2483df38936",
+      "recipe_id": "125748434",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "abce0f32bc5ac5b88372916f2736a3d519c6f0186716ca6bdbe453b1047f6403",
+      "recipe_id": "125748438",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b42b2abad1799739a168914663f36e4b4002e6819cfd3c261f5ea0d5874d6f5b",
+      "recipe_id": "125838852",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9410daf8ec9f63da57c595e82397ee6af0e096f82d0949be7284af15cfbb122d",
+      "recipe_id": "125880216",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ef51b091912b8e418b593a528d3c8e7d1e4f011819d8dee53bcda7453b801cca",
+      "recipe_id": "125891342",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "00a6db5736c43b41539f18f6e42b12704f8b7774c0caae665ff942e0f0d9d08e",
+      "recipe_id": "126049785",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ca631aa4c9c4ca8843509bb262b4322cfd8a4de202afaea7acff2f6fbb3cdadf",
+      "recipe_id": "126396823",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3110e5b5a0495c64fc51124b8cd48675655e391c8927ee3ab2ec31cfb3c558a2",
+      "recipe_id": "126727318",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "364e32673df5f9297883b1b3e24459341db57256d94a14358904ed7bf43b784a",
+      "recipe_id": "126727654",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a1452d736dc8620a11662bec990ac17663ea35f2e537da22f4383009a81442b3",
+      "recipe_id": "126733247",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3f2fd65d92c707330c3fe226d8620326ce5f9a0d6460ea71b08ede6c5d46209d",
+      "recipe_id": "126904657",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9676520f457eabeb121a7edbba4e0d4b48adc4bbb284ab03c2a26323ba605ec8",
+      "recipe_id": "126984010",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7bba978b517938d498156755f703983e978d787da7f5dd842622272126286459",
+      "recipe_id": "127065639",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "754795233dbc24ea47f285f4b8a4a93e272d7de9354fbd977811c511539182a8",
+      "recipe_id": "127208191",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ba9a24e8e5f1c360a68f9ce649e7dce323fb3ef428ca995d21de69e55fec783d",
+      "recipe_id": "127418592",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "417dc203dbf42e629f7c05b0f40c46e57619c6f4ff322d05dc1d5a295347e1de",
+      "recipe_id": "127614095",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3c4410aeb2a71fb85a1a4bddbed57dc615a526e7d907bc97b4555e679a355e6a",
+      "recipe_id": "127614404",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4a96e53b3abdfdc7cecd4aabebc028283a081ee7d13f95a31166f7ca5c69a243",
+      "recipe_id": "127622086",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d9778e83be15052d04a8f939f58affac9a0f057008554ef7bee6fa5996828f35",
+      "recipe_id": "127703452",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3e02ec5dec59c2b9432508a62415c0550b0b565fba3cff2a17cde226bed57b62",
+      "recipe_id": "127703856",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b7a6e13615ba35d562147bfa0f410edd00a5999f395d9adac1cb3964f377e4b1",
+      "recipe_id": "127706059",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4ee6742cb1578082d7f9864df13a28773be1dcade60dabbd85069d8b38f0845a",
+      "recipe_id": "127706060",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6997231b2b3c80ef78e77d411bcbe270657d0deed745215874fa1356fee3bf8f",
+      "recipe_id": "127782581",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4f51dde121c6f28e998b3af7f6e656d5e886dc72601a3ac6e0e78a540b48bef2",
+      "recipe_id": "127811469",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7f074bc437d06772ce1bef726f4b6b6530bb49aeaf5f7ac99247fa02bf1f12bb",
+      "recipe_id": "127874600",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17a5120c9ac35db64f339068ae129d557e2da092122c7fa3611315a0b6e58692",
+      "recipe_id": "127880459",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5146a5a6e2e812822e36b04487575ec6e7971233b1ac21d8384acff9575cf829",
+      "recipe_id": "127910849",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "333e5c56981b1e02c53455162c47bf937d84f0693d3b0a24e6e35134921fb0ae",
+      "recipe_id": "127934002",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cf58c88d2ec87d494c8fe232e5bece3171428ce96a4e8c5a029a6eda616a899d",
+      "recipe_id": "127982810",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f07c164d3d0d0b2ead6cb1f56ff041a916d95175778a721c80b5efd466ddbac5",
+      "recipe_id": "128090498",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9418571a5860fa96ceb49cc5875df88c9978559f85053767ff6879d34072f008",
+      "recipe_id": "128102189",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ab8cd50902acefff3aacaf81b9a2b94dc700501b82c0f837e80db1b6977a2f74",
+      "recipe_id": "128141345",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1a9ecc3c4d3ef645f74cb8f19d5ff7ead66af4fc280cbcac2187dedd9eb29bfd",
+      "recipe_id": "128165934",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7370439009742ccbf466f6ae96da3aef51f7ed6d2859d091606c9aa46993ff6e",
+      "recipe_id": "128226603",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9fd51289ff50542248624ec1989a63a024117a11272035a1da7c122faaf37c62",
+      "recipe_id": "128375319",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8436eced0f6d357da817d9d334cb80d30c4a6828a27416f921fcf9ce190c90aa",
+      "recipe_id": "128412762",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6a1df01dcf620f34696f265b0255128cb3e6839a5cb1bf140d277299695b726d",
+      "recipe_id": "128614467",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e5cf7b095daa5854b734bf888307de303541357fb900aa37e2661a6e122b8f43",
+      "recipe_id": "128631979",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9916aba37e28136768124fb670e9b3d008e3a4d2c272f95cd4b69d59c1900aea",
+      "recipe_id": "128639306",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ad28f58803f0409dbf1b859a84c740d516cf08da43817027e2af0207f5169fdd",
+      "recipe_id": "128658154",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f692b2115848c56c9652acf8e5ec7f2882c7e9252ae842aed82bddc8785cbad5",
+      "recipe_id": "128662049",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "195350be204fb8a49dc948854139c9725be5c2506aa427120803956677f057f5",
+      "recipe_id": "128662267",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "518971f60dad932f8a500013f99dc7e9feb05e8b0545a4adfbfcdd3f34adfee5",
+      "recipe_id": "128662309",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "12a994d9f26bcf7b0446b32aefa6f4be4e4f8c8738a4b571fe7f9379351a594b",
+      "recipe_id": "128663122",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "aa039f9c86079ff10e244b7474a07201163593791982a2d6c633c2edf008ebbb",
+      "recipe_id": "128705827",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5b7c785df2a57fb69d3aef2256fccb5e11d323b37f1a4f69df06dd5ef2cb4763",
+      "recipe_id": "128764529",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5e350a97733dea19be81005744b83e4bcdb5be238becb60ce74b3991617fac99",
+      "recipe_id": "128892154",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "704660b16bee517ab9bcdfe701a62f92d2bae16a75579b4ab935556a9f119f9a",
+      "recipe_id": "128894356",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1517cd8ca66b60ebda88da01990fd0ac972360104dff316cfad07b37b3472388",
+      "recipe_id": "128901328",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "970ac52c1f7c1b7ff5d8de70708b6362805a96ee0c56f485bdf8acb91e5f8871",
+      "recipe_id": "128943537",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "67aef7e75ed196d50f49f1e79a464e8b7b15d2f08a3faa2e49f7b447910a8037",
+      "recipe_id": "128952750",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9fc695548a7d51838ebdf41baa928a43cbd9211e781e8eb7d53864e27a89d5f5",
+      "recipe_id": "129119056",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "05b134255b72d623b79ba3f850a15081c313e2f424b4fcd5b0ba00579795a612",
+      "recipe_id": "129122215",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0593b128b81ed14f03ac32849c619806f184e80a9a049a21b47589257c6109b1",
+      "recipe_id": "129217932",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7515093c5136e860a95218c77e3f2f6eebd6d82c87390461f6ce982a3d7191e9",
+      "recipe_id": "129421288",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a4962d761ad4ad7e93b4ea1a7e67f948abb27fc7561c53d3a594732ff872f8a9",
+      "recipe_id": "129493886",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d62de1ff8632424e1b102196b060467f136c5fd20fb0e14da23f9dd96a8301ff",
+      "recipe_id": "129494068",
+      "variant_ids": [
+        "00",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "60fe9bb8482d366ff8bce5706055ac8079f897b7b84808fbd5fd2342f92fd3ff",
+      "recipe_id": "129651034",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b07df7335cc767af2dfccf94871bda87dafaee5bbbb25584bdc136ce129bcf3a",
+      "recipe_id": "129730314",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3fc2e7c187e10dd3c4384f7b777c3789d228bbca7b6f5d7f0e4c4a4cccacdc74",
+      "recipe_id": "129733236",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fd000ddf6ac2f467c22f2270a6ffeedf68f5a542efc2275e6a74a56feda2f185",
+      "recipe_id": "129734352",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2a96c02339c78d937b77f0825817d21c4addff72640886aa3f4b47fa5a3691df",
+      "recipe_id": "129750406",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c4b1c3ff4ec95a57e27aade06fc907e2a4a8a9258c0a222caec2205aa1141b5b",
+      "recipe_id": "129809018",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "eb62fbc138208a1a2fb2aaf80148b6bd54bc31b64ec6aa571e89c477757ce52a",
+      "recipe_id": "129809019",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "00576680e85e331acb1ed061a97fe6dd2127ffaebc6ade42951f3a43b13a3cd7",
+      "recipe_id": "129809031",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "58810dfb144d28376874596e42a00931d7488c237d607774cb8dcbec21fb0265",
+      "recipe_id": "129809032",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "54ab865d62e03adba6671e755c7eeb6d863f6a0b2eebc9091d502b7b58ad42e6",
+      "recipe_id": "129817933",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "732cfaefa849328229e4449dab11bbabcbccfa2afae8ae53bd7129f50903dfb5",
+      "recipe_id": "129988557",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c46d3f184f9a248afe446ed0220e48021bca1f3cc06491e09a0f97cd9bf78b6b",
+      "recipe_id": "130002208",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e2c5159f574ce2eda6994a45162bafcc8e134ae9930711edf18df4c6c8dc6c50",
+      "recipe_id": "130008586",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ab566627e840ee508ed963dc67123c5ed4eaef1bb95fbd7927896c86bebc911f",
+      "recipe_id": "130070527",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d598fb6e24921fe699bdd4166ed32f243a3aa585328a8adcf830434d7d4df14d",
+      "recipe_id": "130073081",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "184cb126a2a5bc02f9eeb660190f68916cdbf2aa010ff9ae599eef8a51835e9b",
+      "recipe_id": "130290922",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f12ba5a4e254bab94b077074ce80b80d6e82087250c5df0d7704f39189d55587",
+      "recipe_id": "130290960",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d2951a9fd3bed810179d8785be30aebab8ce9a8a95e14d521e5f04ae42dbcab8",
+      "recipe_id": "130359645",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2a29f277cfa565edcd76d24d853fd9ff527f80f8718b2a7760ece998f9d4cc91",
+      "recipe_id": "130359991",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "788caa61ce6da4b9f0431f71838e6a678f5053554d549b6e989d7f367f83b20a",
+      "recipe_id": "130423584",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "00b83e1ca7efaf7fad7c846dcbb0ea1fe3f11f457dd1fde6e0e21107a2980c7c",
+      "recipe_id": "130549037",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ffe81f7ce0e4655b745e59ec060f640ec165e7cf24071ecf08f70424b9404729",
+      "recipe_id": "130549575",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "31e14743d628498dfb60f8e6dde4d5e35e631ded042f2c4d362aabab6f33b1dc",
+      "recipe_id": "130550781",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ef02d19593e06e14bf14084bb8d65d76de7c8d6303b1096155616c3058fc7c5d",
+      "recipe_id": "130631004",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a65dfe4e62e85dc73ac73e8994f47e650d65755c39a91993c97a1d031a205cdb",
+      "recipe_id": "130631471",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "66776db1cab39571436175c469975f832d5f4f28b7ce5f6c35bd65c2a1a32f2b",
+      "recipe_id": "130632724",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7a058012431b18406f8eb00c66ab407be52a9207b5ddc72464dee58b5cebe374",
+      "recipe_id": "130635347",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "dc278348e8fce3528ea1bed1ac91de17c727592896be27b521e0633526ef3f69",
+      "recipe_id": "130635809",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c04cf2498262fbc5ecaacd1d7f193a1a17dffddc110930e59a552dc4ba759936",
+      "recipe_id": "130636430",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c860a26b7415db58f1b440cd0c40d416c4924e30601a379d32039bc0a0bb9b20",
+      "recipe_id": "130678724",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a70e59a3a1638a21c828428d1b34e2fb260ce8a8f8f032b5fbe6ad765fe6a817",
+      "recipe_id": "130704674",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c6bd66a13e308782f1699a1a5d736c416b38854c36271a83281104c242f857bc",
+      "recipe_id": "130709445",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "12459c09d4642aeec88ec97f0efe39a3ff00761950bfc8673d2b0f0eaec0b7eb",
+      "recipe_id": "130712299",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c6a08c9a216717d0b584df5f98826f24e576869c922dd4e90d2f3f76c390d58f",
+      "recipe_id": "130739978",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5a14868ec983c7071e8b0abfd123a7c6f753ce8888702de789ec71132e4ff926",
+      "recipe_id": "130740083",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4443978c2cde83c934f930b1f2d10c437d08e8c3bfa8928c72a08115403c6424",
+      "recipe_id": "130740169",
+      "variant_ids": [
+        "00",
+        "01",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5805c39755f517ea1fed416cf636fbeda267ac441e253f1dd29523f070cbe7d6",
+      "recipe_id": "130740881",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fa8ea7fe97112131cebadaf501c349d37956e078ff0675f314ef0cf1d3353f25",
+      "recipe_id": "130744193",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "567e1f45e1c8f13bf4e8a8a7c7f99c52d9169ff150fd1f2419fc5ad05db7c6ed",
+      "recipe_id": "130842923",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "007886d0c1accd4befd80310097bed686a9ed123b18d655e1601f37cc33d695e",
+      "recipe_id": "130846697",
+      "variant_ids": [
+        "00",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9b32381947c1d1c8640f76fbd083a6f6c9ba22ad40a4ef41d7e4cd9f3d2b65c0",
+      "recipe_id": "130926393",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f1762062454738682ebbf76008f2777c309bb3e63d093ff78f74bb09759b0555",
+      "recipe_id": "130992107",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3a752e54184d437f0bd41c0db0cca46003acfc00934a83333cca9f70555056e7",
+      "recipe_id": "130993114",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1ff00c682f61446014baef45a1689001dbe20790fad003256cecdacfabfd0c6a",
+      "recipe_id": "131036228",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "75287e23f3f329d1ea2a99935033cfd12b29e3be0dd5b5293e24ff4044d9ebfc",
+      "recipe_id": "131131336",
+      "variant_ids": [
+        "00",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e7f687e1cec3b756ffe0570a0ea625421d916e2e22fd5cd5319b54b01b5b10b0",
+      "recipe_id": "131203051",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7ee3fd54e3406de61df12594bb4686f5d98a9704a72581f8d3da9f06d7d2f5a3",
+      "recipe_id": "131217672",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e34d7dd9396d2b96e02c7bf8809d7c27f1548c39c6423dc6018be28dff6dbcec",
+      "recipe_id": "131261668",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "14c6d785bde5269f160fbe5518d20614f168aa1626706137e196ae4ecd38cdce",
+      "recipe_id": "131314498",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d9aac2a8a638980f49c74ed5579414bf3cb0e82aa529d94a2cb5069efa510d3d",
+      "recipe_id": "131392306",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b49511afe7e0d3f0878f66fb03fa9e98f2c7842125ddc0a65c6c0452599bfffe",
+      "recipe_id": "131392307",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9af6d631dcddd8886359743496016244c07d383c7d09e8aa38693072d39bf46b",
+      "recipe_id": "131479066",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f3df1a6f6b9d154f4c2bbb93d88bcbf4b2f0f7644f65593da9d14e618c6ca187",
+      "recipe_id": "131491130",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b9db64f9c52f6126f27eee548d85122ffbe92ca1cc4c0a0b2a6a192f74d3ad43",
+      "recipe_id": "131575559",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "53b2298f0e58b6e7a1de0c29d43a4f213ba3d4f0bebd49c9fdb1f7e69a109925",
+      "recipe_id": "131596457",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17471d5c87cd532d0d2378257ced19a2b4225224a2b7924c2df970f2e70f56fb",
+      "recipe_id": "131666602",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b7347d2d215d28e5154faea4ff41bb515136021a832c3addff6a91cc50f8a6ec",
+      "recipe_id": "131710998",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "46c369618b6ed19f05b2ee622decde974d436fff60acba7b80f216432687608d",
+      "recipe_id": "131716751",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bd50683bb956c9e73d1cb925da8f5660bd493b609716c6ab95e37714322e627a",
+      "recipe_id": "131787572",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1701dbedcc3c7d2bf05c07d3ae90e2a1e7e65de5e18523ab6983accef68ddbef",
+      "recipe_id": "131787573",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e08758ff087507ed1b43253d77570d177fb29239fc19b930e4b658f1852db015",
+      "recipe_id": "131787576",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0b78c51dd64400057f08687e89b735e18d05d921a24c7cc31d8827e225fb4e07",
+      "recipe_id": "131787577",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7cf7b2bf2ffc30991adf0bf7d3a819791902f54cd30ecd24b8e94a5aaac75c2d",
+      "recipe_id": "131787578",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1bec2bc172621b20dd7c667f89d19b274fc6fdcfab6f8f5984aebdab62a597d5",
+      "recipe_id": "131787579",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "490a25882dba38ecd2333d063c78eca1c1b24b31d75e36541cb210e34324b8eb",
+      "recipe_id": "131814535",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b01560fe11e0dcc5a4661565b013d8e577fceaf9e82308bca0c3e2d3677a8bc1",
+      "recipe_id": "23260489",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "28b8b8d54e4955dfebd75fb50793812666bf9c90adaca308f7df2bd47c9248b4",
+      "recipe_id": "23260621",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5782f72c139669f2b4c435c30e6d995e92da57549b22a493b0da08fe5f95f12b",
+      "recipe_id": "23562709",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fd95e96d9c8cf493a7000b5cb6cc5b0a2d83619b053e4f8389ea6281c9fa339c",
+      "recipe_id": "29578882",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c8af89d793b3baf09dcea41e7d0445e5b9aac750fa4e21fbb7153aa1dc4eb26e",
+      "recipe_id": "38949992",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b55c176341eef61550bd4a9c991dc240f2ad64c6d86d9b281bf90f76410066ad",
+      "recipe_id": "39347402",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "63890680d26f9b35b9a99c2947ba96587e208bc8ca4ed6cfa3b5e16ecc8b79d1",
+      "recipe_id": "47148233",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "31fdd8ace087f52fd703f7a0f37e218e6463f0a3d81a1151c0e36c931b847aa8",
+      "recipe_id": "50073367",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8296cb97d9824f168f97e6019359d60f3b9d2147b86d9c8a6cf2c72bad788d3f",
+      "recipe_id": "50108414",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a82669a173ea14d6309ef2304b33ac4b661eb11528428f86a408e4d79411a4aa",
+      "recipe_id": "50801166",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2d1deb098b8fd1496581455862e08e5924cfab4f9567215bd1fff5ca740ee2aa",
+      "recipe_id": "50802627",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "795ebdf03a9f2af6a0adc37e1187b6768daea1af359aa0c017cf41d2b91695db",
+      "recipe_id": "50807132",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f927d615c7e5540069ef08118e6e85e1db81b551e44c228c52eb19b54c455d68",
+      "recipe_id": "50815426",
+      "variant_ids": [
+        "00",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "38232bb9cf269ace9bd3505f20bb9d8108d128d270452c934dfc148bfde1dd6d",
+      "recipe_id": "50815486",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "52a3eb9a49e1f40669635b58ce7077879aa98eb75c09fd9cec72cfba9ae6bbfe",
+      "recipe_id": "50815491",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1e1f1759c2bbe09522ca3e6eaba64a9fb5a1efb008806e00d915ea6aed354c6f",
+      "recipe_id": "50815492",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3d337e75755204a6ab7e6a4ac053b5beef3e9b6501f81ef230bd09e0f553609e",
+      "recipe_id": "50816152",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e0bdaa9d915dbb612109393a5cccf8d9b160c991c1dbcc71fa1bd952e12a3819",
+      "recipe_id": "50816215",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "86fcff943b40db37af216b989def507c07d61121e8bd4727a11e6555d123bb45",
+      "recipe_id": "50957083",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2d20f8c5be0e49ebcac8c000073683e1470239862f4a3403e030ae919b2843e2",
+      "recipe_id": "53837831",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1436a0e87d17bc34d7846c4bcb9c71ee4b953b51ba5fa5a59b74bbf554e078e0",
+      "recipe_id": "57440057",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4dc6a8b7334e177eba3e10a446b7bbc56b69c191c2c3648c962b7605cf64d19f",
+      "recipe_id": "57440067",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7a7bb0cb41ab8efe1256faa4f6110e73043c52662b870da977d9dfff701530e2",
+      "recipe_id": "57440133",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3b58c59384370c047df6065037089eb2d75b9a1e3f497e3cae1dfeb40a0eb1cc",
+      "recipe_id": "57442301",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3e8b80adf2801f236701f608810efe3521effa2ac8e78ec5f802a88582d70a8f",
+      "recipe_id": "58167313",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "91c7210dcbedc0d697639af7e543ebeaf2360845f25257a49495e31a07a18b27",
+      "recipe_id": "58167458",
+      "variant_ids": [
+        "00",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b20fd402643c23cefed8c0be84ea81e50f20a60d8edfefeddcbb8e90b1d67068",
+      "recipe_id": "59346468",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c5ec57ab5d5539df20c02ec788035fbb3ccf2eb76cc96542de2a4449497679c6",
+      "recipe_id": "59797915",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f8fb125cd64aad8cea42294898ee821bfa610431c58e9bb15dd8df17fc0f13cc",
+      "recipe_id": "59798555",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5085406d40cc76615ba0b6e7a8fbd750127792d877e7ae5b7fddbeafe75bc1a3",
+      "recipe_id": "59798772",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17770227edf3d6434c6d9b2a743a1f243a9783508080df60a276a2f02977f079",
+      "recipe_id": "59798940",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6043a2cf61d1acfcc75ff12c8e2d7b2e9171e487b8f776b9fef3c9f53e81ec24",
+      "recipe_id": "59799030",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "636252b73306248ff0ba90141fceb692ebfbbaacb9ce43acf492daa4c108ca5e",
+      "recipe_id": "59799084",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "942b2c5949f0fd9c46bb0c1161cff303af98599d45050af558c4150f80f42175",
+      "recipe_id": "59799442",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8dff05e73877ceac877e538e692e67f91b2a5e82bb39b7117ea2de57b2bffb04",
+      "recipe_id": "59838285",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f536f27fa69007e8ff165b27ef4db4a702d11d8aeaf8a1f330b3a91fe56980c6",
+      "recipe_id": "60374711",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b6dba9eea922b0976b33e3220e2d84ccc005bbe55d11adf3645cf915586d41cc",
+      "recipe_id": "60374713",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7831c620009671fd16f3b68ec5dc20098b16fd59522a2f9640feaac6175392dc",
+      "recipe_id": "62905310",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7f66d70240ce4c3c24ce30eabbd258b01570580757c036999ff14f09aa27fac9",
+      "recipe_id": "63434648",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "34dcb1929dafad6702e1755285d3c6ff38ff4c8cf407e9c734d6beda4e1697fb",
+      "recipe_id": "64112882",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "154da6ccaf60f3a5f2e5f6e788beb033cab853f714155edf27cae190741ee10b",
+      "recipe_id": "64138480",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0f879b1e0a03a12dc132d746ce452026610d91b418349a0a3c380cee746005cb",
+      "recipe_id": "69270259",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a10974c200b808bdf7b9e43d5f9dfb40f4ba003ae1cb215f7f58da2e14ba8f95",
+      "recipe_id": "72741973",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "733398829cb4e09918e407e314148dec208fe953867966ac52f74be019b28563",
+      "recipe_id": "72743871",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "840955450d10f3f2b93ec93690afb5419a71e30ea73659c556ebf215c823e923",
+      "recipe_id": "72787973",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3a0f846848f3ada30e34ee981f41d1d9b90dc0850bbbdd7731c8829662bfbd71",
+      "recipe_id": "72787974",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b7ba70fbbd71b21767f61402964d4b26f0ab94b1ca1aec375f24f23b68be0437",
+      "recipe_id": "73202768",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ce9aa213ef4179c61d87b08642c279217ef9746f53ffc7c5b5cb588183d38979",
+      "recipe_id": "74627281",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "438878a24bff1c4b473725af688047ce691035c7f2aac5e8a577add00bf54fc3",
+      "recipe_id": "77368937",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bda36fdeab4eff0ac2bc83066b31db61b38166ea884e39e34b38c59e66e3c0b8",
+      "recipe_id": "78751375",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "22745c0c1d9739cfd77ff49b3c561527bdc5d14dd2d4090e6ea11383160bb223",
+      "recipe_id": "78751376",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c067f0f5ec04dc2a5bbcfba65f52e0fe6b6b40e705c4fc65fd3ee0906f55483c",
+      "recipe_id": "78751378",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "018c06878e71e3608faf0be7377f94418c804d935c9d087bf73dfe871cc15d5e",
+      "recipe_id": "78751381",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4a669333fb493404de5dff8972710897fcf9ce4e3b703805a3f5277036fb065a",
+      "recipe_id": "78751382",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "49f9ebd6fbe5e4b6dba1307cce785965a9d7cbabe50e4219b2bd062ec6dfafd2",
+      "recipe_id": "78751384",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ec2f54f4098e49f16a9bef943ef16d21dd3d2a5fd36b5a9fc30bb014286882c7",
+      "recipe_id": "80850459",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0ee828d2a581878b09ebd4c0b60cf9a77051aa18197ebe016011035775467a5b",
+      "recipe_id": "82302802",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9c1c1bf40a05bdb0b835ea13aa02f31d02bdb14490a7f25ce652ef61013843eb",
+      "recipe_id": "83147854",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d211a748901292e13350850ebd1ed470056d483f4c63d7108f946fa8965b2dc2",
+      "recipe_id": "83545905",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f60afdd7514447adc92d533c0b37df15724d132ba764ced372cca3c033ad385c",
+      "recipe_id": "84532823",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a5914829cc750290ecfb51498965f1b032c0f8322bac8c598ad001c0939a490a",
+      "recipe_id": "84729812",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fd397dd574cb6058591d92ac47f8cd15686e743341ff3de7b763322e0829d84e",
+      "recipe_id": "84791375",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "77a53723d745820c125ccea0b9cb395a180924a5a631f50f74183bfd61142f9a",
+      "recipe_id": "85427201",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3f21f30656b6d588cb71a0e28361a108b1391cf381c1099b56fae12f2c8ab8f2",
+      "recipe_id": "85578640",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e66d6713569b1d95fb01522988addc54fb6090e8ace3f995eeedcd30e31408e1",
+      "recipe_id": "85791701",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "25339f2ff6afed96e6175eb4e1a033b67183c76fe0ef3e4e074e1c4451a2b902",
+      "recipe_id": "85928669",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "05ae4508acfbb003f9e4227395fa4d4168365efe60f63d4d62d40d59ca650b1a",
+      "recipe_id": "85944334",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c36757d7779b2682158c72b0ff080d81b0b093165f8c237be396522bf3855855",
+      "recipe_id": "85944340",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3a3ababf3123541905ccb7603c210ac69e245e346ce4f784da93b72ac0521d23",
+      "recipe_id": "85944692",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "293740a70a7c2ae2c2fdc64943a02a2890c5fb98e55b2fbe3fc3fa09299f2c95",
+      "recipe_id": "85944696",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d278d7439d120cae50ef6613587ecc2a70ee2b604c8955e13250e0ffaea5c949",
+      "recipe_id": "86179000",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ab64ed5b9a7d6b0ee70ef6a238ccc8cec1cebff7ae67b5bd5ea2221bdc9e2d70",
+      "recipe_id": "86365770",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "eceb23c4582df3a3c6fc0b301f3af978762e9b71334ae54dda37b5a01d8592e3",
+      "recipe_id": "86472380",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4e1e70d791e9c0d50386d22ce79949e2c9f165abd3a38bae7c01ff10e517924d",
+      "recipe_id": "86565480",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f105c43a3ef431111b19ca622c4275cc401a495410ca25e8f68d4c45408e9568",
+      "recipe_id": "86565537",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b445bcf92010c8234e4d2aebd6da3dad3c1337e64e090b4f55de5ed37615c73c",
+      "recipe_id": "86735425",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e83c5f0c1fe0b11f81104524727a13885ac353f3abf38041686c323143fc6d94",
+      "recipe_id": "86735426",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f1a28914192f901ff871c0ee9b60533f36a4007be145b395a1be4ce7aef15c87",
+      "recipe_id": "86735429",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7ea104a466eed478fd0861a11305c267fda3ab01c5f19299c116e5616cf91fe4",
+      "recipe_id": "86735472",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "24c6e9939c1072ba5c78b3bffb5961518ffb0765905ab614c098dc4426fc9e37",
+      "recipe_id": "86735475",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ef6d52fe13975446aea162f19f8633e10782f4a6b438262c0b635355b5c40d69",
+      "recipe_id": "86735481",
+      "variant_ids": [
+        "00",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a56c3323a22d18088623f7ea79138ff3a05d68966906bf76b159be39f8174f38",
+      "recipe_id": "86902509",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "47d0e1308620935f87bf4a171ba4ffd45a2e55562e6337dc8eb8c5174587ad79",
+      "recipe_id": "86905090",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "69cda04705abd31f721b1d37d23c5749d529c7627b95b3473419ead5fe45cfd8",
+      "recipe_id": "86988548",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6dbdbb142802cd1eb0c4df0638b366b315ff52963c5c9c9eeb83296ea2a69418",
+      "recipe_id": "86990074",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d468fe17cbd5b8e6cb4d34ddc866fbfba969cce99f222225f00c2febfb0fb700",
+      "recipe_id": "87139696",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1e5972f9ce2ba2e87ee8e0ae7f305cddb52b40b652dffcdb768226f6d393109d",
+      "recipe_id": "87241695",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4f547c277a426b0232e3f06fc19a552e9fb149e53b16f50f9f48498d1d18e95f",
+      "recipe_id": "87279058",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2bd6a19bd1e2c92c72b668702c0acda1fbb09dda781f52b7bf47e68433ee853f",
+      "recipe_id": "87410086",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "999f70427c6096d23dac9e2c587b11dda8962474deea217eee4ae3de5a1d74a0",
+      "recipe_id": "87481384",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "baa07a2d68fb6186b36f4670dbdf40a55e298b530b2cd6510065c3f08a08c4dd",
+      "recipe_id": "87484821",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "95968fe1f4387101601b2b002cbb40534cd2e6df2ea94443a847f6069088390b",
+      "recipe_id": "87485576",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bc9ac065dccf20e90b2e797d4a0f8a2bf5a03db4e6fd58747b22b8f6f6899a2f",
+      "recipe_id": "87489459",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8f0120a8e4dd849e4f0c95eb88368d1e115365c4512ac85b25e2cedeb51d0ca3",
+      "recipe_id": "87549170",
+      "variant_ids": [
+        "00",
+        "01",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ffa19555fc2da4ec8c788572f17cb072dd0a7df6b3b82610aa9de7f59f2b9033",
+      "recipe_id": "87835194",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "14df57305b75e3e0608a2ce306a2a28413a454e40941f590d06168f1e14a27b0",
+      "recipe_id": "87960973",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8335c11e494cbe2331df44306503305173c613fceeda66d16c39e21bec15239b",
+      "recipe_id": "88017708",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2e43aef0b777d56e6a3de9151ebe597311547b8c39b8b92ae7b1ab4e67c458da",
+      "recipe_id": "88437797",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ff66d5d0eab18c79299aeb1a725766337898f1988c9ada106df27faadecc9d27",
+      "recipe_id": "88451624",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a102266adaacb2ab66069e4c1356881a10a59a03d392cb6f73ea0f83305f2fff",
+      "recipe_id": "88451625",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2cdc8b56ec5308427e756d4ae8b8c59328d806392102088620d0d3fb125966a4",
+      "recipe_id": "88488556",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "384758419fca3f330b2ac35ac478a13d225d2afe6f90ce985cb418c95641e8d7",
+      "recipe_id": "88488557",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "65e6cc34597f41decaf53ef0c709e452e4947a57a75db9cab70788dc17d9943c",
+      "recipe_id": "88488558",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4fe2b1f9cf6d18aa11b692923120d8847e67a5a7cedf4549fbc70501ac924a6a",
+      "recipe_id": "88488560",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b4824ae2dee3e001662c46011cb3c1deb08ebda1a5495c8360374ea7c84a022d",
+      "recipe_id": "88488561",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "939ed42af8b4c7b8281e23ff948dc5e23b87916bdd814b562c35b2ea05ed64f4",
+      "recipe_id": "88624242",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c478c313563d11203dff23f1721804f23581e8cef5beb984ad6997f0af7e96fd",
+      "recipe_id": "88624257",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "59c4ef7af4db12bcc4f5cccbc5a180cc8406e8b6021f5bd350963a5dfd1d105e",
+      "recipe_id": "88674737",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f4ff8df99414a3982fcc7ff9d078579d1f5132592a81a145e605ec561a36e62f",
+      "recipe_id": "88676000",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f8c95700d687ec8229c08b972f1825075b90183578e8983afcde61b939700c67",
+      "recipe_id": "88676017",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a6193c97c215cb03dc3c49d3286fd163f80c8302416c2037f00d466366e31999",
+      "recipe_id": "88676076",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9ae7ff0c3076090414c483a1557ddc286591685e0a016eda3ab96c717de0dbfe",
+      "recipe_id": "88676116",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "0824eca8fc04894dd2016da70d243b3b44a823a6e0e4ec170ddf8ee0ff042b52",
+      "recipe_id": "88676223",
+      "variant_ids": [
+        "00",
+        "01",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d41d063855cb799d7b74c852245d7cc4956f3b82d43e0a23a03bdfcd3819c8c2",
+      "recipe_id": "88676643",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a7ca2825ae97e1f91ff5f6794412836fcc488670b1af577f2f0827e0239d2767",
+      "recipe_id": "88676666",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b32e6bc62ecafac99eda855672ee1fe20d26509f96ba32c08bb0bcf1609bccd7",
+      "recipe_id": "88676796",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fa47065ee36e441161f70550f7e724f9499a08219299b3f179f450f091650a04",
+      "recipe_id": "88704851",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "61f9d5ea0526cb34fa069cb417ff206a08efc5935a6b408a460a431eb302c23e",
+      "recipe_id": "88707332",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "44c0675c2f1289a545a28012fd2df23807586b88776361b0b8f9b13d8beb4820",
+      "recipe_id": "88707765",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "09528bf2bb5fde1f69bd35a31c3fe08ddcfe1324e85057e525dcd5fb91a1ebc9",
+      "recipe_id": "88708198",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3b47c8913fbd9fc63f110c5f854064256680924e187f6d95e5d6a236a73ff7b3",
+      "recipe_id": "88781351",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6271fa04fe0323930ea775e55c49dfc176950ea79e09f1c02491c06291e1186d",
+      "recipe_id": "88782312",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "459f9f009e649358770d9f850c4c19680f12c7e12bdd2c1d5d3bec53d92dda43",
+      "recipe_id": "88783356",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2ce7e0ccc146798f37f237c8923397e264da7ad1f77de03b2d809e0519dfe027",
+      "recipe_id": "88789010",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ce3a064894a1120c3f3e9d672d4cba241925c99cec973bddb47d17baed71d536",
+      "recipe_id": "88917380",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "88ccd253ab44c8de9728009da647404e028b55c9e6f70ea8a84a0574fb89dee2",
+      "recipe_id": "89048964",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "838c6b3dd436709ca9d5cf2b476d1ec8aaca1cb24cd33088f2dab119cd8aeff6",
+      "recipe_id": "89407689",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8be40f96916e7e7e0fc47f49b03e66e1303b29d867810a78bd9d75b1c805fa9a",
+      "recipe_id": "89454416",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3692349abeec48a51d5c019f9cab6a88397be566782b9706eec14937f84eaa0a",
+      "recipe_id": "89454478",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9c515101abe84971d14f9d42ece822970467b6912c969c5a0fc45462a0dfd71e",
+      "recipe_id": "89583851",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c0104e7f4870dfaca97fcf39d97be4324fb6d3df398ba6013dc18f41eb88ba69",
+      "recipe_id": "89583909",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "981875029248384fae6141688b61d0d17af82f3b7df69132ed83db55b94f080b",
+      "recipe_id": "89583975",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "77aadc86976b022db901a40160d0207520986befc6a3a6609ecad145846368af",
+      "recipe_id": "89584039",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f0bbcf904d544dd9d09f48545d2fbd724625d99889fd177a77674fe06e546b25",
+      "recipe_id": "89648185",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8761bd66e77ce42a609e0ea9f6a769b9a71683e37d47cdfce821a371f4740616",
+      "recipe_id": "89648194",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "15ef986d895bacfd950b1a920c53740c2ea95e6c36be55c816fa7248cb6dfe86",
+      "recipe_id": "89731033",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5a30ef77ce4f4dcde626b83f4238be7a575379ee9e38dc72366629c8bf8ac467",
+      "recipe_id": "90239205",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "960027b59d0034d0692669881078228331efb3be56851d62977b088bd96c0f02",
+      "recipe_id": "90256258",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "93c3934427f66be9e27bd9941d4a76820a46355c3cc8eb794f76840380d20b7e",
+      "recipe_id": "90485335",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d027c8493e44377428b65347508d7f4e3651f5988d578ad6d5b8526858afa547",
+      "recipe_id": "90603290",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3993135f79514e09c5c78923a311f5525fbf51b9209d73e79f36f5a85fa708b3",
+      "recipe_id": "90638892",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "052744706da4b520bcdde3be4d155b4b5f7e0e611a12028534e66d4daec18b22",
+      "recipe_id": "90660067",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "49b742a552210a3fb49c0284a7cb89b8042902b78ce0783b8c41ee92507a59c2",
+      "recipe_id": "90734269",
+      "variant_ids": [
+        "00",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "22ebfd4d3647ff76b025e3560bf89d194e638d1d4e0afa41b2b88873f64b4291",
+      "recipe_id": "90817361",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1fe51bf16d6227841494a88eaffbbb9a1291b2e1052fd3c69d849d5aa3125548",
+      "recipe_id": "91033101",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "07ce5c142815c249d9443090c6abe1e6f274f72312611db19ecca4a61728163a",
+      "recipe_id": "91033107",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c0884407b06ac3c0526010110ce4cc22c84afb0aba2c86f9cc2c30104b2e6c7e",
+      "recipe_id": "91033108",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7b66ae81c3b149eacab54267e337cf33219769cf5d58b04fb4aa67a680cfb387",
+      "recipe_id": "91193728",
+      "variant_ids": [
+        "00",
+        "01"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5e6d1813476c8307db0242c18e54f6b2e4f400e6fbcaf22e70a6ce7210d1ca36",
+      "recipe_id": "91199059",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6ed91a014fe59ea2fd3b9f9d37c1f0776898bbc4fa601506c1c46731db2bb6f2",
+      "recipe_id": "91199062",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8a31dc07143ff2844cbaecc342c17d3bcda8c3feaedaa8f0efbba084e2dbb805",
+      "recipe_id": "91241465",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "18660656e0c9e6c54f5ffe6e29eed4ca96322f67793088c90c7a2f0c9f87ac0d",
+      "recipe_id": "91339479",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1aaaa1c1de6aa0e02195e1e50f822cb04f330668350a89ee92672494fbd818db",
+      "recipe_id": "91361311",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "186b6964a8a4d51e70e89fbd3e4df3896116fc9c55a96720e2e867a7c0c21a4c",
+      "recipe_id": "91361560",
+      "variant_ids": [
+        "00",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1c624ad5cb167c21f38cc9982f383badb193b2566322767e23790eb07315ce8f",
+      "recipe_id": "91361562",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4672d82947cfbf8265fdf11babe2700cf09bd37da26e2e15a45ab8dbbfd327ad",
+      "recipe_id": "91416040",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5dce5420153a5910c8ea0fad5e33987fe912b9187423c0893f8e2e5c1196410a",
+      "recipe_id": "91495261",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6f19258c26f960ba7906099bf211af2863d24b665ef7c9f8df353b49f4d23c6c",
+      "recipe_id": "91512824",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c41a71d1aa58b30a1a698bae5d0ffcd76e78703c5c32f739ea151494f748197d",
+      "recipe_id": "91556848",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f06ea9e1b9bef9af884fd9f3e083cb38d96649aa153e2d0a781cb7eff6d8cfd7",
+      "recipe_id": "91607497",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "80070f95267f936dc160e638d6eaed96c054ce9fa22dbee51ffe27a4ba8028bb",
+      "recipe_id": "91949163",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b3936a040c8663cb12e8266368e6fa5212ba4efe93107b4d67b4cb3f50fdd688",
+      "recipe_id": "92048772",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7bbacf6dd30abd8a1d9008a272f1a4c4e6da359d4a553e6da93af3dc4d35d6ef",
+      "recipe_id": "92330750",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "27a460974ac8b598c48069d7eb45b40e331b16aa6536764739a52255d530c18b",
+      "recipe_id": "92330759",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "46b59222b68885c09d39e010ae9d1583030482d2a3fd6903df575b527ba031bc",
+      "recipe_id": "92330850",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9ee1d3d703134f4d73c2d6744810e019b8b0278c0151b6b2289dad8f394ade91",
+      "recipe_id": "92330852",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "51389ee54a8d009765b8be7b7865161b5f4061ae75f9872129adcaae7f775e08",
+      "recipe_id": "92416709",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2e217ae21cc6bd72698a4631deadec37e7bb12e825276366485bded65eb3771a",
+      "recipe_id": "92424502",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8209ead7370c65123ce8a493b9295058839aff137a6d647d4edcf4ac8edd91a9",
+      "recipe_id": "92570321",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bdca13ab55ec83ed391b3420350b1a5f89f3b66da668dce06e0bd2169cd7bc18",
+      "recipe_id": "92570331",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "d69759d7aa7205a2ed01b4c99ad4989de86de1af8a93abc0af85b05d78bd3fce",
+      "recipe_id": "92570340",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "a23e1fc79db77f3b33064277105e80c92d83d7ac3bb46fafb2dfc34913cbc7dc",
+      "recipe_id": "92623970",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c25df71514ff43e376f7c2ef0b22785997092c083d91420c20c46037567590e3",
+      "recipe_id": "92629971",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "266dcf798bd4548bf98d15772a2d1fe8fdae5d7c34141f51aa7c91e9840aba7c",
+      "recipe_id": "92726378",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "377c44973dadc6f4e933232ef4ca947c5fc0b24065728686d0844397b7c0216f",
+      "recipe_id": "93515057",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "eb218c47336372c767c261bd46c9646920c28ffa91d3561a2741e27ad3ef8cf8",
+      "recipe_id": "94001408",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "da8abd8a4210afed516d0d21f20b2ed919528f1eea4125903b0d9f8ad3826c94",
+      "recipe_id": "94108351",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "06ea5006cfae8d40679bff55a19d15de56dfc7fa1eea4ca237a9c72264fa82fa",
+      "recipe_id": "94108384",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "bc186f2d766f47fe7cbaf352a59b4b2b4a97cd1e3e666f3d20e497ebb6380e4f",
+      "recipe_id": "94356002",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "db55a2a2c6e23ef03b218b87d9696b0578dc1cec9b4356bb445f08ab1fd94b89",
+      "recipe_id": "94382824",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "085e0da7a65207ac77189ecf0db6d5a3700deda56c59f5b10394acdf7adf7bfa",
+      "recipe_id": "94382842",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "07bdfa194893b868a51533357ffaf61020e66e799b83764af2a0d42fb1b3bce3",
+      "recipe_id": "94679799",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3c00ccc9da5f0e9c3636e70ae7f14fca85c97d8b4536ee30b376059d8e3d750f",
+      "recipe_id": "95377023",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "cc01b0759cbdf85b7adbd11cc61ad0827e45d2ed95456b6b4f12fc2dea41b9c8",
+      "recipe_id": "95394706",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "56782094a6db1639b6868b5ada0c7bfa7895060555bf510af9ea7293329f24b9",
+      "recipe_id": "95449201",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "57116559acf008d1425b79543002e93e35742389f2458b3a5ca34fc2c3ed8358",
+      "recipe_id": "95543180",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "58a2d7c7435edf1b66aafdc6c033e7775a9a425e905633369adf7d62e40c7740",
+      "recipe_id": "95840865",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "457acbefdd47cfed5d8fb4f2f3656091e03f627541dc31122ac2ab287086ccdc",
+      "recipe_id": "95841602",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "42d7a4631e624a055e0c3c5e41d35c9e99c8f1835b0aa59ac0ea24608b111b46",
+      "recipe_id": "95842054",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "9fbac78cfaf87072698402e950f38a0f7eb95342af655d22b89b094ae3a2fe0c",
+      "recipe_id": "95991033",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ebb7ff843ed3260d268dfed8f0a219da3969d354e45554c96c5be8b33f3cbc6a",
+      "recipe_id": "96155393",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "02716b275c1357f712da9f0f2c31f09c3abda825796f35e025a6ced8f46d4c18",
+      "recipe_id": "96229946",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "267c4b29f807252338f327970b3dfa46867f4d6054250685402244a8c85e6274",
+      "recipe_id": "96969599",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "32c5e3c5b2755f75e5494daa028cba752e4b4d9c2693472a1b41e419483eafee",
+      "recipe_id": "97028470",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "fd849fa7ee4b8050ee6dc19fc1887048ae10bc9a76bbbd05bedbc16a910bc112",
+      "recipe_id": "97126841",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5a1eebf621ae216cdf4320c83aeeb2272ed2e47ed50ca216b287d6b8dff2eb13",
+      "recipe_id": "97233177",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e354551397e1f0a4602c555c4d92cde5a14fe85f6afbcb39d8fa39f47896dce5",
+      "recipe_id": "97310457",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8a6b191eb12e1c0a32b9e115b376697a89b8cf9a02c51c9940377c360e5efd09",
+      "recipe_id": "97310526",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "686c29a0bb6c8a5383f1ceafaccd2b5c0693ffd16cfaad316737721c52c10796",
+      "recipe_id": "97310532",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6a0d0b7655fc10fdfcaabda0a2cd06057a940bf0772938fb7d309879ee0e61f3",
+      "recipe_id": "97310564",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2ed7ba98d4ec03e5d8b11d505fb61348cb31d44dd60763c1b58dd750cc3430dc",
+      "recipe_id": "97310593",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "06756948247b3cb3f23072f4578654bcbd7facdcfcc42dd9d0135eface0d7641",
+      "recipe_id": "97310640",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "58c0f79d16a1191561cd761097cf28861be97c0cc2694e645443c36e4001a81e",
+      "recipe_id": "97310663",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8123fa746a06f4ee1690f3f72b5520559d34358edc20d057ec8ccb820671dbe2",
+      "recipe_id": "97310724",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "575f05198f527a875b46396c88082440e34b9b2b06a74a2f729005042b67223d",
+      "recipe_id": "97310798",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "25eaa08af050f60197e902f5f63b93e00c86ee371a7efd87417679b61afaca06",
+      "recipe_id": "97312221",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "57d5df58a135fd811670a1ea5ff4535b2abf0dc0da93700d1e12848421ec717d",
+      "recipe_id": "97312445",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "f62acfa26a63752802c4dca5c34cb80d3fa91811aae4e6d58fbeae8c06cf79b2",
+      "recipe_id": "97458907",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "966c01c3770275b1422f8f29489c3d330ed05b71e3b1f28cfc4d5966794c686d",
+      "recipe_id": "97568057",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "20d89fc11e98eb0c8008a38bdaf14fca08c2f9c2f2ccecd8c3be9d8d1a4e5940",
+      "recipe_id": "97678944",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "5b8ad8c86846b6b52ae27adbfeabbfdab006b760b9dd43453f7f10e6fb005558",
+      "recipe_id": "97678952",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c4782c751dc251d2a80da0c781ffa3415e6229365bff7f4b3532ba51994413cd",
+      "recipe_id": "97678961",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "1a6cb20e88009d302a177656d75b51dedb29eff9cb17f2d2fa56e79b4b8071bd",
+      "recipe_id": "97678967",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6548675a46b8adfc291609489521a1dceb25bea5f7ac3879abbece7c323c62b4",
+      "recipe_id": "97678972",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "2a9ee7948b0b74f66263ab44796ea6aaed6ea49b907a3a194bd602217ede6d1d",
+      "recipe_id": "97678974",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "16e07f3318b934e23e57c6a5ad994dc8f72f41d2853fa9cad1a0f8369b16bb4d",
+      "recipe_id": "97678975",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "eb7631ac56e6a2e1b05a834dc4d1edc6d0df48188dc2a3ce3e03c343cb0f4f5b",
+      "recipe_id": "97679002",
+      "variant_ids": [
+        "00",
+        "01",
+        "02"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "3e495ee777ab1c669822e50cd43f342adee35b5156ea9e4ef5e31d9f396e3e38",
+      "recipe_id": "97679004",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "17a802d46f5e19d05e697773a349d68eda87bde8bfce98d5544fc4600158dac6",
+      "recipe_id": "97679005",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c322f4243bde9b5f8b3130ba70051c236cfc428556b9faf56dd6810cce9ef14a",
+      "recipe_id": "97679006",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "6cae7af03e8e833043569b69f83307ae293a25dc5ca265743416df4c004650ea",
+      "recipe_id": "97679007",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7b9e9a8ea750c12dc478d8997feb20d6f6722c09307e5164a9eff5b5ef82f4a0",
+      "recipe_id": "97679020",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c177e2072efe77b7c1bf974960211ee2febaa70a068e15f1835769a4635b6dd1",
+      "recipe_id": "97679021",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "502e7de932023b382b60884bb9f69aeb566be88b30e7f653e403627d4223b4dd",
+      "recipe_id": "97679027",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "4b9b1737246895dab0df479d6c3610ada1bd9c878de6911dff0b7dcc4740fe8f",
+      "recipe_id": "97679035",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8dfd6a6dbe2ce90c99e495cb10a202b39014aac09821896ee2f4aef6981028b8",
+      "recipe_id": "97679044",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "c908da784aa757e5e868f77fadb10d4d9024b0411911312809268675453d1512",
+      "recipe_id": "97679050",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "7dfd6e619d8a8e6e911c3a1618470676d40e7497ba766143b82d62036f022c02",
+      "recipe_id": "97679057",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "e0e39531b1ca0834aeca8ccac663f4b3ce2a59412198c9c83c7c192a8a0fbfb3",
+      "recipe_id": "97679058",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "51f363d84cf5684685da084dcd2c0a08725b52c98f5bb3f8de01a9ba91e69afe",
+      "recipe_id": "97879578",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "ae2ef368ddd2c6e3cd92ca5fe9497ff59582985a0f25baba601ee54549c26518",
+      "recipe_id": "97967767",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "24100058440d85acdc7d33b326b4df88ff656a220984f1c3cf2bcb7a47b6cb56",
+      "recipe_id": "98289775",
+      "variant_ids": [
+        "00"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "89615d3441f82f02136b1c24c42eb5730e7198b71a63ffd09bf5a70a23b344f3",
+      "recipe_id": "98802887",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "8edbaf45b4210286bb71e375aa164a1f60aaec6175322063c2f8729aa5d55dcd",
+      "recipe_id": "98906320",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "126d9d9e4dd55d44e7eec2d03f551f87f44c614c288f7be5cda0f5a3ac9eaddc",
+      "recipe_id": "98906732",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "b343c480c8d1f234a2520d266c1bfa4ac5d5f980622c3f5d51e41cf1668e1df3",
+      "recipe_id": "99221183",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "95fe4a32c1532171ec053899637e8d542947c3f60a3f321f472be67a81f80f9e",
+      "recipe_id": "99221239",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    },
+    {
+      "groundtruth_bundle_hash": "86674097e6bb563ba76e539329d9b4f4eef1be5bf5a36954850a0dde930e1f28",
+      "recipe_id": "99910943",
+      "variant_ids": [
+        "00",
+        "01",
+        "02",
+        "03",
+        "04"
+      ]
+    }
+  ],
+  "schema": "agentorch-private-ground-truth-manifest",
+  "source_manifest_hash": "ab9677aad7a52b2ae161b20ba144fd4e9260d63d58f2f3593bda0f393b93aa67",
+  "task_count": 650
+}

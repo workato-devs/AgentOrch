@@ -1,0 +1,67 @@
+{
+  "expect": {
+    "case": "API request finds no open invoices for the churn Opportunity and returns an empty list",
+    "executed_action_count": 2,
+    "tool_expectations": [
+      {
+        "args_contains": {
+          "filters": [
+            {
+              "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+              "op": "eq",
+              "value": "OPP-64112882-01-NOMATCH"
+            }
+          ],
+          "table_id": "1670"
+        },
+        "result_count": 0,
+        "tool": "workato_db_table.get_records"
+      },
+      {
+        "args_contains": {
+          "http_status_code": "200",
+          "response": {
+            "invoices": []
+          }
+        },
+        "http_status_code": "200",
+        "response_contains": {
+          "invoices": []
+        },
+        "tool": "workato_api_platform.return_response"
+      }
+    ],
+    "tools": [
+      "workato_db_table.get_records",
+      "workato_api_platform.return_response"
+    ]
+  },
+  "recipe_id": "64112882",
+  "seed": {
+    "workato_db_table": {
+      "tables": {
+        "1670": [
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-01-A",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-01-NUM-A",
+            "_row_id": 0,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-01-OTHERA"
+          },
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-01-B",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-01-NUM-B",
+            "_row_id": 1,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-01-OTHERB"
+          }
+        ]
+      }
+    }
+  },
+  "track": "workato_api_open_invoices",
+  "trigger_input": {
+    "request": {
+      "oppty_id": "OPP-64112882-01-NOMATCH"
+    }
+  },
+  "variant": 1
+}

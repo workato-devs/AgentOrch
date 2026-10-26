@@ -1,0 +1,1272 @@
+{
+  "allowed_tools": [
+    "workato_db_table.get_records",
+    "workato_api_platform.return_response"
+  ],
+  "details": {
+    "expect": {
+      "case": "API request finds two open invoices for the churn Opportunity; response maps each matching record to its own id/number",
+      "executed_action_count": 2,
+      "tool_expectations": [
+        {
+          "args_contains": {
+            "filters": [
+              {
+                "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                "op": "eq",
+                "value": "OPP-64112882-02-CHURN"
+              }
+            ],
+            "table_id": "1670"
+          },
+          "result_count": 2,
+          "tool": "workato_db_table.get_records"
+        },
+        {
+          "args_contains": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "http_status_code": "200",
+          "response_contains": {
+            "invoices": [
+              {
+                "id": "INV-64112882-02-M1",
+                "number": "INV-64112882-02-NUM-M1"
+              },
+              {
+                "id": "INV-64112882-02-M2",
+                "number": "INV-64112882-02-NUM-M2"
+              }
+            ]
+          },
+          "tool": "workato_api_platform.return_response"
+        }
+      ],
+      "tools": [
+        "workato_db_table.get_records",
+        "workato_api_platform.return_response"
+      ]
+    },
+    "expected_raw_tools": [
+      "workato_db_table.get_records",
+      "workato_api_platform.return_response"
+    ],
+    "final_snapshot": {
+      "ok": true,
+      "workato_db_table": {
+        "state_file": "output/_state/workato_db_tables/64112882/variant_02/tables.json",
+        "tables": {
+          "1670": [
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-OTHER",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-OTHER",
+              "_created_by": "seed",
+              "_row_id": 0,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-OTHER"
+            },
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+              "_created_by": "seed",
+              "_row_id": 1,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+            },
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+              "_created_by": "seed",
+              "_row_id": 2,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+            }
+          ]
+        }
+      }
+    },
+    "ground_truth": {
+      "by_tool": {
+        "workato_api_platform.return_response": [
+          {
+            "args": {
+              "http_status_code": "200",
+              "response": {
+                "invoices": [
+                  {
+                    "id": "INV-64112882-02-M1",
+                    "number": "INV-64112882-02-NUM-M1"
+                  },
+                  {
+                    "id": "INV-64112882-02-M2",
+                    "number": "INV-64112882-02-NUM-M2"
+                  }
+                ]
+              }
+            },
+            "as": "c3fb8151",
+            "keyword": "action",
+            "name": "return_response",
+            "number": 6,
+            "provider": "workato_api_platform",
+            "result": {
+              "http_status_code": "200",
+              "ok": true,
+              "response": {
+                "invoices": [
+                  {
+                    "id": "INV-64112882-02-M1",
+                    "number": "INV-64112882-02-NUM-M1"
+                  },
+                  {
+                    "id": "INV-64112882-02-M2",
+                    "number": "INV-64112882-02-NUM-M2"
+                  }
+                ]
+              }
+            },
+            "tool": "workato_api_platform.return_response"
+          }
+        ],
+        "workato_db_table.get_records": [
+          {
+            "args": {
+              "filters": [
+                {
+                  "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                  "op": "eq",
+                  "value": "OPP-64112882-02-CHURN"
+                }
+              ],
+              "limit": 200,
+              "order_direction": "asc",
+              "table_id": "1670"
+            },
+            "as": "1bd64b3a",
+            "keyword": "action",
+            "name": "get_records",
+            "number": 3,
+            "provider": "workato_db_table",
+            "result": {
+              "ok": true,
+              "records": [
+                {
+                  "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                  "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                  "_created_by": "seed",
+                  "_row_id": 1,
+                  "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                  "record_id": 1
+                },
+                {
+                  "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                  "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                  "_created_by": "seed",
+                  "_row_id": 2,
+                  "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                  "record_id": 2
+                }
+              ]
+            },
+            "tool": "workato_db_table.get_records"
+          }
+        ]
+      },
+      "return_value": {
+        "invoices": [
+          {
+            "id": "INV-64112882-02-M1",
+            "number": "INV-64112882-02-NUM-M1"
+          },
+          {
+            "id": "INV-64112882-02-M2",
+            "number": "INV-64112882-02-NUM-M2"
+          }
+        ]
+      }
+    },
+    "initial_snapshot": {
+      "ok": true,
+      "workato_db_table": {
+        "state_file": "output/_state/workato_db_tables/64112882/variant_02/tables.json",
+        "tables": {
+          "1670": [
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-OTHER",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-OTHER",
+              "_created_by": "seed",
+              "_row_id": 0,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-OTHER"
+            },
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+              "_created_by": "seed",
+              "_row_id": 1,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+            },
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+              "_created_by": "seed",
+              "_row_id": 2,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+            }
+          ]
+        }
+      }
+    },
+    "raw_execution": {
+      "control_trace": [
+        {
+          "as": null,
+          "branch": "condition_false",
+          "control_type": "if",
+          "keyword": "if",
+          "name": null,
+          "number": 4,
+          "provider": null
+        },
+        {
+          "as": null,
+          "branch": "try_success",
+          "control_type": "try",
+          "keyword": "try",
+          "name": null,
+          "number": 2,
+          "provider": null
+        }
+      ],
+      "data": {
+        "workato_api_platform": {
+          "8bd2b676": {
+            "request": {
+              "oppty_id": "OPP-64112882-02-CHURN"
+            }
+          },
+          "c3fb8151": {
+            "http_status_code": "200",
+            "ok": true,
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          }
+        },
+        "workato_db_table": {
+          "1bd64b3a": {
+            "ok": true,
+            "records": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                "_created_by": "seed",
+                "_row_id": 1,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                "record_id": 1
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                "_created_by": "seed",
+                "_row_id": 2,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                "record_id": 2
+              }
+            ]
+          }
+        }
+      },
+      "executed_action_count": 2,
+      "raw_action_count": 3,
+      "return_value": {
+        "invoices": [
+          {
+            "id": "INV-64112882-02-M1",
+            "number": "INV-64112882-02-NUM-M1"
+          },
+          {
+            "id": "INV-64112882-02-M2",
+            "number": "INV-64112882-02-NUM-M2"
+          }
+        ]
+      },
+      "step_outputs": {
+        "1bd64b3a": {
+          "ok": true,
+          "records": [
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+              "_created_by": "seed",
+              "_row_id": 1,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+              "record_id": 1
+            },
+            {
+              "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+              "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+              "_created_by": "seed",
+              "_row_id": 2,
+              "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+              "record_id": 2
+            }
+          ]
+        },
+        "8bd2b676": {
+          "request": {
+            "oppty_id": "OPP-64112882-02-CHURN"
+          }
+        },
+        "c3fb8151": {
+          "http_status_code": "200",
+          "ok": true,
+          "response": {
+            "invoices": [
+              {
+                "id": "INV-64112882-02-M1",
+                "number": "INV-64112882-02-NUM-M1"
+              },
+              {
+                "id": "INV-64112882-02-M2",
+                "number": "INV-64112882-02-NUM-M2"
+              }
+            ]
+          }
+        }
+      },
+      "trace": [
+        {
+          "args": {
+            "filters": [
+              {
+                "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                "op": "eq",
+                "value": "OPP-64112882-02-CHURN"
+              }
+            ],
+            "limit": 200,
+            "order_direction": "asc",
+            "table_id": "1670"
+          },
+          "as": "1bd64b3a",
+          "keyword": "action",
+          "name": "get_records",
+          "number": 3,
+          "provider": "workato_db_table",
+          "result": {
+            "ok": true,
+            "records": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                "_created_by": "seed",
+                "_row_id": 1,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                "record_id": 1
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                "_created_by": "seed",
+                "_row_id": 2,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                "record_id": 2
+              }
+            ]
+          },
+          "tool": "workato_db_table.get_records"
+        },
+        {
+          "args": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "as": "c3fb8151",
+          "keyword": "action",
+          "name": "return_response",
+          "number": 6,
+          "provider": "workato_api_platform",
+          "result": {
+            "http_status_code": "200",
+            "ok": true,
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "tool": "workato_api_platform.return_response"
+        }
+      ],
+      "trigger": {
+        "request": {
+          "oppty_id": "OPP-64112882-02-CHURN"
+        }
+      },
+      "trigger_filter_matched": true
+    },
+    "raw_validation": {
+      "actions": [
+        {
+          "as": "1bd64b3a",
+          "name": "get_records",
+          "number": 3,
+          "provider": "workato_db_table"
+        },
+        {
+          "as": "c3fb8151",
+          "name": "return_response",
+          "number": 6,
+          "provider": "workato_api_platform"
+        },
+        {
+          "as": "ac43c95c",
+          "name": "return_response",
+          "number": 8,
+          "provider": "workato_api_platform"
+        }
+      ],
+      "trigger_name": "receive_request",
+      "trigger_provider": "workato_api_platform"
+    },
+    "seed_type": "api_platform_open_invoices_variant",
+    "track": "workato_api_open_invoices",
+    "trigger": {
+      "request": {
+        "oppty_id": "OPP-64112882-02-CHURN"
+      }
+    }
+  },
+  "harness_tool_calls": [
+    {
+      "args": {},
+      "result": {
+        "ok": true,
+        "workato_db_table": {
+          "state_file": "output/_state/workato_db_tables/64112882/variant_02/tables.json",
+          "tables": {
+            "1670": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-OTHER",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-OTHER",
+                "_created_by": "seed",
+                "_row_id": 0,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-OTHER"
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                "_created_by": "seed",
+                "_row_id": 1,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                "_created_by": "seed",
+                "_row_id": 2,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+              }
+            ]
+          }
+        }
+      },
+      "tool": "harness.workato_db_table.snapshot"
+    },
+    {
+      "args": {},
+      "result": {
+        "ok": true,
+        "workato_db_table": {
+          "state_file": "output/_state/workato_db_tables/64112882/variant_02/tables.json",
+          "tables": {
+            "1670": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-OTHER",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-OTHER",
+                "_created_by": "seed",
+                "_row_id": 0,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-OTHER"
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                "_created_by": "seed",
+                "_row_id": 1,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                "_created_by": "seed",
+                "_row_id": 2,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN"
+              }
+            ]
+          }
+        }
+      },
+      "tool": "harness.workato_db_table.snapshot"
+    }
+  ],
+  "ok": true,
+  "recipe_id": "64112882",
+  "tool_calls": [
+    {
+      "args": {
+        "filters": [
+          {
+            "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+            "op": "eq",
+            "value": "OPP-64112882-02-CHURN"
+          }
+        ],
+        "limit": 200,
+        "order_direction": "asc",
+        "table_id": "1670"
+      },
+      "result": {
+        "ok": true,
+        "records": [
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+            "_created_by": "seed",
+            "_row_id": 1,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+            "record_id": 1
+          },
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+            "_created_by": "seed",
+            "_row_id": 2,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+            "record_id": 2
+          }
+        ]
+      },
+      "tool": "workato_db_table.get_records"
+    },
+    {
+      "args": {
+        "http_status_code": "200",
+        "response": {
+          "invoices": [
+            {
+              "id": "INV-64112882-02-M1",
+              "number": "INV-64112882-02-NUM-M1"
+            },
+            {
+              "id": "INV-64112882-02-M2",
+              "number": "INV-64112882-02-NUM-M2"
+            }
+          ]
+        }
+      },
+      "result": {
+        "http_status_code": "200",
+        "ok": true,
+        "response": {
+          "invoices": [
+            {
+              "id": "INV-64112882-02-M1",
+              "number": "INV-64112882-02-NUM-M1"
+            },
+            {
+              "id": "INV-64112882-02-M2",
+              "number": "INV-64112882-02-NUM-M2"
+            }
+          ]
+        }
+      },
+      "tool": "workato_api_platform.return_response"
+    }
+  ],
+  "tool_specs": [
+    {
+      "description": "Read records from a controlled Workato data table.",
+      "input_schema": {
+        "properties": {
+          "continuation_token": {
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "properties": {
+                "field_id": {
+                  "type": "string"
+                },
+                "op": {
+                  "enum": [
+                    "eq",
+                    "ne",
+                    "gte",
+                    "gt",
+                    "lte",
+                    "lt",
+                    "starts_with",
+                    "isnull",
+                    "isnotnull"
+                  ],
+                  "type": "string"
+                },
+                "value": {}
+              },
+              "required": [
+                "field_id",
+                "op"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "order_by_field_id": {
+            "type": "string"
+          },
+          "order_direction": {
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "type": "string"
+          },
+          "table_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "table_id"
+        ],
+        "type": "object"
+      },
+      "name": "workato_db_table.get_records"
+    },
+    {
+      "description": "Controlled Workato API Platform return_response action.",
+      "input_schema": {
+        "properties": {
+          "http_status_code": {
+            "type": "string"
+          },
+          "response": {},
+          "response_headers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "http_status_code"
+        ],
+        "type": "object"
+      },
+      "name": "workato_api_platform.return_response"
+    }
+  ],
+  "track": "workato_api_open_invoices",
+  "verifier": {
+    "checks": [
+      {
+        "details": {
+          "trace": [
+            {
+              "args": {
+                "filters": [
+                  {
+                    "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                    "op": "eq",
+                    "value": "OPP-64112882-02-CHURN"
+                  }
+                ],
+                "limit": 200,
+                "order_direction": "asc",
+                "table_id": "1670"
+              },
+              "as": "1bd64b3a",
+              "keyword": "action",
+              "name": "get_records",
+              "number": 3,
+              "provider": "workato_db_table",
+              "result": {
+                "ok": true,
+                "records": [
+                  {
+                    "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                    "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                    "_created_by": "seed",
+                    "_row_id": 1,
+                    "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                    "record_id": 1
+                  },
+                  {
+                    "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                    "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                    "_created_by": "seed",
+                    "_row_id": 2,
+                    "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                    "record_id": 2
+                  }
+                ]
+              },
+              "tool": "workato_db_table.get_records"
+            },
+            {
+              "args": {
+                "http_status_code": "200",
+                "response": {
+                  "invoices": [
+                    {
+                      "id": "INV-64112882-02-M1",
+                      "number": "INV-64112882-02-NUM-M1"
+                    },
+                    {
+                      "id": "INV-64112882-02-M2",
+                      "number": "INV-64112882-02-NUM-M2"
+                    }
+                  ]
+                }
+              },
+              "as": "c3fb8151",
+              "keyword": "action",
+              "name": "return_response",
+              "number": 6,
+              "provider": "workato_api_platform",
+              "result": {
+                "http_status_code": "200",
+                "ok": true,
+                "response": {
+                  "invoices": [
+                    {
+                      "id": "INV-64112882-02-M1",
+                      "number": "INV-64112882-02-NUM-M1"
+                    },
+                    {
+                      "id": "INV-64112882-02-M2",
+                      "number": "INV-64112882-02-NUM-M2"
+                    }
+                  ]
+                }
+              },
+              "tool": "workato_api_platform.return_response"
+            }
+          ]
+        },
+        "name": "raw_recipe_executed_without_harness_error",
+        "ok": true
+      },
+      {
+        "details": {
+          "executed_action_count": 2,
+          "trace_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ]
+        },
+        "name": "executed_actions_match_trace_length",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_trace_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ],
+          "canonical_expected_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ],
+          "expected_raw_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ]
+        },
+        "name": "trace_tools_are_allowed_by_raw_recipe",
+        "ok": true
+      },
+      {
+        "details": {
+          "executed_action_count": 2,
+          "expected_executed_action_count": 2,
+          "raw_action_count": 3,
+          "trace": [
+            {
+              "args": {
+                "filters": [
+                  {
+                    "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                    "op": "eq",
+                    "value": "OPP-64112882-02-CHURN"
+                  }
+                ],
+                "limit": 200,
+                "order_direction": "asc",
+                "table_id": "1670"
+              },
+              "as": "1bd64b3a",
+              "keyword": "action",
+              "name": "get_records",
+              "number": 3,
+              "provider": "workato_db_table",
+              "result": {
+                "ok": true,
+                "records": [
+                  {
+                    "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                    "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                    "_created_by": "seed",
+                    "_row_id": 1,
+                    "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                    "record_id": 1
+                  },
+                  {
+                    "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                    "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                    "_created_by": "seed",
+                    "_row_id": 2,
+                    "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                    "record_id": 2
+                  }
+                ]
+              },
+              "tool": "workato_db_table.get_records"
+            },
+            {
+              "args": {
+                "http_status_code": "200",
+                "response": {
+                  "invoices": [
+                    {
+                      "id": "INV-64112882-02-M1",
+                      "number": "INV-64112882-02-NUM-M1"
+                    },
+                    {
+                      "id": "INV-64112882-02-M2",
+                      "number": "INV-64112882-02-NUM-M2"
+                    }
+                  ]
+                }
+              },
+              "as": "c3fb8151",
+              "keyword": "action",
+              "name": "return_response",
+              "number": 6,
+              "provider": "workato_api_platform",
+              "result": {
+                "http_status_code": "200",
+                "ok": true,
+                "response": {
+                  "invoices": [
+                    {
+                      "id": "INV-64112882-02-M1",
+                      "number": "INV-64112882-02-NUM-M1"
+                    },
+                    {
+                      "id": "INV-64112882-02-M2",
+                      "number": "INV-64112882-02-NUM-M2"
+                    }
+                  ]
+                }
+              },
+              "tool": "workato_api_platform.return_response"
+            }
+          ]
+        },
+        "name": "raw_recipe_executed_expected_path",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ],
+          "expected_tools": [
+            "workato_db_table.get_records",
+            "workato_api_platform.return_response"
+          ]
+        },
+        "name": "tool_sequence_matches_expected",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_call": {
+            "args": {
+              "filters": [
+                {
+                  "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                  "op": "eq",
+                  "value": "OPP-64112882-02-CHURN"
+                }
+              ],
+              "limit": 200,
+              "order_direction": "asc",
+              "table_id": "1670"
+            },
+            "result": {
+              "ok": true,
+              "records": [
+                {
+                  "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                  "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                  "_created_by": "seed",
+                  "_row_id": 1,
+                  "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                  "record_id": 1
+                },
+                {
+                  "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                  "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                  "_created_by": "seed",
+                  "_row_id": 2,
+                  "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                  "record_id": 2
+                }
+              ]
+            },
+            "tool": "workato_db_table.get_records"
+          },
+          "expected_tool": "workato_db_table.get_records"
+        },
+        "name": "tool_0_called_expected_tool",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "filters": [
+              {
+                "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                "op": "eq",
+                "value": "OPP-64112882-02-CHURN"
+              }
+            ],
+            "limit": 200,
+            "order_direction": "asc",
+            "table_id": "1670"
+          },
+          "comparison_mode": "raw_subset",
+          "expected_subset": {
+            "filters": [
+              {
+                "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                "op": "eq",
+                "value": "OPP-64112882-02-CHURN"
+              }
+            ],
+            "table_id": "1670"
+          },
+          "raw_canonical_match": true
+        },
+        "diagnostic": true,
+        "name": "tool_0_args_contain_expected_fields",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "filters": [
+              {
+                "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                "op": "eq",
+                "value": "OPP-64112882-02-CHURN"
+              }
+            ],
+            "limit": 200,
+            "order_direction": "asc",
+            "table_id": "1670"
+          },
+          "expected_subset": {
+            "filters": [
+              {
+                "field_id": "ad862ef9_2e1e_462e_ab20_c149ce29997f",
+                "op": "eq",
+                "value": "OPP-64112882-02-CHURN"
+              }
+            ],
+            "table_id": "1670"
+          }
+        },
+        "name": "tool_0_raw_args_contain_expected_fields",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_count": 2,
+          "actual_result": {
+            "ok": true,
+            "records": [
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M1",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M1",
+                "_created_by": "seed",
+                "_row_id": 1,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                "record_id": 1
+              },
+              {
+                "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-02-M2",
+                "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-02-NUM-M2",
+                "_created_by": "seed",
+                "_row_id": 2,
+                "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-02-CHURN",
+                "record_id": 2
+              }
+            ]
+          },
+          "expected_count": 2
+        },
+        "name": "tool_0_result_count_matches",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_call": {
+            "args": {
+              "http_status_code": "200",
+              "response": {
+                "invoices": [
+                  {
+                    "id": "INV-64112882-02-M1",
+                    "number": "INV-64112882-02-NUM-M1"
+                  },
+                  {
+                    "id": "INV-64112882-02-M2",
+                    "number": "INV-64112882-02-NUM-M2"
+                  }
+                ]
+              }
+            },
+            "result": {
+              "http_status_code": "200",
+              "ok": true,
+              "response": {
+                "invoices": [
+                  {
+                    "id": "INV-64112882-02-M1",
+                    "number": "INV-64112882-02-NUM-M1"
+                  },
+                  {
+                    "id": "INV-64112882-02-M2",
+                    "number": "INV-64112882-02-NUM-M2"
+                  }
+                ]
+              }
+            },
+            "tool": "workato_api_platform.return_response"
+          },
+          "expected_tool": "workato_api_platform.return_response"
+        },
+        "name": "tool_1_called_expected_tool",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "comparison_mode": "raw_subset",
+          "expected_subset": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "raw_canonical_match": true
+        },
+        "diagnostic": true,
+        "name": "tool_1_args_contain_expected_fields",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "expected_subset": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          }
+        },
+        "name": "tool_1_raw_args_contain_expected_fields",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_args": {
+            "http_status_code": "200",
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "actual_result": {
+            "http_status_code": "200",
+            "ok": true,
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          }
+        },
+        "name": "tool_1_returned_expected_response",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_result": {
+            "http_status_code": "200",
+            "ok": true,
+            "response": {
+              "invoices": [
+                {
+                  "id": "INV-64112882-02-M1",
+                  "number": "INV-64112882-02-NUM-M1"
+                },
+                {
+                  "id": "INV-64112882-02-M2",
+                  "number": "INV-64112882-02-NUM-M2"
+                }
+              ]
+            }
+          },
+          "expected_http_status_code": "200"
+        },
+        "name": "tool_1_returned_expected_http_status",
+        "ok": true
+      },
+      {
+        "details": {
+          "actual_response": {
+            "invoices": [
+              {
+                "id": "INV-64112882-02-M1",
+                "number": "INV-64112882-02-NUM-M1"
+              },
+              {
+                "id": "INV-64112882-02-M2",
+                "number": "INV-64112882-02-NUM-M2"
+              }
+            ]
+          },
+          "expected_subset": {
+            "invoices": [
+              {
+                "id": "INV-64112882-02-M1",
+                "number": "INV-64112882-02-NUM-M1"
+              },
+              {
+                "id": "INV-64112882-02-M2",
+                "number": "INV-64112882-02-NUM-M2"
+              }
+            ]
+          }
+        },
+        "name": "tool_1_response_contains_expected_fields",
+        "ok": true
+      }
+    ],
+    "ok": true
+  }
+}

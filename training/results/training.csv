@@ -1,0 +1,16 @@
+model_id,family,base_model,tier,kind,headline,mode,n,n_scored,error_rate,orchestration_accuracy,orch_ci95_lo,orch_ci95_hi,final_accuracy,final_ci95_lo,final_ci95_hi,side_effect_accuracy,execution_trace_accuracy,terminal_output_accuracy,delta_orch_pts_vs_base_same_mode,eval_run,hf_repo
+base-qwen27b,qwen-27b,Qwen3.8-27B-FP8,large,base,,global,3220,1807,0.4388,0.2857,0.2736,0.2988,0.1267,0.1146,0.1382,0.318,0.2533,0.2898,,large_model/Qwen3.8-27B-FP8/global,
+sft-27b-80k-3ep,qwen-27b,Qwen3.8-27B-FP8,large,sft,yes,global,3220,2670,0.1708,0.4196,0.4071,0.4315,0.1848,0.172,0.1988,0.4804,0.3587,0.4593,13.39,sft-27b-80k-3ep-global,JesseLiu/agentorch-sft-27b-80k-3ep
+rl-27b-3ep-step124,qwen-27b,Qwen3.8-27B-FP8,large,rl,yes,global,3220,2596,0.1938,0.4114,0.3992,0.4241,0.1826,0.1696,0.1966,0.4705,0.3524,0.4407,12.57,rl-27b-3ep-step124-global,JesseLiu/agentorch-rl-27b-3ep-step124
+base-qwen4b,qwen-4b,Qwen3-4B-Instruct-2507,small,base,,global,3220,1225,0.6196,0.1375,0.1289,0.1458,0.0391,0.0326,0.0457,0.164,0.1111,0.163,,small_model/Qwen3-4B-Instruct-2507/global,
+sft-4b-v1-2ep,qwen-4b,Qwen3-4B-Instruct-2507,small,sft,yes,global,3220,1900,0.4099,0.2546,0.2431,0.2653,0.1078,0.0975,0.118,0.3112,0.198,0.328,11.71,sft-abl4b-v1-global,JesseLiu/agentorch-sft-4b-v1-2ep
+rl-4b-v1-step60,qwen-4b,Qwen3-4B-Instruct-2507,small,rl,yes,global,3220,2057,0.3612,0.2716,0.2602,0.2824,0.1071,0.0966,0.1174,0.3289,0.2143,0.3506,13.41,rl-4b-v1-kl-step60-global,JesseLiu/agentorch-rl-4b-v1-step60
+base-gemma26b,gemma-26b,gemma-4-26B-A4B-it,medium,base,,global,3220,347,0.8922,0.0405,0.0351,0.0462,0.018,0.0134,0.023,0.041,0.0399,0.0581,,medium_model/gemma-4-26B-A4B-it/global,
+sft-gemma26b-v1-2ep,gemma-26b,gemma-4-26B-A4B-it,medium,sft,yes,global,3220,1397,0.5661,0.1989,0.1881,0.2097,0.0845,0.0748,0.0941,0.2438,0.154,0.2398,15.84,sft-gemma26b-v1-global,JesseLiu/agentorch-sft-gemma26b-v1-2ep
+rl-gemma26b-step680,gemma-26b,gemma-4-26B-A4B-it,medium,rl,yes,global,3220,1667,0.4823,0.2393,0.2279,0.2505,0.0935,0.0839,0.1037,0.2919,0.1866,0.2739,19.88,rl-gemma26b-step680-global,JesseLiu/agentorch-rl-gemma26b-step680
+base-gemma31b,gemma-31b,gemma-4-31B-it,large,base,,global,3220,807,0.7494,0.1271,0.1176,0.1368,0.0478,0.0404,0.055,0.1335,0.1207,0.1143,,large_model/gemma-4-31B-it/global,
+sft-gemma31b-v1-1ep,gemma-31b,gemma-4-31B-it,large,sft,yes,global,3220,1379,0.5717,0.1955,0.1849,0.2056,0.0978,0.0879,0.1081,0.2307,0.1603,0.2562,6.84,sft-gemma31b-global,JesseLiu/agentorch-sft-gemma31b-v1-1ep
+rl-gemma31b-final,gemma-31b,gemma-4-31B-it,large,rl,yes,global,3220,1399,0.5655,0.191,0.1798,0.2013,0.0922,0.0817,0.1025,0.2227,0.1593,0.2525,6.39,rl-gemma31b-final-global,JesseLiu/agentorch-rl-gemma31b-final
+base-gemma12b,gemma-12b,gemma-4-12B-it,medium,base,,global,3220,1102,0.6578,0.1426,0.133,0.1523,0.0407,0.0339,0.0475,0.1609,0.1244,0.1335,,medium_model/gemma-4-12B-it/global,
+sft-gemma12b-v1-2ep,gemma-12b,gemma-4-12B-it,medium,sft,yes,global,3220,1161,0.6394,0.1792,0.1679,0.1897,0.0851,0.0755,0.0944,0.2155,0.1429,0.2034,3.66,sft-gemma12b-v1-global,JesseLiu/agentorch-sft-gemma12b-v1-2ep
+rl-gemma12b-final,gemma-12b,gemma-4-12B-it,medium,rl,yes,global,3220,1521,0.5276,0.2166,0.206,0.227,0.0854,0.0761,0.095,0.2599,0.1733,0.2447,7.4,rl-gemma12b-final-global,JesseLiu/agentorch-rl-gemma12b-final

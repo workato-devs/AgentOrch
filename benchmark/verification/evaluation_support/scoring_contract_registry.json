@@ -1,0 +1,1738 @@
+{
+  "recipes": {
+    "100956844": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "7b3a57cc2e747c5ab44cd93952f21e445ed38828ecc16485f52518830851aa73",
+              "01": "5f8d17593f9866aa5cd5e489fc86f52dd98afd316d7ae6fc0fb9192fe220e3b8",
+              "02": "24c8dece6c4c6863e9a5a93de08c0c607776b2415b4cc2463d41da37c793beda",
+              "03": "120592f4dd547e9b625a7fa75b589720b177f7843ec6a7938d332bfd28d4986f"
+            }
+          }
+        }
+      }
+    },
+    "101954510": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "954b66fe5d17c075012ec4441327b801c399168a2f2fa2aaa286b96eaaaaddbe",
+              "01": "52bc693416b2c2383793ec7d5557377260b2251405b3c00df4cf6c05ee938152",
+              "02": "7ca71a370e4d86d8863b39ac93fb361894479d48ca89d358dafed95847417c54"
+            }
+          }
+        }
+      }
+    },
+    "102760065": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "6c11856080d7c300f1e5a0d9f98588ce0c8d6a5d6dcbc3a33194fa3efd02a51c",
+              "01": "28e6e0cf9fcb4efbd8849c5133fd4d5f2f3dc014940ad3b21c2c5cb1b11415ab",
+              "02": "6c11856080d7c300f1e5a0d9f98588ce0c8d6a5d6dcbc3a33194fa3efd02a51c"
+            }
+          }
+        }
+      }
+    },
+    "103520604": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "fe6ab75b25fbf7e862c2e3374ac23a9aef68a1c88dcfa5c5117f7e375c58a6ac",
+              "01": "fe6ab75b25fbf7e862c2e3374ac23a9aef68a1c88dcfa5c5117f7e375c58a6ac",
+              "02": "fe6ab75b25fbf7e862c2e3374ac23a9aef68a1c88dcfa5c5117f7e375c58a6ac"
+            }
+          }
+        }
+      }
+    },
+    "103711977": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "683a2ceb3fa9ad19e52a3fcb0abf200719d70e624b769986f09891edbd61e925",
+              "01": "701672862a0fc9defb5d35d23039b058ec65603b8a746782779ba8e9d1995d56",
+              "02": "683a2ceb3fa9ad19e52a3fcb0abf200719d70e624b769986f09891edbd61e925"
+            }
+          }
+        }
+      }
+    },
+    "105192491": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.limit": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid pagination cap that returns the same selected lookup-table rows",
+          "evidence_pointer": "hidden active tool result rows"
+        },
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake query that returns the same selected lookup-table rows",
+          "evidence_pointer": "hidden active tool result rows"
+        }
+      }
+    },
+    "106651501": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "f8909b6e69db8942dd9ac76b59c574d70ae0140d41272f7edcf8621bd1966978",
+              "01": "a87a455b575cc6cf4091b8b55f05c2723bdd42c8716ab26ccead741e954108a3"
+            }
+          }
+        }
+      }
+    },
+    "106651510": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "dcf233b33fddc936f181cbc8250d8ee390b2b9361b0257912dad3c344ea095c4",
+              "01": "649b4e4805223d679ca4e518d0aa59fc529a4eff001d5be8ddbdc5acf1357a3e"
+            }
+          }
+        }
+      }
+    },
+    "108028920": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "same declared target-table final state",
+          "evidence_pointer": "hidden_variant_state.expect.final_snowflake_tables"
+        }
+      }
+    },
+    "108332331": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "ca2dcc2fca4b949e5204ded8949613de8bb38a425b750ced77d3ed78031cea5e",
+              "01": "a87afedc90e252bcff853c164599edf3bc7dab68d7f52550ea673cd4f4a94e91"
+            }
+          }
+        }
+      }
+    },
+    "108333874": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "9f7b4248db09e6f97f679cc8e1978c9671d2f6a199ba0cacee94dd6441c265e5",
+              "01": "2f709b413ed7358f75e0c4abe9246d984b973ae3526cba9860f30f70fe10eefb"
+            }
+          }
+        }
+      }
+    },
+    "108445187": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "4621d761458859a018b96be780325a71914c8ffc31fa22e8641830baf64276f4",
+              "01": "fccbbf3aa6c8af2bbf3a39604f97f09d5e74f078cbeda33c25b29cf1f2d522ad",
+              "02": "cd08ba17d024b156ad7a7cf03b040c4ce4ffedbcedcc004b6a7da56c970ec28f"
+            }
+          }
+        }
+      }
+    },
+    "108516287": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "7b9f47da920f8dd014669ed40ccc2728308f919c9b769ce25fad8d1754d513d4",
+              "01": "ece57e435e14011881cb5b7966d2526af3ff9ea1e4bffd721c58659880124c73"
+            }
+          }
+        }
+      }
+    },
+    "108564927": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "8a919537a5b395d8264c7012a130514a3129c04e48a5caf3edc9987a7c8b878c",
+              "01": "8a919537a5b395d8264c7012a130514a3129c04e48a5caf3edc9987a7c8b878c",
+              "02": "8a919537a5b395d8264c7012a130514a3129c04e48a5caf3edc9987a7c8b878c",
+              "03": "8a919537a5b395d8264c7012a130514a3129c04e48a5caf3edc9987a7c8b878c"
+            }
+          }
+        }
+      }
+    },
+    "108702267": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "57bb02cc61312cb6877b4492e00f338fbee912c3ba1298808ef9ba72edee9af8",
+              "01": "f892dde5f979a633d49b4a910241dd909eb9d8e07729abfeb90c8ecbcb4fbfc1",
+              "02": "af055b9f7f697b4977772775b05b44e2942b991fd5d87d27648fa5f02c9909ac"
+            }
+          }
+        }
+      }
+    },
+    "108871514": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "fcc7c3b45b99f99ab3584bfa6d308748ea183ba9cc99fc80e2f47c5f99798630",
+              "01": "fcc7c3b45b99f99ab3584bfa6d308748ea183ba9cc99fc80e2f47c5f99798630",
+              "02": "fcc7c3b45b99f99ab3584bfa6d308748ea183ba9cc99fc80e2f47c5f99798630",
+              "03": "fcc7c3b45b99f99ab3584bfa6d308748ea183ba9cc99fc80e2f47c5f99798630"
+            }
+          }
+        }
+      }
+    },
+    "109200085": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "3befad6ab2e955cf1bcf6980b74a1b6d13b86b7d88c8c2fc16c894b52dcd41d6",
+              "01": "3befad6ab2e955cf1bcf6980b74a1b6d13b86b7d88c8c2fc16c894b52dcd41d6",
+              "02": "3befad6ab2e955cf1bcf6980b74a1b6d13b86b7d88c8c2fc16c894b52dcd41d6",
+              "03": "3befad6ab2e955cf1bcf6980b74a1b6d13b86b7d88c8c2fc16c894b52dcd41d6"
+            }
+          }
+        }
+      }
+    },
+    "113187253": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "26361675dfc71fbc740f33104176bc76a4b3869d860e6bc580cca7a9da120b9c",
+              "01": "26361675dfc71fbc740f33104176bc76a4b3869d860e6bc580cca7a9da120b9c",
+              "02": "26361675dfc71fbc740f33104176bc76a4b3869d860e6bc580cca7a9da120b9c"
+            }
+          }
+        }
+      }
+    },
+    "113487781": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "b0859073d1bacc9bf0cd4bc7ef79fbb71b06740934a055c1cd3df47ff6a4487f",
+              "01": "b0859073d1bacc9bf0cd4bc7ef79fbb71b06740934a055c1cd3df47ff6a4487f"
+            }
+          }
+        }
+      }
+    },
+    "113804593": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake query that selects the same qualifying latest-snapshot accounts and therefore produces the same lookup-table export",
+          "evidence_pointer": "hidden active tool result rows and final lookup-table state"
+        }
+      }
+    },
+    "114064827": {
+      "executed_action_count": {
+        "comparison": "non_scoring_legacy",
+        "evidence_pointer": "hidden_variant_state.expect.log_messages",
+        "reason": "The count includes a private logger step; the public scored workflow contains only the terminal response."
+      }
+    },
+    "114471062": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence"
+            ],
+            "variant_sql_hashes": {
+              "00": "3f08b69d08a971853b96e90aec6306e134fb28ce20f208a967d14804abdbf109",
+              "01": "3f08b69d08a971853b96e90aec6306e134fb28ce20f208a967d14804abdbf109",
+              "02": "3f08b69d08a971853b96e90aec6306e134fb28ce20f208a967d14804abdbf109"
+            }
+          }
+        }
+      }
+    },
+    "115036714": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "statement_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence",
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "09a4145bc1ce3ff1946f0335025b45f628d8ed657234733721a8c4c9646e0aff",
+              "01": "09a4145bc1ce3ff1946f0335025b45f628d8ed657234733721a8c4c9646e0aff",
+              "02": "09a4145bc1ce3ff1946f0335025b45f628d8ed657234733721a8c4c9646e0aff"
+            }
+          }
+        }
+      }
+    },
+    "115850922": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "3d723a600a05bbf073d09be9cff02cbcd3591e98697b12f6f5d7ad5a6c96a4c9",
+              "01": "edf0623563e38d8333e267a3d3a805b93cbcf126360e82f83594801c13a933c1",
+              "02": "63ae38dd6b1134508843e461f2c677ad44d57034353ec7ec809fcef18f9e3001"
+            }
+          }
+        }
+      }
+    },
+    "116263482": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "32a7500b53a24358b79821e25ccefa072e25679fe4b4e6575eaa0d4b08087181",
+              "03": "32a7500b53a24358b79821e25ccefa072e25679fe4b4e6575eaa0d4b08087181"
+            }
+          }
+        }
+      }
+    },
+    "116340422": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "bf0a36e56491486b1401451cfe31f3ff0099e20af68053a623888bc97e28815d",
+              "01": "27dad292eedda0d12e944731c790a460afb1d6c7c567b0a8123531fa25c6c8f5",
+              "02": "f6a06aeb79e477395bbad956d8554cd379df2b0264721ae984f53c60153a8546",
+              "03": "27dad292eedda0d12e944731c790a460afb1d6c7c567b0a8123531fa25c6c8f5",
+              "04": "d95381410718e92ace2f71decc50af606b321164bd7330d2999e2a05d67b582b"
+            }
+          }
+        }
+      }
+    },
+    "116477352": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "0570de318ffc81bdc8e3b5c1bf43421462b7773de5ebcba4dd1fcb9a25c50a39",
+              "01": "f933c9fb568e31cc10a59a93a4a35eb4f11a924fa5aba888e9ac8da5a111077d",
+              "02": "c68d69500959b7384c0a403c60403a1cf6ebf9ebbd983d397351a1fec403aa64"
+            }
+          }
+        }
+      }
+    },
+    "117564458": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "b4acba0bee200a98cc8f5fbc8a03623cacb1cdd29c09f1c3bad2a3bec33b5933",
+              "01": "b4acba0bee200a98cc8f5fbc8a03623cacb1cdd29c09f1c3bad2a3bec33b5933"
+            }
+          }
+        }
+      }
+    },
+    "117566071": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "d096763318106bfd6a9bf18e89a9c00dc74be4bb9c8772395280e07c27807eac",
+              "01": "d096763318106bfd6a9bf18e89a9c00dc74be4bb9c8772395280e07c27807eac"
+            }
+          }
+        }
+      }
+    },
+    "117566168": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "30b7ddecde1b5b7fe4184c2813f05bb09ee61b0430e54e6be968ce4844f9adcb",
+              "01": "30b7ddecde1b5b7fe4184c2813f05bb09ee61b0430e54e6be968ce4844f9adcb"
+            }
+          }
+        }
+      }
+    },
+    "117566176": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "01ed7c3e830d0858abddab56c1c9e7126780c232c3f53d9700c6d5a98adb73a4",
+              "01": "01ed7c3e830d0858abddab56c1c9e7126780c232c3f53d9700c6d5a98adb73a4"
+            }
+          }
+        }
+      }
+    },
+    "117566182": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "25a5225e2f4b860e870458caa269e8f17f89d8c2760d703eed8777dd2e1dccf4",
+              "01": "25a5225e2f4b860e870458caa269e8f17f89d8c2760d703eed8777dd2e1dccf4",
+              "02": "25a5225e2f4b860e870458caa269e8f17f89d8c2760d703eed8777dd2e1dccf4"
+            }
+          }
+        }
+      }
+    },
+    "117566211": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "1866f3e326029b66da9f596bc78181c93d588fec5fe92bb720997a7a53be139c",
+              "01": "1866f3e326029b66da9f596bc78181c93d588fec5fe92bb720997a7a53be139c",
+              "02": "1866f3e326029b66da9f596bc78181c93d588fec5fe92bb720997a7a53be139c"
+            }
+          }
+        }
+      }
+    },
+    "117566662": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "957e3f47a1e014cf11e0d5ea946e02f1657ce01361e59ca351276f14260b2a84",
+              "01": "957e3f47a1e014cf11e0d5ea946e02f1657ce01361e59ca351276f14260b2a84"
+            }
+          }
+        }
+      }
+    },
+    "118159799": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid ALTER encoding that leaves the declared target table in the same final state",
+          "evidence_pointer": "hidden_variant_state.expect.final_snowflake_tables"
+        }
+      }
+    },
+    "118162472": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "01ed7c3e830d0858abddab56c1c9e7126780c232c3f53d9700c6d5a98adb73a4",
+              "01": "01ed7c3e830d0858abddab56c1c9e7126780c232c3f53d9700c6d5a98adb73a4"
+            }
+          }
+        }
+      }
+    },
+    "118162473": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "b4acba0bee200a98cc8f5fbc8a03623cacb1cdd29c09f1c3bad2a3bec33b5933",
+              "01": "b4acba0bee200a98cc8f5fbc8a03623cacb1cdd29c09f1c3bad2a3bec33b5933"
+            }
+          }
+        }
+      }
+    },
+    "118162474": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "30b7ddecde1b5b7fe4184c2813f05bb09ee61b0430e54e6be968ce4844f9adcb",
+              "01": "30b7ddecde1b5b7fe4184c2813f05bb09ee61b0430e54e6be968ce4844f9adcb"
+            }
+          }
+        }
+      }
+    },
+    "118162476": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "1866f3e326029b66da9f596bc78181c93d588fec5fe92bb720997a7a53be139c",
+              "01": "1866f3e326029b66da9f596bc78181c93d588fec5fe92bb720997a7a53be139c",
+              "02": "1866f3e326029b66da9f596bc78181c93d588fec5fe92bb720997a7a53be139c"
+            }
+          }
+        }
+      }
+    },
+    "118162477": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "d096763318106bfd6a9bf18e89a9c00dc74be4bb9c8772395280e07c27807eac",
+              "01": "d096763318106bfd6a9bf18e89a9c00dc74be4bb9c8772395280e07c27807eac"
+            }
+          }
+        }
+      }
+    },
+    "118162479": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "25a5225e2f4b860e870458caa269e8f17f89d8c2760d703eed8777dd2e1dccf4",
+              "01": "25a5225e2f4b860e870458caa269e8f17f89d8c2760d703eed8777dd2e1dccf4"
+            }
+          }
+        }
+      }
+    },
+    "118162481": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "957e3f47a1e014cf11e0d5ea946e02f1657ce01361e59ca351276f14260b2a84",
+              "01": "957e3f47a1e014cf11e0d5ea946e02f1657ce01361e59ca351276f14260b2a84"
+            }
+          }
+        }
+      }
+    },
+    "118554940": {
+      "executed_action_count": {
+        "comparison": "non_scoring_legacy",
+        "evidence_pointer": "hidden_variant_state.expect.tools",
+        "reason": "Legacy counts include recipe-local list and formatting helpers. Public orchestration is scored from the Google Sheets and Slack calls plus their observable communication outcomes."
+      }
+    },
+    "119144543": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "f6ee1ffd6cd19fcd99294e26b6fdaceb47a2cbfee02c3a5ccfc0bf78bab88a8b",
+              "01": "f6ee1ffd6cd19fcd99294e26b6fdaceb47a2cbfee02c3a5ccfc0bf78bab88a8b",
+              "02": "f6ee1ffd6cd19fcd99294e26b6fdaceb47a2cbfee02c3a5ccfc0bf78bab88a8b"
+            }
+          }
+        }
+      }
+    },
+    "119259283": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "02": "ef99ce5ad2d5646bc51d2c00027068ddf34e1244c22b5c80aa29608ede7cbc4c",
+              "03": "ef99ce5ad2d5646bc51d2c00027068ddf34e1244c22b5c80aa29608ede7cbc4c"
+            }
+          }
+        }
+      }
+    },
+    "119586008": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "b5cd24010fba9800407592d69237579740d58b7887589f74391b3f59a67cedda",
+              "01": "909e482a782b5606bbb3aa5953b365a8578a3fff05425353413fa57edc4047ff",
+              "02": "3dadeb1f3024777a04d1de974bdad4a39c2a4d208db9ea0c18bb58a937889f33"
+            }
+          }
+        }
+      }
+    },
+    "120099421": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "f25f96926dbc412a567c96785eaf4dcdad5f768b3f7f48909bde60a8b201b599",
+              "01": "f25f96926dbc412a567c96785eaf4dcdad5f768b3f7f48909bde60a8b201b599",
+              "02": "f25f96926dbc412a567c96785eaf4dcdad5f768b3f7f48909bde60a8b201b599",
+              "03": "f25f96926dbc412a567c96785eaf4dcdad5f768b3f7f48909bde60a8b201b599",
+              "04": "f25f96926dbc412a567c96785eaf4dcdad5f768b3f7f48909bde60a8b201b599"
+            }
+          }
+        }
+      }
+    },
+    "120183307": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake query that selects the same qualifying latest snapshot rows",
+          "evidence_pointer": "hidden active tool result rows and final lookup-table state"
+        }
+      }
+    },
+    "120761092": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "56e0f60ac15540dd909a1375db61726c47adc98816ac6c3a288a210dace9b512",
+              "01": "56e0f60ac15540dd909a1375db61726c47adc98816ac6c3a288a210dace9b512"
+            }
+          }
+        }
+      }
+    },
+    "121086244": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "2fd0d0069e5bd187868a81e9a4f108fcae38d270ad11ca46dd09bef3bfcd0284",
+              "01": "2fd0d0069e5bd187868a81e9a4f108fcae38d270ad11ca46dd09bef3bfcd0284",
+              "02": "2fd0d0069e5bd187868a81e9a4f108fcae38d270ad11ca46dd09bef3bfcd0284",
+              "03": "2fd0d0069e5bd187868a81e9a4f108fcae38d270ad11ca46dd09bef3bfcd0284",
+              "04": "2fd0d0069e5bd187868a81e9a4f108fcae38d270ad11ca46dd09bef3bfcd0284"
+            }
+          }
+        }
+      }
+    },
+    "121287116": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "b39d42fd4c7d991d7609352b442dcc3f4c5a681498e8d99d05b281cb037e2cd5",
+              "01": "b39d42fd4c7d991d7609352b442dcc3f4c5a681498e8d99d05b281cb037e2cd5",
+              "02": "b39d42fd4c7d991d7609352b442dcc3f4c5a681498e8d99d05b281cb037e2cd5",
+              "03": "b39d42fd4c7d991d7609352b442dcc3f4c5a681498e8d99d05b281cb037e2cd5"
+            }
+          }
+        }
+      }
+    },
+    "121967119": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "6c3fa750ce3894c5efec439ac4784efa9c6212999a08823fe16777afea0868fb",
+              "01": "6c3fa750ce3894c5efec439ac4784efa9c6212999a08823fe16777afea0868fb",
+              "02": "6c3fa750ce3894c5efec439ac4784efa9c6212999a08823fe16777afea0868fb"
+            }
+          }
+        }
+      }
+    },
+    "122406899": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "dfbcf5202a512f255361e1733b8a387d932fbeea3ac83aa7e92dd5025e8ec87d",
+              "01": "dfbcf5202a512f255361e1733b8a387d932fbeea3ac83aa7e92dd5025e8ec87d"
+            }
+          }
+        }
+      }
+    },
+    "122809739": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "e9679291379e8078875436859e43466fc7819e0eee223d6fccc2391b490861af",
+              "01": "e9679291379e8078875436859e43466fc7819e0eee223d6fccc2391b490861af"
+            }
+          }
+        }
+      }
+    },
+    "123154292": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "d6b59da7424b5e31da24da7b9254ad102c038be26e0d1e35334b44aa40bec7fa",
+              "01": "d6b59da7424b5e31da24da7b9254ad102c038be26e0d1e35334b44aa40bec7fa",
+              "02": "d6b59da7424b5e31da24da7b9254ad102c038be26e0d1e35334b44aa40bec7fa"
+            }
+          }
+        }
+      }
+    },
+    "123216893": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "e2db5f487e0e5685db4790ea02fdacb7cb06e7fb91399f855c20ac35aab8244d",
+              "01": "e2db5f487e0e5685db4790ea02fdacb7cb06e7fb91399f855c20ac35aab8244d",
+              "02": "e2db5f487e0e5685db4790ea02fdacb7cb06e7fb91399f855c20ac35aab8244d"
+            }
+          }
+        }
+      }
+    },
+    "124258051": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake statement that leaves the declared target table in the same final state",
+          "evidence_pointer": "hidden_variant_state.expect.final_snowflake_tables"
+        }
+      }
+    },
+    "124261270": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake statement that leaves the declared target table in the same final state",
+          "evidence_pointer": "hidden_variant_state.expect.final_snowflake_tables"
+        }
+      }
+    },
+    "124796779": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "df446e1d7d71779fc108ee25c647b4406476597203f6674365fc13a37ccacf65",
+              "01": "df446e1d7d71779fc108ee25c647b4406476597203f6674365fc13a37ccacf65",
+              "02": "df446e1d7d71779fc108ee25c647b4406476597203f6674365fc13a37ccacf65",
+              "03": "df446e1d7d71779fc108ee25c647b4406476597203f6674365fc13a37ccacf65"
+            }
+          }
+        }
+      }
+    },
+    "124948630": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "2ce45292d55749729565b020b0057c87502a99f925b289e04ba361b3825a5cab",
+              "02": "2ce45292d55749729565b020b0057c87502a99f925b289e04ba361b3825a5cab",
+              "04": "2ce45292d55749729565b020b0057c87502a99f925b289e04ba361b3825a5cab"
+            }
+          }
+        }
+      }
+    },
+    "126049785": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence"
+            ],
+            "variant_sql_hashes": {
+              "00": "5c3ea7b1c4c1739adf269305958026f093a0d6545aae4edb14d05d8ee04e0782",
+              "01": "5c3ea7b1c4c1739adf269305958026f093a0d6545aae4edb14d05d8ee04e0782",
+              "02": "5c3ea7b1c4c1739adf269305958026f093a0d6545aae4edb14d05d8ee04e0782",
+              "03": "5c3ea7b1c4c1739adf269305958026f093a0d6545aae4edb14d05d8ee04e0782",
+              "04": "5c3ea7b1c4c1739adf269305958026f093a0d6545aae4edb14d05d8ee04e0782"
+            }
+          }
+        }
+      }
+    },
+    "127065639": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "statement_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence",
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "caffa04396161f349f429418ef3a6fa25da697b91c0deab0e3e1a8a491ba6511",
+              "01": "caffa04396161f349f429418ef3a6fa25da697b91c0deab0e3e1a8a491ba6511",
+              "02": "d0dca117ecbc124091d1cbb8e0ebee965b1d81c92a199f9a43a0006ef6e53feb"
+            }
+          }
+        }
+      }
+    },
+    "129217932": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid COPY and retention-delete SQL pair that produces the declared per-call result counts and exact final target-table rows",
+          "evidence_pointer": "hidden_variant_state.expect.final_rows",
+          "state_projection": {
+            "connector": "snowflake",
+            "row_key": "event_id",
+            "suffix_actual_field": "filename",
+            "suffix_expected_field": "filename_suffix",
+            "table": "SALESFORCE.EVENT_LOGS"
+          }
+        }
+      }
+    },
+    "129421288": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "3b1d7c9d0356231c9a7311bf7f8afa206eea0ec5d97d2f4cbd19afb8fbbab832",
+              "01": "3b1d7c9d0356231c9a7311bf7f8afa206eea0ec5d97d2f4cbd19afb8fbbab832",
+              "02": "3b1d7c9d0356231c9a7311bf7f8afa206eea0ec5d97d2f4cbd19afb8fbbab832"
+            }
+          }
+        }
+      }
+    },
+    "129988557": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake query that returns the same workspace-owner rows for the runtime current_team and user_id values",
+          "evidence_pointer": "hidden_variant_state.expect.sql_result_rows"
+        }
+      }
+    },
+    "130073081": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid recursive hierarchy rebuild that leaves all declared Snowflake tables in the same final state",
+          "evidence_pointer": "hidden_variant_state.expect.final_snowflake_tables"
+        }
+      }
+    },
+    "130549037": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid process-complexity rollup that leaves all declared Snowflake tables in the same final state",
+          "evidence_pointer": "hidden_variant_state.expect.final_snowflake_tables"
+        }
+      }
+    },
+    "130549575": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence"
+            ],
+            "variant_sql_hashes": {
+              "00": "60b2b0bde7d7731e4879e33a8f4fb74bd2fe929f5bf66d4dd2fd70839cca1d65",
+              "01": "60b2b0bde7d7731e4879e33a8f4fb74bd2fe929f5bf66d4dd2fd70839cca1d65",
+              "03": "60b2b0bde7d7731e4879e33a8f4fb74bd2fe929f5bf66d4dd2fd70839cca1d65"
+            }
+          }
+        }
+      }
+    },
+    "130550781": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence"
+            ],
+            "variant_sql_hashes": {
+              "00": "17afe7f92acbb1784112e2ec870adaee86f1f54e9b528a61e575c1f0b10605a7",
+              "01": "17afe7f92acbb1784112e2ec870adaee86f1f54e9b528a61e575c1f0b10605a7"
+            }
+          }
+        }
+      }
+    },
+    "50816152": {
+      "executed_action_count": {
+        "comparison": "non_scoring_legacy",
+        "evidence_pointer": "hidden_variant_state.expect.tools",
+        "reason": "The legacy count includes an internal date-formatting logger. Public orchestration is scored from the four benchmark tool calls and the resulting lookup-table and Slack effects."
+      }
+    },
+    "60374713": {
+      "slot_equivalences": {
+        "snowflake.search_rows.arguments.limit": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any omitted or public-contract-valid pagination cap that returns the same complete duplicate-employee rows",
+          "evidence_pointer": "hidden_variant_state.expect.tool_expectations[].result_rows_contains"
+        },
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid grouped query that returns the same duplicate employee identifiers and counts",
+          "evidence_pointer": "hidden_variant_state.expect.tool_expectations[].result_rows_contains"
+        }
+      }
+    },
+    "74627281": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "execution_equivalence",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence"
+            ],
+            "variant_sql_hashes": {
+              "00": "29d64770b1e9fdd765775d08fc732ce705d15c076cbae8431c518dc46019b0ab",
+              "01": "74146760eba31ae9832aab204b757e40a99dffcc4db044906fdf0caa17ca237e",
+              "02": "11c7c63158ea79e71fca2b4f20ba5527df51a74aedde916be158778fff4dcaae",
+              "03": "9a7c88e33fd279a5f9fc4a083dfb3fde0c12a4266632553eb28e780bfbd18a61"
+            }
+          }
+        },
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "dcd30dcdda323e597175dbb649e9db472dbf553fb7b13bed84cf6ee4db833452",
+              "01": "dcd30dcdda323e597175dbb649e9db472dbf553fb7b13bed84cf6ee4db833452",
+              "02": "dcd30dcdda323e597175dbb649e9db472dbf553fb7b13bed84cf6ee4db833452",
+              "03": "dcd30dcdda323e597175dbb649e9db472dbf553fb7b13bed84cf6ee4db833452"
+            }
+          }
+        }
+      }
+    },
+    "82302802": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "ae2432bc8780c1b566aa37732aabd37569a3d309ee35133e784c2183b5dd50db",
+              "01": "ae2432bc8780c1b566aa37732aabd37569a3d309ee35133e784c2183b5dd50db"
+            }
+          }
+        }
+      }
+    },
+    "86179000": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "statement_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "execution_equivalence",
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "efa502a2ca5f57646f2f435615b5db97f0991db582d8bbeabae3554feb53deec",
+              "01": "51f9c12a28052eb4695c528b2b7e7e5549b24901753fe787b9f28f01428bf647"
+            }
+          }
+        }
+      }
+    },
+    "86365770": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "0df7247f90f670e9c3c237344897b4c14a7f542688e07b8dbf201ed52d47932b",
+              "01": "0df7247f90f670e9c3c237344897b4c14a7f542688e07b8dbf201ed52d47932b",
+              "02": "0df7247f90f670e9c3c237344897b4c14a7f542688e07b8dbf201ed52d47932b",
+              "04": "0df7247f90f670e9c3c237344897b4c14a7f542688e07b8dbf201ed52d47932b"
+            }
+          }
+        }
+      }
+    },
+    "86988548": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "c2d57ee101240584d0711fa7da710f330d35a42271ac0451fda7826d685aea2a",
+              "01": "c2d57ee101240584d0711fa7da710f330d35a42271ac0451fda7826d685aea2a",
+              "02": "c2d57ee101240584d0711fa7da710f330d35a42271ac0451fda7826d685aea2a",
+              "03": "c2d57ee101240584d0711fa7da710f330d35a42271ac0451fda7826d685aea2a"
+            }
+          }
+        }
+      }
+    },
+    "87485576": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "f5fd803c6c6620fb9e8ddca1f6c65c1a012076df7120207441439374e3829fa8",
+              "01": "f5fd803c6c6620fb9e8ddca1f6c65c1a012076df7120207441439374e3829fa8",
+              "02": "f5fd803c6c6620fb9e8ddca1f6c65c1a012076df7120207441439374e3829fa8",
+              "03": "f5fd803c6c6620fb9e8ddca1f6c65c1a012076df7120207441439374e3829fa8"
+            }
+          }
+        }
+      }
+    },
+    "88437797": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "d5c84c4b46df523383680e79993bae7940775b6d750e82023cef1180cec01302",
+              "01": "dba7e216a76a91069a3aaacc98f4148dddc43dbc58c2ebbb49db77261694aedf"
+            }
+          }
+        }
+      }
+    },
+    "88704851": {
+      "executed_action_count": {
+        "comparison": "non_scoring_legacy",
+        "evidence_pointer": "hidden_variant_state.expect.tools",
+        "reason": "Legacy raw-action counts include recipe-internal table setup, logger, and smart-list helper actions. Public orchestration is scored from the benchmark tool trace and semantic outcomes."
+      }
+    },
+    "88789010": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "c1efecb7dd540c62a0079970d7a5f9d80f409c26affe07746e2133b45ff4b1cf",
+              "01": "861eca477c42a25b6a0e6f361a9f315fad168a47e88ec0ad6f59dd1c4f71778a",
+              "02": "861eca477c42a25b6a0e6f361a9f315fad168a47e88ec0ad6f59dd1c4f71778a",
+              "03": "c1efecb7dd540c62a0079970d7a5f9d80f409c26affe07746e2133b45ff4b1cf"
+            }
+          }
+        }
+      }
+    },
+    "91361562": {
+      "slot_equivalences": {
+        "salesforce.search_records.arguments.limit": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid cap encoding producing the expected bounded result",
+          "evidence_pointer": "hidden_variant_state.expect.tool_expectations[].result_count"
+        },
+        "salesforce.search_records.arguments.query": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid query encoding producing the expected selected records",
+          "evidence_pointer": "hidden_variant_state.expect.tool_expectations[].result_count"
+        }
+      }
+    },
+    "91556848": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "6e7fe51bbdf24e3f3e5378c58c66468c921b930d4768437dd11ec43c9b7d516e",
+              "01": "9368d33aee1cbfdadb0c0337b8d682d3bff53f6532a281a5c922ba99b0036232",
+              "02": "6e7fe51bbdf24e3f3e5378c58c66468c921b930d4768437dd11ec43c9b7d516e"
+            }
+          }
+        }
+      }
+    },
+    "92048772": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "db90299dd1feaf401686b1f469b37a5cd8efd1be91b41fc4ef6c24cded5a5646",
+              "01": "db90299dd1feaf401686b1f469b37a5cd8efd1be91b41fc4ef6c24cded5a5646",
+              "02": "db90299dd1feaf401686b1f469b37a5cd8efd1be91b41fc4ef6c24cded5a5646"
+            }
+          }
+        }
+      }
+    },
+    "94382824": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "c71572a478b7d64e46cb6d1a62bcd13bc099eb13e7edac7654243964022ff657",
+              "01": "9ce70ece0bd7ae160d90c5b166cc3c2ade4a12c8e5c6736349e93bf7253ca268",
+              "02": "15fd0f567de23a97360b80093e61cef8ad1d2b3cf2f6495dc269014ee94d5771",
+              "03": "e5d0f8c8bf28cb1769999bdc4c5235032a9e4aa3d475db3cf82f3f62ac8d521b"
+            }
+          }
+        }
+      }
+    },
+    "94382842": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "e00b2b32b0ed7c4eb1c9059118c59f50570814df79ad2d1968ab38b9fa089778",
+              "01": "a87a455b575cc6cf4091b8b55f05c2723bdd42c8716ab26ccead741e954108a3",
+              "02": "72a6d2729b04422392683a46d64c2f94158af505812e3676f11121cdd232111b",
+              "03": "f8909b6e69db8942dd9ac76b59c574d70ae0140d41272f7edcf8621bd1966978"
+            }
+          }
+        }
+      }
+    },
+    "95377023": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "16dc2bc1c4810a946800fd7fa5af2a5b6b78afcd498f5a8ec84865ff5c5a25a2",
+              "01": "16dc2bc1c4810a946800fd7fa5af2a5b6b78afcd498f5a8ec84865ff5c5a25a2",
+              "02": "16dc2bc1c4810a946800fd7fa5af2a5b6b78afcd498f5a8ec84865ff5c5a25a2",
+              "03": "3654ef20220d5bab2ffe5f48162873afee5b120ea5a4d8dbd5144d1ae31fbce0",
+              "04": "3654ef20220d5bab2ffe5f48162873afee5b120ea5a4d8dbd5144d1ae31fbce0"
+            }
+          }
+        }
+      }
+    },
+    "97310457": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "83bf4639bc1d1c1153d4ae3d7837d9c5e51d0087e0c9aa8964e94ce797c1ce4a",
+              "01": "83bf4639bc1d1c1153d4ae3d7837d9c5e51d0087e0c9aa8964e94ce797c1ce4a",
+              "02": "83bf4639bc1d1c1153d4ae3d7837d9c5e51d0087e0c9aa8964e94ce797c1ce4a",
+              "03": "83bf4639bc1d1c1153d4ae3d7837d9c5e51d0087e0c9aa8964e94ce797c1ce4a"
+            }
+          }
+        }
+      }
+    },
+    "97310526": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "27ac33dce3917bae773f1cae3d75a670f924417b41a04a0e573584eff95692c2",
+              "01": "27ac33dce3917bae773f1cae3d75a670f924417b41a04a0e573584eff95692c2",
+              "02": "27ac33dce3917bae773f1cae3d75a670f924417b41a04a0e573584eff95692c2",
+              "03": "27ac33dce3917bae773f1cae3d75a670f924417b41a04a0e573584eff95692c2"
+            }
+          }
+        }
+      }
+    },
+    "97310532": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "bb4ca262bc7711f2428e20f9147ec6a0ba02a35fddd91185c9e727c727789dd3",
+              "01": "bb4ca262bc7711f2428e20f9147ec6a0ba02a35fddd91185c9e727c727789dd3",
+              "02": "bb4ca262bc7711f2428e20f9147ec6a0ba02a35fddd91185c9e727c727789dd3",
+              "03": "bb4ca262bc7711f2428e20f9147ec6a0ba02a35fddd91185c9e727c727789dd3"
+            }
+          }
+        }
+      }
+    },
+    "97310564": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "09d6bc19aee7949abd36d589ced974fca05bbb1a7d5adf8b45f128e4ef3e43a7",
+              "01": "09d6bc19aee7949abd36d589ced974fca05bbb1a7d5adf8b45f128e4ef3e43a7",
+              "02": "09d6bc19aee7949abd36d589ced974fca05bbb1a7d5adf8b45f128e4ef3e43a7",
+              "03": "09d6bc19aee7949abd36d589ced974fca05bbb1a7d5adf8b45f128e4ef3e43a7"
+            }
+          }
+        }
+      }
+    },
+    "97310593": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "6a5505d2832358fbac821a81a90dd62a486841942cdfaca07f10ef07345716f1",
+              "01": "6a5505d2832358fbac821a81a90dd62a486841942cdfaca07f10ef07345716f1",
+              "02": "6a5505d2832358fbac821a81a90dd62a486841942cdfaca07f10ef07345716f1",
+              "03": "6a5505d2832358fbac821a81a90dd62a486841942cdfaca07f10ef07345716f1"
+            }
+          }
+        }
+      }
+    },
+    "97310663": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "e52e2d1415ab93cc68b35225c5318917a773910a7fd1606a3365264764e3ef20",
+              "01": "e52e2d1415ab93cc68b35225c5318917a773910a7fd1606a3365264764e3ef20",
+              "02": "e52e2d1415ab93cc68b35225c5318917a773910a7fd1606a3365264764e3ef20",
+              "03": "e52e2d1415ab93cc68b35225c5318917a773910a7fd1606a3365264764e3ef20"
+            }
+          }
+        }
+      }
+    },
+    "97310724": {
+      "slot_equivalences": {
+        "snowflake.run_custom_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "b360e49cddf2c5a79cb27fe17a68235d07177706764aac9cf32b6f4cb1c6da80",
+              "01": "b360e49cddf2c5a79cb27fe17a68235d07177706764aac9cf32b6f4cb1c6da80",
+              "02": "b360e49cddf2c5a79cb27fe17a68235d07177706764aac9cf32b6f4cb1c6da80",
+              "03": "b360e49cddf2c5a79cb27fe17a68235d07177706764aac9cf32b6f4cb1c6da80",
+              "04": "b360e49cddf2c5a79cb27fe17a68235d07177706764aac9cf32b6f4cb1c6da80"
+            }
+          }
+        }
+      }
+    },
+    "99910943": {
+      "slot_equivalences": {
+        "snowflake.search_rows_sql.arguments.sql": {
+          "comparison": "result_semantics",
+          "equivalence_class": "any public-contract-valid Snowflake SQL encoding with the same selected result for reads or the same Snowflake final state for writes",
+          "evidence_pointer": "hidden gold/agent result rows for SELECT-like statements and hidden gold/agent Snowflake final state for mutating statements",
+          "proof": {
+            "method": "canonical_statement_kind_inventory",
+            "observed_statement_modes": [
+              "result_semantics"
+            ],
+            "variant_sql_hashes": {
+              "00": "369989eeb4cc3fc2f2c6f553dbe834dc34dd19cc51e5357862dd93387bbe4cbc",
+              "01": "369989eeb4cc3fc2f2c6f553dbe834dc34dd19cc51e5357862dd93387bbe4cbc",
+              "02": "369989eeb4cc3fc2f2c6f553dbe834dc34dd19cc51e5357862dd93387bbe4cbc",
+              "03": "369989eeb4cc3fc2f2c6f553dbe834dc34dd19cc51e5357862dd93387bbe4cbc"
+            }
+          }
+        }
+      }
+    }
+  },
+  "schema_version": "agentorch-scoring-contract-registry-v1"
+}

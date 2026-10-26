@@ -1,0 +1,50 @@
+{
+  "expect": {
+    "case": "get_records fails; the try/catch catch branch returns an HTTP 400 error response carrying the failure message",
+    "executed_action_count": 1,
+    "tool_expectations": [
+      {
+        "args_contains": {
+          "http_status_code": "400",
+          "response": {
+            "error": "benchmark forced get_records failure"
+          }
+        },
+        "http_status_code": "400",
+        "response_contains": {
+          "error": "benchmark forced get_records failure"
+        },
+        "tool": "workato_api_platform.return_response"
+      }
+    ],
+    "tools": [
+      "workato_api_platform.return_response"
+    ]
+  },
+  "force_action_error": {
+    "error": "benchmark forced get_records failure",
+    "step_as": "1bd64b3a"
+  },
+  "recipe_id": "64112882",
+  "seed": {
+    "workato_db_table": {
+      "tables": {
+        "1670": [
+          {
+            "1e5fd270_2211_4c58_8dfa_95b6ee3b7b9c": "INV-64112882-05-001",
+            "665410c4_9b6f_46fe_93cd_8253dbcd3308": "INV-64112882-05-NUM-001",
+            "_row_id": 0,
+            "ad862ef9_2e1e_462e_ab20_c149ce29997f": "OPP-64112882-05-CHURN"
+          }
+        ]
+      }
+    }
+  },
+  "track": "workato_api_open_invoices",
+  "trigger_input": {
+    "request": {
+      "oppty_id": "OPP-64112882-05-CHURN"
+    }
+  },
+  "variant": 5
+}

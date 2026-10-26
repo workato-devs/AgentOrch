@@ -1,0 +1,18 @@
+{
+  "n": 3220,
+  "n_scored": 1819,
+  "error_rate": 0.4351,
+  "orchestration_accuracy": 0.2701,
+  "orchestration_accuracy_ci95": [
+    0.2578,
+    0.282
+  ],
+  "side_effect_accuracy": 0.2994,
+  "final_accuracy": 0.1143,
+  "final_accuracy_ci95": [
+    0.1034,
+    0.1258
+  ],
+  "execution_trace_accuracy": 0.2407,
+  "terminal_output_accuracy": 0.2898
+}

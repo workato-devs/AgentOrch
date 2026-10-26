@@ -1,0 +1,62 @@
+# --- credentials and site settings (never committed) -------------------------
+.env
+.env.*
+!.env.example
+benchmark/reproduction/cluster/env.sh
+training/scripts/env.sh
+
+# --- run outputs, checkpoints, logs -------------------------------------------
+benchmark/outputs/*
+!benchmark/outputs/README.md
+training/output/*
+!training/output/README.md
+*.log
+*.out
+wandb/
+
+# --- data fetched by scripts/download_data.py (checksums: scripts/data_release.json)
+# Only the sample recipe 64112882 is committed so the smoke test runs after a clone.
+benchmark/input/recipes/*
+!benchmark/input/recipes/64112882/
+benchmark/groundtruth/recipes/*
+!benchmark/groundtruth/recipes/64112882/
+benchmark/verification/dataset/input_recipes/*
+!benchmark/verification/dataset/input_recipes/64112882/
+benchmark/verification/evaluation_support/canonical_ir/*
+!benchmark/verification/evaluation_support/canonical_ir/64112882.json
+benchmark/verification/evaluation_support/critic/*
+!benchmark/verification/evaluation_support/critic/64112882.json
+benchmark/verification/evaluation_support/workflow_groundtruth/*
+!benchmark/verification/evaluation_support/workflow_groundtruth/64112882.json
+benchmark/verification/groundtruth/reference_outputs/*
+!benchmark/verification/groundtruth/reference_outputs/64112882/
+benchmark/verification/seeds/*
+!benchmark/verification/seeds/64112882/
+training/input/recipes/
+training/groundtruth/recipes/
+training/input_v2_canonicalized/
+training/data/*/
+training/data/sft_messages_*.jsonl
+
+# --- caches -------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.venv*/
+coverage.xml
+htmlcov/
+.coverage
+build/
+dist/
+*.egg-info/
+.DS_Store
+
+# --- model files ------------------------------------------------------------
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.bin

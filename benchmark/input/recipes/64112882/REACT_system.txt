@@ -1,0 +1,3984 @@
+You are an automation agent. Complete the task using ONLY the tools below.
+
+OBJECTIVE:
+"The requirements below describe the desired behavior. Do not treat their\npresentation order as the execution order; determine the workflow from the\nrequirements, dependencies, and conditions.\n\nObjective\nProvide a bounded open-invoice lookup for a supplied churn opportunity and return the appropriate terminal result to the API caller.\n\nRequirements\n- A successfully delivered HTTP 200 or HTTP 400 response terminates processing.\n- For the supplied request.oppty_id, identify the bounded result of matching open invoices for that churn opportunity. If the result contains exactly 200 invoices, terminate as an error with the message exactly \"Amount of invoices found hits table storage limit, please consider increasing search size\". If it contains fewer than 200 invoices, return HTTP 200 with the optional invoices array in ascending retrieval order, containing one item per invoice in that bounded result; each item\u2019s id is its invoice ID and number is its invoice number, with blank source values represented as null.\n- If invoice retrieval, result-count evaluation, or delivery of the success response raises an error, do not retry; return HTTP 400 with the captured failure message in the required error field."
+
+INPUT CONTRACT:
+[
+ "The TRIGGER EVENT is the complete caller/event payload available for this run.",
+ "The ENVIRONMENT and PUBLIC WORKFLOW CONTEXT describe available state without revealing hidden row values."
+]
+
+COMPLETION CRITERIA:
+[
+ "Achieve every business effect and caller-visible response stated in the task description.",
+ "Stop after the required final state or terminal response is complete."
+]
+
+CONSTRAINTS:
+[
+ "Choose tools from the broad workspace catalog; many are distractors.",
+ "Ground every identifier and value in the task, trigger, public context, or a prior tool observation.",
+ "Avoid speculative reads, unrelated mutations, and duplicate messages."
+]
+
+OUTPUT CONTRACT (interface documentation):
+- Declared 200 body schema; delivery: explicit_tool_call: [{"label": "Invoices", "name": "invoices", "of": "object", "optional": true, "properties": [{"control_type": "text", "label": "Invoice ID", "name": "id", "optional": true, "sticky": true, "type": "string"}, {"control_type": "text", "label": "Invoice Number", "name": "number", "optional": true, "sticky": true, "type": "string"}], "sticky": true, "type": "array"}]
+- Declared 400 body schema; delivery: explicit_tool_call: [{"control_type": "text", "label": "Error", "name": "error", "optional": false, "type": "string"}]
+
+TOOLS:
+[
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Replay a Workato clock wait interval without sleeping during benchmark execution. Advance the simulated clock only when the task explicitly requires waiting. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "interval": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "interval"
+   ],
+   "type": "object"
+  },
+  "name": "clock.wait_for_interval",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "clock",
+   "operation": "operation",
+   "side_effect": true,
+   "when_to_use": "Advance the simulated clock only when the task explicitly requires waiting."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "parent_id",
+     "name"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "parent_encoding": "Use parent_id only. folderId is connector-authoring input and is not a canonical benchmark argument alias.",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Create a folder in the in-process Google Drive simulator. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "folderId": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "parent_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "parent_id",
+    "name"
+   ],
+   "type": "object"
+  },
+  "name": "google_drive.create_folder",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "google_drive",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Append one row to the simulated Google Sheet. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "data": {
+     "type": "object"
+    },
+    "headers": {
+     "type": "array"
+    },
+    "sheet": {
+     "type": "string"
+    },
+    "spreadsheet": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "data"
+   ],
+   "type": "object"
+  },
+  "name": "google_sheets.add_spreadsheet_row_v4",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "google_sheets",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Retrieve rows from the simulated Google Sheet. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "range": {
+     "type": "string"
+    },
+    "sheet": {
+     "type": "string"
+    },
+    "spreadsheet": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "google_sheets.get_spreadsheet_rows_v4",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "google_sheets",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "spreadsheet",
+     "sheet",
+     "data",
+     "count"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "count_encoding": "count is a non-negative JSON integer when present and null when absent. Numeric strings are not canonical.",
+   "filter_encoding": "data is the exact object of column-name equality filters; do not move a filter into a query string.",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Search rows in the simulated Google Sheet using exact column filters. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "count": {
+     "minimum": 0,
+     "type": [
+      "integer",
+      "null"
+     ]
+    },
+    "data": {
+     "type": "object"
+    },
+    "sheet": {
+     "type": "string"
+    },
+    "spreadsheet": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "google_sheets.search_spreadsheet_rows_v4_new",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "google_sheets",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update one row in the simulated Google Sheet. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "data": {
+     "type": "object"
+    },
+    "row_number": {
+     "type": "integer"
+    },
+    "sheet": {
+     "type": "string"
+    },
+    "spreadsheet": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "row_number",
+    "data"
+   ],
+   "type": "object"
+  },
+  "name": "google_sheets.update_row_v4_new",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "google_sheets",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "project_issuetype",
+     "summary",
+     "description",
+     "priority",
+     "labels"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "optional_value_encoding": "All five canonical keys are present. Unconfigured optional text fields are empty strings and unconfigured labels is null.",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Create an issue in the in-process Jira simulator. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "required": [
+    "project_issuetype",
+    "summary"
+   ],
+   "type": "object"
+  },
+  "name": "jira.create_issue",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "jira",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Add a batch of entries to a controlled Workato lookup table. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "entries": {
+     "items": {
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "lookup_table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "lookup_table_id",
+    "entries"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.add_batch_of_entries",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Add an entry to a controlled Workato lookup table. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "lookup_table_id": {
+     "type": "string"
+    },
+    "parameters": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "lookup_table_id",
+    "parameters"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.add_entry",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Delete an entry from a controlled Workato lookup table. Destructive operation. Use only when deletion is explicitly required and the target is unambiguous. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "id": {},
+    "ignore_not_found": {},
+    "lookup_table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "lookup_table_id",
+    "id"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.delete_entry",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Destructive operation. Use only when deletion is explicitly required and the target is unambiguous."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Read entries from a controlled Workato lookup table. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "lookup_table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "lookup_table_id"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.get_entries",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Read one entry from a controlled Workato lookup table. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "id": {},
+    "lookup_table_id": {
+     "type": "string"
+    },
+    "parameters": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "lookup_table_id"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.get_entry",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Search entries in a controlled Workato lookup table. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "lookup_table_id": {
+     "type": "string"
+    },
+    "parameters": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "lookup_table_id",
+    "parameters"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.search_entries",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Delete all entries from a controlled Workato lookup table. Destructive operation. Use only when deletion is explicitly required and the target is unambiguous. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "lookup_table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "lookup_table_id"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.truncate",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Destructive operation. Use only when deletion is explicitly required and the target is unambiguous."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update an entry in a controlled Workato lookup table. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "id": {},
+    "lookup_table_id": {
+     "type": "string"
+    },
+    "parameters": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "lookup_table_id",
+    "id",
+    "parameters"
+   ],
+   "type": "object"
+  },
+  "name": "lookup_table.update_entry",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "lookup_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Create a simulated Salesforce record. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. Connector selection concepts cross-checked against workato-recipe-skills/skills/salesforce-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "fields": {
+     "type": "object"
+    },
+    "sobject": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sobject",
+    "fields"
+   ],
+   "type": "object"
+  },
+  "name": "salesforce.create_record",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "salesforce",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "sobject",
+     "query"
+    ],
+    "optional": [
+     "filters",
+     "limit"
+    ]
+   },
+   "boolean_encoding": "Equality-filter values use JSON booleans for boolean fields. Boolean tokens inside query remain query syntax.",
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_non_query_arguments_plus_query_semantics",
+   "limit_encoding": "Limit placement is part of query semantics. If supplied as a connector field, its transport type is a non-negative JSON integer. Do not encode it as a numeric string.",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_comparison": "runtime_result_or_state_equivalence",
+   "query_encoding": "SOQL spelling and structure are not compared directly. The Salesforce object stays exact and the executed selection must return the same business records on every variant.",
+   "query_normalization": "No syntax normalization defines correctness; execute the connector and compare the selected row multiset.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "selection_mode": "SOQL text, equality filters, and a separate limit are one query surface. Alternative encodings are accepted only when the executed connector returns the same row multiset.",
+   "semantic_rewrites": "query_surface_only"
+  },
+  "description": "Search simulated Salesforce records. Use exactly one mode: either a non-empty SOQL-style query with filters omitted, or query='' with simple equality filters containing only field and value. Never send both. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. Connector selection concepts cross-checked against workato-recipe-skills/skills/salesforce-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "oneOf": [
+    {
+     "properties": {
+      "filters": {
+       "maxItems": 0,
+       "type": "array"
+      },
+      "query": {
+       "minLength": 1,
+       "type": "string"
+      }
+     }
+    },
+    {
+     "properties": {
+      "filters": {
+       "minItems": 1,
+       "type": "array"
+      },
+      "query": {
+       "const": ""
+      }
+     },
+     "required": [
+      "filters"
+     ]
+    }
+   ],
+   "properties": {
+    "filters": {
+     "items": {
+      "additionalProperties": false,
+      "properties": {
+       "field": {
+        "type": "string"
+       },
+       "value": {}
+      },
+      "required": [
+       "field",
+       "value"
+      ],
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "limit": {
+     "minimum": 0,
+     "type": "integer"
+    },
+    "query": {
+     "type": "string"
+    },
+    "sobject": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sobject",
+    "query"
+   ],
+   "type": "object"
+  },
+  "name": "salesforce.search_records",
+  "output_schema": {
+   "properties": {
+    "count": {
+     "type": "integer"
+    },
+    "ok": {
+     "type": "boolean"
+    },
+    "records": {
+     "items": {
+      "type": "object"
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "ok",
+    "records",
+    "count"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "salesforce",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "batch": [
+     "sobject",
+     "records"
+    ],
+    "scalar": [
+     "sobject",
+     "id",
+     "fields"
+    ]
+   },
+   "batch_encoding": "A scalar record update uses exactly {sobject, id, fields}. An imported composite/batch update uses exactly {sobject, records}, where every records item is {sobject, id, fields}. Batch form is retained even when runtime expansion yields one item; cardinality never changes the argument shape.",
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "field_encoding": "fields contains only mapped Salesforce fields. Connector authoring metadata is omitted, and an absent optional value is omitted rather than encoded as null.",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update a simulated Salesforce record. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. Connector selection concepts cross-checked against workato-recipe-skills/skills/salesforce-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "oneOf": [
+    {
+     "required": [
+      "sobject",
+      "id",
+      "fields"
+     ]
+    },
+    {
+     "required": [
+      "sobject",
+      "records"
+     ]
+    }
+   ],
+   "properties": {
+    "fields": {
+     "type": "object"
+    },
+    "id": {
+     "type": "string"
+    },
+    "records": {
+     "items": {
+      "additionalProperties": false,
+      "properties": {
+       "fields": {
+        "type": "object"
+       },
+       "id": {
+        "type": "string"
+       },
+       "sobject": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "sobject",
+       "id",
+       "fields"
+      ],
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "sobject": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "salesforce.update_record",
+  "output_schema": {
+   "properties": {
+    "id": {
+     "type": "string"
+    },
+    "ok": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "ok"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "salesforce",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Upsert a simulated Salesforce record by a primary key field. Use when the task requires create-or-update behavior keyed by the match fields in the schema. Supply only grounded identifiers and values. Connector selection concepts cross-checked against workato-recipe-skills/skills/salesforce-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "fields": {
+     "type": "object"
+    },
+    "key_field": {
+     "type": "string"
+    },
+    "sobject": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sobject",
+    "key_field",
+    "fields"
+   ],
+   "type": "object"
+  },
+  "name": "salesforce.upsert_record",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "salesforce",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use when the task requires create-or-update behavior keyed by the match fields in the schema. Supply only grounded identifiers and values."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Delete a simulated Slack message by channel and timestamp. Destructive operation. Use only when deletion is explicitly required and the target is unambiguous. Native Slack versus interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "ts": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "channel",
+    "ts"
+   ],
+   "type": "object"
+  },
+  "name": "slack.delete_message",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Destructive operation. Use only when deletion is explicitly required and the target is unambiguous."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Post a message to the in-process Slack simulator. Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends. Native Slack versus interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "attachments": {
+     "items": {
+      "additionalProperties": false,
+      "properties": {
+       "actions": {
+        "type": "array"
+       },
+       "color": {
+        "type": "string"
+       },
+       "fields": {
+        "items": {
+         "additionalProperties": false,
+         "properties": {
+          "short": {
+           "type": "boolean"
+          },
+          "title": {
+           "type": "string"
+          },
+          "value": {
+           "type": "string"
+          }
+         },
+         "required": [
+          "title",
+          "value"
+         ],
+         "type": "object"
+        },
+        "type": "array"
+       },
+       "footer": {
+        "type": "string"
+       },
+       "footer_icon": {
+        "type": "string"
+       },
+       "pretext": {
+        "type": "string"
+       },
+       "text": {
+        "type": "string"
+       },
+       "title": {
+        "type": "string"
+       },
+       "title_link": {
+        "type": "string"
+       }
+      },
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "blocks": {
+     "type": "array"
+    },
+    "channel": {
+     "type": "string"
+    },
+    "text": {
+     "type": "string"
+    },
+    "thread_ts": {
+     "type": "string"
+    },
+    "ts": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "channel",
+    "text"
+   ],
+   "type": "object"
+  },
+  "name": "slack.post_message",
+  "output_schema": {
+   "properties": {
+    "channel": {
+     "type": "string"
+    },
+    "message": {
+     "type": "object"
+    },
+    "ok": {
+     "type": "boolean"
+    },
+    "thread_ts": {
+     "type": "string"
+    },
+    "ts": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "ok"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "communication",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack",
+   "operation": "communication",
+   "side_effect": true,
+   "when_to_use": "Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "invoking_context_encoding": "The invoking channel, thread timestamp, user, and original timestamp are connector-injected transport context and are omitted from the canonical request. Omit false optional mode flags; include ephemeral, replace_original, or delete_original only when true. Destination correctness is still checked from the resulting Slack side effect.",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Reply to the invoking Slack bot-command conversation, or to an explicit channel/thread when supplied. Omitting channel uses the invoking conversation routed through benchmark isolation. The reply may contain text, Block Kit blocks, or both; it may be requester-only, replace the original command response, or delete the original while posting the reply when those modes are set. Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends. Native Slack versus interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "blocks": {
+     "items": {
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "channel": {
+     "type": "string"
+    },
+    "delete_original": {
+     "type": "boolean"
+    },
+    "ephemeral": {
+     "type": "boolean"
+    },
+    "original_ts": {
+     "type": "string"
+    },
+    "replace_original": {
+     "type": "boolean"
+    },
+    "text": {
+     "type": "string"
+    },
+    "thread_ts": {
+     "type": "string"
+    },
+    "user": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "slack.post_reply",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "communication",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack",
+   "operation": "communication",
+   "side_effect": true,
+   "when_to_use": "Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update a simulated Slack message by replacing or removing Block Kit blocks with matching block IDs. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. Native Slack versus interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "blocks_to_update": {
+     "type": "array"
+    },
+    "message_json": {}
+   },
+   "required": [
+    "message_json",
+    "blocks_to_update"
+   ],
+   "type": "object"
+  },
+  "name": "slack.update_blocks_by_block_id",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Open a Slack modal in the simulator. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. Interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "trigger_id": {
+     "type": "string"
+    },
+    "view": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "trigger_id",
+    "view"
+   ],
+   "type": "object"
+  },
+  "name": "slack_bot.block_kit_modals",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack_bot",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Return dynamic menu options for a Slack trigger payload. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. Interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "options": {
+     "items": {
+      "additionalProperties": false,
+      "properties": {
+       "label": {
+        "type": "string"
+       },
+       "value": {
+        "type": "string"
+       }
+      },
+      "required": [
+       "label",
+       "value"
+      ],
+      "type": "object"
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "options"
+   ],
+   "type": "object"
+  },
+  "name": "slack_bot.generate_menu_options",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "options": {
+     "type": "array"
+    }
+   },
+   "required": [
+    "ok",
+    "options"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack_bot",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Look up a deterministic simulated Slack user by email or id. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. Interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "email": {
+     "type": "string"
+    },
+    "id": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "slack_bot.get_user_by_email",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack_bot",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Publish a Slack App Home view in the simulator. Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends. Interactive Workbot usage cross-checked against workato-recipe-skills/skills/slack-recipes; the simulator schema below is the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "user_id": {
+     "type": "string"
+    },
+    "view": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "user_id",
+    "view"
+   ],
+   "type": "object"
+  },
+  "name": "slack_bot.open_bot_app_home",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "ok"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "slack_bot",
+   "operation": "communication",
+   "side_effect": true,
+   "when_to_use": "Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "sql",
+     "parameters"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_non_query_arguments_plus_query_semantics",
+   "object_key_order": "canonical_json_sorted_keys",
+   "parameter_encoding": "parameters is exactly the configured parameters.data object, or {} when absent.",
+   "query_comparison": "runtime_result_or_state_equivalence",
+   "query_encoding": "SQL spelling and structure are not compared directly. Reads must return the same row multiset; mutating statements must leave the same Snowflake table state on every variant.",
+   "query_normalization": "No syntax normalization defines correctness; execute reads and compare row multisets, or execute writes and compare the final Snowflake table state.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "query_surface_only"
+  },
+  "description": "Run constrained Snowflake SQL against isolated benchmark state. Supports SELECT, INSERT INTO ... SELECT, ALTER TABLE ... ADD, COPY INTO from a declared stage, retention DELETE, TRUNCATE TABLE, and CREATE OR REPLACE TABLE AS SELECT within the documented simulator SQL subset. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "limit": {},
+    "offset": {},
+    "parameters": {
+     "type": "object"
+    },
+    "sql": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sql"
+   ],
+   "type": "object"
+  },
+  "name": "snowflake.run_custom_sql",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "row_count": {
+     "type": "integer"
+    },
+    "rows": {
+     "items": {
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "rows_affected": {
+     "type": "integer"
+    }
+   },
+   "required": [
+    "ok",
+    "rows",
+    "rows_affected"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "snowflake",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "table",
+     "where",
+     "parameters",
+     "limit",
+     "offset",
+     "orderby",
+     "output_columns"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "pagination_encoding": "limit and offset are JSON integers when present and null when absent. Numeric strings are not canonical.",
+   "parameter_encoding": "parameters is exactly the configured parameters.data object, or {} when absent.",
+   "query_encoding": "where, orderby, and output_columns remain separate fields; do not replace this structured call with SQL text.",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Search rows in an isolated benchmark Snowflake table state. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "limit": {
+     "minimum": 0,
+     "type": [
+      "integer",
+      "null"
+     ]
+    },
+    "offset": {
+     "minimum": 0,
+     "type": [
+      "integer",
+      "null"
+     ]
+    },
+    "orderby": {
+     "type": "string"
+    },
+    "output_columns": {
+     "description": "Optional projection of returned fields. Accepts a newline- or comma-separated field list.",
+     "type": "string"
+    },
+    "parameters": {
+     "type": "object"
+    },
+    "table": {
+     "type": "string"
+    },
+    "where": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table"
+   ],
+   "type": "object"
+  },
+  "name": "snowflake.search_rows",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "snowflake",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "sql",
+     "parameters",
+     "limit",
+     "offset"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_non_query_arguments_plus_query_semantics",
+   "object_key_order": "canonical_json_sorted_keys",
+   "pagination_encoding": "limit and offset are JSON integers when present and null when absent. Numeric strings are not canonical.",
+   "parameter_encoding": "parameters is exactly the configured parameters.data object, or {} when absent.",
+   "query_comparison": "runtime_result_or_state_equivalence",
+   "query_encoding": "SQL spelling and structure are not compared directly. The executed read must return the same row multiset on every variant; parameters and pagination participate in that query result semantics.",
+   "query_normalization": "No syntax normalization defines correctness; execute the connector and compare the selected row multiset.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "query_surface_only"
+  },
+  "description": "Run a constrained SELECT query against isolated benchmark Snowflake table state. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "limit": {
+     "minimum": 0,
+     "type": [
+      "integer",
+      "null"
+     ]
+    },
+    "offset": {
+     "minimum": 0,
+     "type": [
+      "integer",
+      "null"
+     ]
+    },
+    "parameters": {
+     "type": "object"
+    },
+    "sql": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sql"
+   ],
+   "type": "object"
+  },
+  "name": "snowflake.search_rows_sql",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "snowflake",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update rows in an isolated benchmark Snowflake target table. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "columns": {
+     "type": "object"
+    },
+    "table": {
+     "type": "string"
+    },
+    "where": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table",
+    "where",
+    "columns"
+   ],
+   "type": "object"
+  },
+  "name": "snowflake.update_rows",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "snowflake",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Upsert rows into an isolated benchmark Snowflake target table. Use when the task requires create-or-update behavior keyed by the match fields in the schema. Supply only grounded identifiers and values. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "key_columns": {},
+    "rows": {
+     "type": "array"
+    },
+    "table": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table",
+    "key_columns",
+    "rows"
+   ],
+   "type": "object"
+  },
+  "name": "snowflake.upsert_rows_batch",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "snowflake",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use when the task requires create-or-update behavior keyed by the match fields in the schema. Supply only grounded identifiers and values."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "http_status_code",
+     "response"
+    ],
+    "optional": [
+     "response_headers"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden",
+   "status_encoding": "http_status_code is a JSON string; use '200' only when the recipe declares no other status."
+  },
+  "description": "Controlled Workato API Platform return_response action. Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "http_status_code": {
+     "type": "string"
+    },
+    "response": {},
+    "response_headers": {
+     "additionalProperties": {
+      "type": "string"
+     },
+     "type": "object"
+    }
+   },
+   "required": [
+    "http_status_code"
+   ],
+   "type": "object"
+  },
+  "name": "workato_api_platform.return_response",
+  "output_schema": {
+   "properties": {
+    "http_status_code": {
+     "type": "string"
+    },
+    "ok": {
+     "type": "boolean"
+    },
+    "response": {},
+    "response_headers": {
+     "additionalProperties": {
+      "type": "string"
+     },
+     "type": "object"
+    }
+   },
+   "required": [
+    "ok",
+    "http_status_code"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "behavior_notes": [
+    "A successful return_response is inherently recipe-terminal regardless of HTTP status."
+   ],
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "terminal_response",
+   "mutates_external_state": false,
+   "terminal_on_success": true
+  },
+  "usage": {
+   "connector_family": "workato_api_platform",
+   "operation": "terminal",
+   "side_effect": true,
+   "when_to_use": "Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Get a controlled Workato app recipe's details (deterministic seeded state). Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "recipe_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "recipe_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_app.get_recipe",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_app",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "List controlled Workato app jobs (deterministic seeded state). Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "recipe_id": {
+     "type": "string"
+    },
+    "status": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "workato_app.list_jobs",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_app",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato app recipe-lifecycle rerun_jobs action. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "job_ids": {
+     "items": {
+      "type": "string"
+     },
+     "type": "array"
+    },
+    "recipe_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "job_ids"
+   ],
+   "type": "object"
+  },
+  "name": "workato_app.rerun_jobs",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "lifecycle_transition",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_app",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato app recipe-lifecycle start_recipe action. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "recipe_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "recipe_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_app.start_recipe",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "recipe_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "ok",
+    "recipe_id"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "lifecycle_transition",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_app",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato app recipe-lifecycle stop_recipe action. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "recipe_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "recipe_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_app.stop_recipe",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "recipe_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "ok",
+    "recipe_id"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "lifecycle_transition",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_app",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Add a record to a controlled Workato data table. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "record": {
+     "type": "object"
+    },
+    "record_id_field": {
+     "type": "string"
+    },
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id",
+    "record"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.add_record",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "record": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "ok"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Delete a record from a controlled Workato data table. Destructive operation. Use only when deletion is explicitly required and the target is unambiguous. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "record_id": {},
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id",
+    "record_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.delete_record",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Destructive operation. Use only when deletion is explicitly required and the target is unambiguous."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "table_id",
+     "filters"
+    ],
+    "optional": [
+     "continuation_token",
+     "limit",
+     "order_by_field_id",
+     "order_direction"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "filter_encoding": "Each filter is exactly {field_id, op, value}. Replace '-' with '_' in field_id. Lowercase op and canonicalize equals to eq. Encode istrue/isfalse as op='eq' with JSON boolean true/false. Preserve an explicitly configured value for isnull/isnotnull; use null only when no value was configured.",
+   "modifier_encoding": "Omit editor defaults limit=100 and order_direction='asc' when order_by_field_id is absent. Retain a non-default limit as a JSON integer. When order_by_field_id is present, replace '-' with '_', include order_direction (default 'asc'), and retain an explicitly configured limit.",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Read records from a controlled Workato data table. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "continuation_token": {
+     "type": "string"
+    },
+    "filters": {
+     "items": {
+      "properties": {
+       "field_id": {
+        "type": "string"
+       },
+       "op": {
+        "enum": [
+         "eq",
+         "ne",
+         "gte",
+         "gt",
+         "lte",
+         "lt",
+         "starts_with",
+         "isnull",
+         "isnotnull"
+        ],
+        "type": "string"
+       },
+       "value": {}
+      },
+      "required": [
+       "field_id",
+       "op"
+      ],
+      "type": "object"
+     },
+     "type": "array"
+    },
+    "limit": {
+     "type": "integer"
+    },
+    "order_by_field_id": {
+     "type": "string"
+    },
+    "order_direction": {
+     "enum": [
+      "asc",
+      "desc"
+     ],
+     "type": "string"
+    },
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.get_records",
+  "output_schema": {
+   "properties": {
+    "continuation_token": {
+     "type": [
+      "string",
+      "number",
+      "null"
+     ]
+    },
+    "ok": {
+     "type": "boolean"
+    },
+    "records": {
+     "items": {
+      "type": "object"
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "ok",
+    "records"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation",
+   "filter_operator_semantics": {
+    "eq": "Field value equals the supplied value.",
+    "gt": "Field value is greater than the supplied value.",
+    "gte": "Field value is greater than or equal to the supplied value.",
+    "isnotnull": "Field is neither null nor empty. Any supplied value is retained in the call but ignored by this presence test.",
+    "isnull": "Field is null or empty. Any supplied value is retained in the call but ignored by this presence test.",
+    "lt": "Field value is less than the supplied value.",
+    "lte": "Field value is less than or equal to the supplied value.",
+    "ne": "Field value does not equal the supplied value.",
+    "starts_with": "Field text starts with the supplied value."
+   }
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Search records in a controlled Workato data table. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "query": {
+     "type": "string"
+    },
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id",
+    "query"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.search_records",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "read",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Delete all records from a controlled Workato data table. Destructive operation. Use only when deletion is explicitly required and the target is unambiguous. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.truncate_table",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Destructive operation. Use only when deletion is explicitly required and the target is unambiguous."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update a record in a controlled Workato data table. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "record": {
+     "type": "object"
+    },
+    "record_id": {},
+    "record_id_field": {
+     "type": "string"
+    },
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id",
+    "record_id",
+    "record"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.update_record",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "table_id",
+     "primary_field_id",
+     "record"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "field_encoding": "Replace '-' with '_' in primary_field_id and record keys.",
+   "identity_encoding": "Use primary_field_id only. record_id and record_id_field are not aliases in the canonical upsert call.",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Create or update a record in a controlled Workato data table. Use when the task requires create-or-update behavior keyed by the match fields in the schema. Supply only grounded identifiers and values. Data-table read/write concepts cross-checked against workato-recipe-skills/skills/datatable-recipes; table and column identifiers must follow the simulator schema/environment cards.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "primary_field_id": {
+     "type": "string"
+    },
+    "record": {
+     "type": "object"
+    },
+    "record_id": {},
+    "record_id_field": {
+     "type": "string"
+    },
+    "table_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "table_id",
+    "record"
+   ],
+   "type": "object"
+  },
+  "name": "workato_db_table.upsert_record",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "record": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "ok"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_db_table",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use when the task requires create-or-update behavior keyed by the match fields in the schema. Supply only grounded identifiers and values."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato Genie workflow_return_result action. Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "result": {}
+   },
+   "type": "object"
+  },
+  "name": "workato_genie.workflow_return_result",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_genie",
+   "operation": "terminal",
+   "side_effect": true,
+   "when_to_use": "Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato pub/sub publish action. Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "message": {},
+    "topic_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "topic_id",
+    "message"
+   ],
+   "type": "object"
+  },
+  "name": "workato_pub_sub.publish_to_topic",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_pub_sub",
+   "operation": "communication",
+   "side_effect": true,
+   "when_to_use": "Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato pub/sub batch publish action. Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "messages": {
+     "type": "array"
+    },
+    "topic_id": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "topic_id",
+    "messages"
+   ],
+   "type": "object"
+  },
+  "name": "workato_pub_sub.publish_to_topic_batch",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_pub_sub",
+   "operation": "communication",
+   "side_effect": true,
+   "when_to_use": "Produces a user-visible message, publication, view, or dialog. Resolve the destination and content first; avoid duplicate sends."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato recipe-function return_result action. Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "result": {
+     "type": "object"
+    }
+   },
+   "required": [
+    "result"
+   ],
+   "type": "object"
+  },
+  "name": "workato_recipe_function.return_result",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_recipe_function",
+   "operation": "terminal",
+   "side_effect": true,
+   "when_to_use": "Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Append one item to the current accumulator and return the accumulated list. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "list_item": {}
+   },
+   "required": [
+    "list_item"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.accumulate_list_items",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "argument_shape": {
+    "always": [
+     "name",
+     "size"
+    ]
+   },
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden",
+   "size_encoding": "size is one non-negative JSON integer. Numeric strings are not canonical; when the recipe creates a list from a source, size is the resolved source length."
+  },
+  "description": "Create an indexed list of the configured non-negative size. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "size": {
+     "minimum": 0,
+     "type": "integer"
+    }
+   },
+   "required": [
+    "name",
+    "size"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.create_list",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Declare a recipe list with an optional initial list_items array. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "list_item_schema_json": {
+     "type": "string"
+    },
+    "list_items": {
+     "type": "array"
+    },
+    "name": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "name"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.declare_list",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Declare recipe variables and return their initial values. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "value": {},
+    "variables": {
+     "type": "object"
+    }
+   },
+   "type": "object"
+  },
+  "name": "workato_runtime.declare_variable",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "An object containing each declared variable and its resolved value.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Insert one item at the start or end of a recipe list. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "list_item": {},
+    "location": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "name",
+    "list_item"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.insert_to_list",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Insert an array of items at the start or end of a recipe list. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "list_items": {
+     "type": "array"
+    },
+    "location": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "name",
+    "list_items"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.insert_to_list_batch",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Write one deterministic runtime log message with an optional INFO, WARN, or ERROR severity and centralized-log visibility. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "log_level": {
+     "enum": [
+      "INFO",
+      "WARN",
+      "ERROR"
+     ],
+     "type": "string"
+    },
+    "message": {
+     "type": "string"
+    },
+    "user_logs_enabled": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "message"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.log_message",
+  "output_schema": {
+   "properties": {
+    "log_level": {
+     "type": "string"
+    },
+    "message": {
+     "type": "string"
+    },
+    "ok": {
+     "type": "boolean"
+    },
+    "user_logs_enabled": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "ok",
+    "message"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Parse a JSON document into a structured value. Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "document": {
+     "type": [
+      "string",
+      "object",
+      "array"
+     ]
+    }
+   },
+   "required": [
+    "document"
+   ],
+   "type": "object"
+  },
+  "name": "workato_runtime.parse_json",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "transform",
+   "side_effect": false,
+   "when_to_use": "Use for the named deterministic transformation or workflow-runtime operation when its output is needed by a later step."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Update recipe variables; pass variable fields alongside the configured name metadata. Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "additionalProperties": true,
+   "properties": {
+    "input_mode": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    }
+   },
+   "type": "object"
+  },
+  "name": "workato_runtime.update_variables",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_runtime",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to change an existing target after its identifier and new values are known. This is a side effect; do not use it as a read."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Invoke a controlled callable recipe. The simulator returns the exact deterministic seeded reply for the supplied flow and request. Invoke a configured child service only when its result or side effect is required. The synchronous form returns a seeded reply; the asynchronous form returns only an acknowledgement. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "flow_id": {
+     "type": "string"
+    },
+    "request": {}
+   },
+   "required": [
+    "flow_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_service.call_service",
+  "output_schema": {
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "reply": {}
+   },
+   "required": [
+    "ok"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_service",
+   "operation": "operation",
+   "side_effect": true,
+   "when_to_use": "Invoke a configured child service only when its result or side effect is required. The synchronous form returns a seeded reply; the asynchronous form returns only an acknowledgement."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato async callable-recipe invocation; returns an ack only (no reply). Invoke a configured child service only when its result or side effect is required. The synchronous form returns a seeded reply; the asynchronous form returns only an acknowledgement. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "flow_id": {
+     "type": "string"
+    },
+    "request": {}
+   },
+   "required": [
+    "flow_id"
+   ],
+   "type": "object"
+  },
+  "name": "workato_service.call_service_async",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_service",
+   "operation": "operation",
+   "side_effect": true,
+   "when_to_use": "Invoke a configured child service only when its result or side effect is required. The synchronous form returns a seeded reply; the asynchronous form returns only an acknowledgement."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Controlled Workato service (callable recipe) send_reply action. Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "message": {},
+    "reply": {},
+    "reply_type": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "reply_type"
+   ],
+   "type": "object"
+  },
+  "name": "workato_service.send_reply",
+  "output_schema": {
+   "properties": {
+    "message": {},
+    "ok": {
+     "type": "boolean"
+    },
+    "reply": {},
+    "reply_type": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "ok",
+    "reply_type"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "external_write",
+   "mutates_external_state": true,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_service",
+   "operation": "terminal",
+   "side_effect": true,
+   "when_to_use": "Use only when the caller or parent workflow must receive its final response. Complete prerequisite reads and mutations first; a successful terminal call can end the run."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Create the configured in-memory smart list and return its rows and columns. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "list_name": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "list_name"
+   ],
+   "type": "object"
+  },
+  "name": "workato_smart_list.create_list",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_smart_list",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Create the configured in-memory smart list from CSV columns. Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "columns": {
+     "items": {
+      "type": "string"
+     },
+     "type": "array"
+    },
+    "list_name": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "list_name",
+    "columns"
+   ],
+   "type": "object"
+  },
+  "name": "workato_smart_list.create_list_from_csv",
+  "output_schema": {
+   "additionalProperties": true,
+   "description": "A successful call returns a JSON object. Tool-specific fields are documented when the adapter has a stable, narrower result contract.",
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_smart_list",
+   "operation": "mutation",
+   "side_effect": true,
+   "when_to_use": "Use to create new state only when the task requires it and after checking for duplicates when the task or schema calls for that."
+  }
+ },
+ {
+  "canonical_argument_rules": {
+   "caught_error_binding": "A caught error's message field is the underlying exception text without the interactive tool-observation 'ERROR:' transport prefix. Preserve that message exactly in any downstream field bound to it.",
+   "comparison": "exact_canonical_arguments",
+   "object_key_order": "canonical_json_sorted_keys",
+   "query_normalization": "For query/sql/where/order arguments, exact scoring discards insignificant whitespace, line endings, one trailing semicolon, and SQL/SOQL keyword case. Quoted literals/identifiers, comments, token order, projections, sources, joins, predicates, grouping, ordering, limits, and bindings remain exact.",
+   "scalar_types": "Use the JSON type declared by the canonical input schema. Do not interchange strings, numbers, booleans, or null unless a tool-specific normalization below explicitly requires it.",
+   "schema_version": "agentorch-canonical-argument-rules-v1",
+   "semantic_rewrites": "forbidden"
+  },
+  "description": "Run the configured SQL statement over in-memory smart lists. Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt. The simulator registry description and JSON schema are the executable contract.",
+  "error_schema": {
+   "description": "A failed call is returned to the model as a text observation prefixed with 'ERROR:'; it is not a successful tool result.",
+   "pattern": "^ERROR:",
+   "type": "string"
+  },
+  "input_schema": {
+   "properties": {
+    "sql": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "sql"
+   ],
+   "type": "object"
+  },
+  "name": "workato_smart_list.query_list",
+  "output_schema": {
+   "properties": {
+    "columns": {
+     "type": "object"
+    },
+    "count": {
+     "type": "integer"
+    },
+    "ok": {
+     "type": "boolean"
+    },
+    "row_count": {
+     "type": "integer"
+    },
+    "rows": {
+     "items": {
+      "type": "object"
+     },
+     "type": "array"
+    }
+   },
+   "required": [
+    "ok",
+    "rows",
+    "row_count",
+    "count"
+   ],
+   "type": "object"
+  },
+  "semantic_constraints": {
+   "behavior_notes": [
+    "SQL doubled apostrophes inside quoted string literals are decoded to a single apostrophe when values are stored and returned."
+   ],
+   "error_delivery": "error_observation"
+  },
+  "side_effects": {
+   "class": "recipe_local_state",
+   "mutates_external_state": false,
+   "terminal_on_success": false
+  },
+  "usage": {
+   "connector_family": "workato_smart_list",
+   "operation": "read",
+   "side_effect": false,
+   "when_to_use": "Use for a targeted read when an identifier, existing value, or current state is needed by a later decision or mutation. Avoid speculative reads whose result is already in the prompt."
+  }
+ }
+]
+
+Control tools (always available, not part of the environment):
+- {"tool": "finish", "args": {}} — declare the task complete.
+- {"tool": "stop", "args": {"stop_reason": "...", "stop_with_error": true}}
+  — execute an explicit workflow stop branch, preserving its reason and error flag.
+
+Action budget: you have a limited number of tool calls. First infer the
+intended business outcome from the goal, trigger event, environment cards,
+and tool schemas. Use read-only tools only when they are necessary to
+identify an existing record, resolve an ID, inspect current state, or avoid
+an unsafe mutation. Prefer targeted reads over broad searches. Do not spend
+actions verifying information already provided in the prompt or schema
+cards. Once you have enough information to perform the required business
+effect, execute the minimal set of actions in the dependency and control-flow
+order implied by the requirements. Canonical tool choice and action order are
+evaluated in addition to final state and terminal outputs.
+
+Response format: reply with exactly ONE JSON object per turn:
+{"thought": "...", "tool": "<tool name>", "args": { ... }}
+No prose outside the JSON. Tool errors come back as observations — read them
+and recover. Do not repeat identical calls.
+
+Work step by step: think, emit exactly one JSON action, observe the result, repeat. Do not announce a full plan up front.

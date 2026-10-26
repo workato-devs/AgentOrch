@@ -1,0 +1,421 @@
+{
+  "schema": "agentorch-global-react-comparison-v2",
+  "recipes": 650,
+  "runtime_variants": 3220,
+  "backend": "simulated",
+  "modes": [
+    "plan_execute",
+    "react"
+  ],
+  "runs_per_task": 1,
+  "task_source": "task_description",
+  "tool_surface": "broad",
+  "context_tokens": 131072,
+  "max_input_tokens": 122880,
+  "output_budget": {
+    "global_plan_visible_tokens": 4096,
+    "react_turn_stop": "generation ends at the first complete top-level JSON object",
+    "react_turn_cap_api_models": 4096,
+    "react_turn_hard_cap_local_models": 8192,
+    "react_turn_soft_cap_local_models": 1024
+  },
+  "tiers": {
+    "small": "parameters <= 4B",
+    "medium": "4B < parameters <= 15B",
+    "large": "parameters > 15B; API models are assigned by vendor capability tier"
+  },
+  "local_models": [
+    {
+      "model": "Qwen/Qwen2.5-0.5B-Instruct",
+      "parameters_billions": 0.5,
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "tier": "small"
+    },
+    {
+      "model": "meta-llama/Llama-3.2-1B-Instruct",
+      "parameters_billions": 1.0,
+      "revision": "9213176726f574b556790deb65791e0c5aa438b6",
+      "tier": "small"
+    },
+    {
+      "model": "Qwen/Qwen2.5-1.5B-Instruct",
+      "parameters_billions": 1.5,
+      "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+      "tier": "small"
+    },
+    {
+      "model": "ibm-granite/granite-3.1-2b-instruct",
+      "parameters_billions": 2.5,
+      "tier": "small",
+      "revision": "bbc2aed595bd38bd770263dc3ab831db9794441d"
+    },
+    {
+      "model": "meta-llama/Llama-3.2-3B-Instruct",
+      "parameters_billions": 3.0,
+      "revision": "0cb88a4f764b7a12671c53f0838cd831a0843b95",
+      "tier": "small"
+    },
+    {
+      "model": "Qwen/Qwen2.5-3B-Instruct",
+      "parameters_billions": 3.1,
+      "tier": "small",
+      "revision": "aa8e72537993ba99e69dfaafa59ed015b17504d1"
+    },
+    {
+      "model": "Qwen/Qwen3-4B-Instruct-2507",
+      "parameters_billions": 4.0,
+      "tier": "small",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554"
+    },
+    {
+      "model": "google/gemma-3-4b-it",
+      "parameters_billions": 4.3,
+      "tier": "medium",
+      "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+      "gated": true
+    },
+    {
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "parameters_billions": 7.0,
+      "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+      "tier": "medium"
+    },
+    {
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "parameters_billions": 8.0,
+      "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+      "tier": "medium"
+    },
+    {
+      "model": "ibm-granite/granite-3.1-8b-instruct",
+      "parameters_billions": 8.2,
+      "tier": "medium",
+      "revision": "4009206d5fc95d2e65a7b7633e159d6e97e25d35"
+    },
+    {
+      "model": "google/gemma-3-12b-it",
+      "parameters_billions": 12.2,
+      "tier": "medium",
+      "revision": "96b6f1eccf38110c56df3a15bffe176da04bfd80",
+      "gated": true
+    },
+    {
+      "model": "mistralai/Mistral-Nemo-Instruct-2407",
+      "parameters_billions": 12.2,
+      "tier": "medium",
+      "revision": "04d8a90549d23fc6bd7f642064003592df51e9b3"
+    },
+    {
+      "model": "Qwen/Qwen2.5-14B-Instruct",
+      "parameters_billions": 14.0,
+      "revision": "cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8",
+      "tier": "medium"
+    },
+    {
+      "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "parameters_billions": 24.0,
+      "tier": "large",
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a"
+    },
+    {
+      "model": "google/gemma-3-27b-it",
+      "parameters_billions": 27.4,
+      "tier": "large",
+      "revision": "005ad3404e59d6023443cb575daa05336842228a",
+      "gated": true
+    },
+    {
+      "model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+      "parameters_billions": 30.5,
+      "tier": "large",
+      "revision": "0d7cf23991f47feeb3a57ecb4c9cee8ea4a17bfe"
+    },
+    {
+      "model": "Qwen/Qwen2.5-32B-Instruct",
+      "parameters_billions": 32.0,
+      "revision": "5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd",
+      "tier": "large"
+    },
+    {
+      "model": "CohereForAI/c4ai-command-r-08-2024",
+      "parameters_billions": 32.3,
+      "tier": "large",
+      "revision": "dc835b893cd3fb8f14b24970dbc2a0a6d3c22ee3",
+      "gated": true
+    },
+    {
+      "model": "meta-llama/Llama-3.1-70B-Instruct",
+      "parameters_billions": 70.6,
+      "tier": "large",
+      "revision": "1605565b47bb9346c5515c34102e054115b4f98b",
+      "gated": true,
+      "tensor_parallel": 2
+    },
+    {
+      "model": "meta-llama/Llama-3.3-70B-Instruct",
+      "parameters_billions": 70.6,
+      "tier": "large",
+      "revision": "6f6073b423013f6a7d4d9f39144961bfbfbc386b",
+      "gated": true,
+      "tensor_parallel": 2
+    },
+    {
+      "model": "Qwen/Qwen2.5-72B-Instruct",
+      "parameters_billions": 72.7,
+      "tier": "large",
+      "revision": "495f39366efef23836d0cfae4fbe635880d2be31",
+      "tensor_parallel": 2
+    },
+    {
+      "model": "zai-org/GLM-4.5-Air-FP8",
+      "parameters_billions": 106.0,
+      "active_parameters_billions": 12.0,
+      "tier": "large",
+      "revision": "f9a9c5acf5e543cd24d659a056c5dbcda78ffcfc",
+      "quantization": "fp8 (vendor release)"
+    },
+    {
+      "model": "zai-org/GLM-4.5-FP8",
+      "parameters_billions": 355.0,
+      "active_parameters_billions": 32.0,
+      "tier": "large",
+      "revision": "8cc290ee4c7cbfa38d3a2db9bd0b7371773ece81",
+      "quantization": "fp8 (vendor release)"
+    },
+    {
+      "model": "zai-org/GLM-5.2-FP8",
+      "parameters_billions": 357.0,
+      "tier": "large",
+      "revision": "ba978f7d347eaf65d22f1a86833408afdb953541",
+      "active_parameters_billions": 32.0,
+      "quantization": "fp8 (vendor release)"
+    },
+    {
+      "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "parameters_billions": 167.0,
+      "tier": "large",
+      "revision": "7872f01b1d1fe23eabc4c98b48bffcef5a386062"
+    },
+    {
+      "model": "Qwen/Qwen3.8-27B-FP8",
+      "parameters_billions": 27.0,
+      "tier": "large",
+      "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+      "quantization": "fp8 (vendor release)"
+    },
+    {
+      "model": "google/gemma-4-31B-it",
+      "parameters_billions": 31.0,
+      "tier": "large",
+      "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475"
+    },
+    {
+      "model": "google/gemma-4-12B-it",
+      "parameters_billions": 12.0,
+      "tier": "medium",
+      "revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
+    },
+    {
+      "model": "google/gemma-4-26B-A4B-it",
+      "parameters_billions": 26.0,
+      "tier": "large",
+      "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+      "active_parameters_billions": 4.0
+    }
+  ],
+  "api_models": [
+    {
+      "model": "gpt-4o",
+      "provider": "azure_openai",
+      "tier": "large"
+    },
+    {
+      "model": "gpt-35-turbo",
+      "provider": "azure_openai",
+      "tier": "large"
+    },
+    {
+      "model": "claude-opus-5",
+      "provider": "anthropic",
+      "thinking": "disabled",
+      "effort": "high",
+      "temperature": null,
+      "max_output_tokens": 4096,
+      "tier": "large"
+    }
+  ],
+  "reasoning_configurations": {
+    "claude_opus_5": {
+      "model": "claude-opus-5",
+      "purpose": "Claude Opus 5 reasoning configuration: adaptive thinking, high effort, and a 16,384-token reasoning/output budget.",
+      "modes": [
+        "plan_execute",
+        "react"
+      ],
+      "headline": {
+        "global": {
+          "orchestration_accuracy": 0.5988,
+          "final_accuracy": 0.3233,
+          "side_effect_accuracy": 0.6398
+        },
+        "react": {
+          "orchestration_accuracy": 0.6841,
+          "final_accuracy": 0.5531,
+          "side_effect_accuracy": 0.7457
+        }
+      }
+    },
+    "open_weight": {
+      "purpose": "test-time reasoning ablation for local open-weight models, reported separately from the main comparison (same protocol as the claude-opus-5 thinking ablation)",
+      "lanes": [
+        {
+          "model": "Qwen/Qwen3.8-27B-FP8",
+          "thinking": "enable_thinking + reasoning_effort=xhigh (template's top tier)",
+          "caps": "plan 32768 / react 16384 generated tokens; input 98304",
+          "headline_global": {
+            "orchestration_accuracy": 0.3302,
+            "final_accuracy": 0.1705
+          },
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.3302,
+              "final_accuracy": 0.1705,
+              "side_effect_accuracy": 0.3571
+            },
+            "react": {
+              "orchestration_accuracy": 0.6308,
+              "final_accuracy": 0.4941,
+              "side_effect_accuracy": 0.7239
+            }
+          }
+        },
+        {
+          "model": "zai-org/GLM-5.2-FP8",
+          "thinking": "enable_thinking=true (untagged inline reasoning; final-JSON scoring)",
+          "caps": "plan 32768 / react 16384",
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.1775,
+              "final_accuracy": 0.0929,
+              "side_effect_accuracy": 0.1866
+            },
+            "react": {
+              "orchestration_accuracy": 0.6266,
+              "final_accuracy": 0.4891,
+              "side_effect_accuracy": 0.7208
+            }
+          }
+        },
+        {
+          "model": "zai-org/GLM-4.5-Air-FP8",
+          "thinking": "enable_thinking template switch",
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.1072,
+              "final_accuracy": 0.0425,
+              "side_effect_accuracy": 0.1161
+            },
+            "react": {
+              "orchestration_accuracy": 0.4949,
+              "final_accuracy": 0.3006,
+              "side_effect_accuracy": 0.5988
+            }
+          }
+        },
+        {
+          "model": "zai-org/GLM-4.5-FP8",
+          "thinking": "enable_thinking template switch",
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.2009,
+              "final_accuracy": 0.0848,
+              "side_effect_accuracy": 0.2146
+            },
+            "react": {
+              "orchestration_accuracy": 0.5468,
+              "final_accuracy": 0.3792,
+              "side_effect_accuracy": 0.641
+            }
+          }
+        },
+        {
+          "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+          "thinking": "enable_thinking template switch",
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.1714,
+              "final_accuracy": 0.0966,
+              "side_effect_accuracy": 0.1752
+            },
+            "react": {
+              "orchestration_accuracy": 0.5885,
+              "final_accuracy": 0.4543,
+              "side_effect_accuracy": 0.6767
+            }
+          }
+        }
+      ]
+    },
+    "gpt_5_6_sol": {
+      "purpose": "test-time reasoning ablation, API lane: gpt-5.6-sol at reasoning_effort=high (reported separately, like claude-opus-5 thinking)",
+      "lanes": [
+        {
+          "model": "gpt-5.6-sol",
+          "provider": "openai direct",
+          "reasoning_effort": "high",
+          "max_completion_tokens": 16384
+        }
+      ],
+      "headline": {
+        "global": {
+          "orchestration_accuracy": 0.5176,
+          "final_accuracy": 0.3189,
+          "side_effect_accuracy": 0.5488
+        },
+        "react": {
+          "orchestration_accuracy": 0.6688,
+          "final_accuracy": 0.5444,
+          "side_effect_accuracy": 0.7379
+        }
+      }
+    },
+    "qwen_3_pairs": {
+      "purpose": "thinking/non-thinking matched pairs across scale: dedicated Qwen3 *-Thinking-2507 checkpoints vs same-generation Instruct-2507 baselines; tests whether test-time reasoning gains on Global View emerge with scale",
+      "protocol": "32,768 Global output tokens; 16,384 ReAct output tokens; 98,304 input tokens; HF_THINKING_PREFIX=1.",
+      "lanes": [
+        {
+          "model": "Qwen/Qwen3-4B-Thinking-2507",
+          "tier": "small",
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.1025,
+              "final_accuracy": 0.027,
+              "side_effect_accuracy": 0.1304
+            },
+            "react": {
+              "orchestration_accuracy": 0.4734,
+              "final_accuracy": 0.2217,
+              "side_effect_accuracy": 0.5705
+            }
+          }
+        },
+        {
+          "model": "Qwen/Qwen3-30B-A3B-Thinking-2507",
+          "tier": "large",
+          "headline": {
+            "global": {
+              "orchestration_accuracy": 0.1475,
+              "final_accuracy": 0.0519,
+              "side_effect_accuracy": 0.1683
+            },
+            "react": {
+              "orchestration_accuracy": 0.5209,
+              "final_accuracy": 0.2817,
+              "side_effect_accuracy": 0.6335
+            }
+          }
+        }
+      ]
+    }
+  }
+}
