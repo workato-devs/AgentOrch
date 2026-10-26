@@ -49,16 +49,6 @@ and GRPO examine ways to improve global workflow orchestration. See the
 
 ## Results
 
-- **Step-by-Step leads across all 31 models in the main comparison.** The
-  Orchestration Accuracy gap is 40.67 percentage points for GPT-3.5 Turbo
-  and 8.53 points for Claude Opus 5 Thinking.
-- **Global amortizes planning across runtime variants.** One generated
-  workflow serves multiple executions. The [cost table](benchmark/results/COST.csv)
-  records model calls, completion tokens, and the coverage of token counters.
-- **Complete-workflow training improves Global accuracy.** Across five model
-  families, the better of the reported SFT and SFT + RL checkpoints improves
-  over the base model by 12.18 percentage points on average.
-
 ### Global versus Step-by-Step
 
 Orchestration Accuracy (%) on all 3,220 variants. For each variant, this is
